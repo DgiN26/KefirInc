@@ -35,24 +35,24 @@
 
  :: Spring Boot ::                (v3.5.7)
 
-2025-12-29 13:36:02 - Starting SkladApplication using Java 17.0.17 with PID 367470 (/home/vboxuser/Desktop/Kefirchik/KefirInc/Backend/Sklad/target/classes started by vboxuser in /home/vboxuser/Desktop/Kefirchik/KefirInc/Backend/Sklad)
-2025-12-29 13:36:02 - The following 1 profile is active: "local"
-2025-12-29 13:36:05 - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2025-12-29 13:36:05 - Finished Spring Data repository scanning in 88 ms. Found 1 JPA repository interface.
-2025-12-29 13:36:06 - Tomcat initialized with port 8082 (http)
-2025-12-29 13:36:06 - Starting service [Tomcat]
-2025-12-29 13:36:06 - Starting Servlet engine: [Apache Tomcat/10.1.48]
-2025-12-29 13:36:06 - Initializing Spring embedded WebApplicationContext
-2025-12-29 13:36:06 - Root WebApplicationContext: initialization completed in 3864 ms
-2025-12-29 13:36:07 - HHH000204: Processing PersistenceUnitInfo [name: default]
-2025-12-29 13:36:07 - HHH000412: Hibernate ORM core version 6.6.33.Final
-2025-12-29 13:36:07 - HHH000026: Second-level cache disabled
-2025-12-29 13:36:08 - No LoadTimeWeaver setup: ignoring JPA class transformer
-2025-12-29 13:36:08 - HikariPool-1 - Starting...
-2025-12-29 13:36:09 - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@4e9e0c6
-2025-12-29 13:36:09 - HikariPool-1 - Start completed.
-2025-12-29 13:36:09 - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-12-29 13:36:09 - HHH10001005: Database info:
+2025-12-29 14:16:21 - Starting SkladApplication using Java 17.0.17 with PID 371337 (/home/vboxuser/Desktop/Kefirchik/KefirInc/Backend/Sklad/target/classes started by vboxuser in /home/vboxuser/Desktop/Kefirchik/KefirInc/Backend/Sklad)
+2025-12-29 14:16:21 - The following 1 profile is active: "local"
+2025-12-29 14:16:24 - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-12-29 14:16:24 - Finished Spring Data repository scanning in 115 ms. Found 1 JPA repository interface.
+2025-12-29 14:16:25 - Tomcat initialized with port 8082 (http)
+2025-12-29 14:16:25 - Starting service [Tomcat]
+2025-12-29 14:16:25 - Starting Servlet engine: [Apache Tomcat/10.1.48]
+2025-12-29 14:16:26 - Initializing Spring embedded WebApplicationContext
+2025-12-29 14:16:26 - Root WebApplicationContext: initialization completed in 4302 ms
+2025-12-29 14:16:27 - HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-12-29 14:16:27 - HHH000412: Hibernate ORM core version 6.6.33.Final
+2025-12-29 14:16:27 - HHH000026: Second-level cache disabled
+2025-12-29 14:16:28 - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-12-29 14:16:28 - HikariPool-1 - Starting...
+2025-12-29 14:16:29 - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@adc8683
+2025-12-29 14:16:29 - HikariPool-1 - Start completed.
+2025-12-29 14:16:29 - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-12-29 14:16:29 - HHH10001005: Database info:
 	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
 	Database driver: undefined/unknown
 	Database version: 16.11
@@ -60,9 +60,42 @@
 	Isolation level: undefined/unknown
 	Minimum pool size: undefined/unknown
 	Maximum pool size: undefined/unknown
-2025-12-29 13:36:11 - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2025-12-29 13:36:11 - Initialized JPA EntityManagerFactory for persistence unit 'default'
-2025-12-29 13:36:12 - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2025-12-29 13:36:14 - Exposing 2 endpoints beneath base path '/actuator'
-2025-12-29 13:36:14 - Tomcat started on port 8082 (http) with context path '/'
-2025-12-29 13:36:14 - Started SkladApplication in 13.398 seconds (process running for 14.401)
+2025-12-29 14:16:31 - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-12-29 14:16:31 - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-12-29 14:16:33 - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-12-29 14:16:35 - Exposing 2 endpoints beneath base path '/actuator'
+2025-12-29 14:16:35 - Tomcat started on port 8082 (http) with context path '/'
+2025-12-29 14:16:35 - Started SkladApplication in 15.363 seconds (process running for 16.281)
+2025-12-29 14:16:52 - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-12-29 14:16:52 - Initializing Servlet 'dispatcherServlet'
+2025-12-29 14:16:52 - Completed initialization in 4 ms
+2025-12-29 14:16:52 - Получение всех товаров
+2025-12-29 14:16:52 - Получение всех товаров
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0
