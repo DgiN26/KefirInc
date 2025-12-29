@@ -34,35 +34,39 @@
  =========|_|==============|___/=/_/_/_/
  :: Spring Boot ::               (v3.2.12)
 
-2025-12-29T14:15:03.872Z  INFO 370451 --- [api-gateway] [           main] c.e.ApiGateWay.ApiGateWayApplication     : Starting ApiGateWayApplication using Java 17.0.17 with PID 370451 (/home/vboxuser/Desktop/Kefirchik/KefirInc/Backend/ApiGateWay/target/classes started by vboxuser in /home/vboxuser/Desktop/Kefirchik/KefirInc/Backend/ApiGateWay)
-2025-12-29T14:15:03.881Z  INFO 370451 --- [api-gateway] [           main] c.e.ApiGateWay.ApiGateWayApplication     : The following 1 profile is active: "local"
-2025-12-29T14:15:06.720Z  INFO 370451 --- [api-gateway] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2025-12-29T14:15:06.764Z  INFO 370451 --- [api-gateway] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 27 ms. Found 0 JPA repository interfaces.
-2025-12-29T14:15:07.514Z  INFO 370451 --- [api-gateway] [           main] o.s.cloud.context.scope.GenericScope     : BeanFactory id=59fb9b51-d11e-3101-8641-30a06713f428
-2025-12-29T14:15:09.080Z  INFO 370451 --- [api-gateway] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
-2025-12-29T14:15:09.114Z  INFO 370451 --- [api-gateway] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2025-12-29T14:15:09.114Z  INFO 370451 --- [api-gateway] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.33]
-2025-12-29T14:15:09.280Z  INFO 370451 --- [api-gateway] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-2025-12-29T14:15:09.283Z  INFO 370451 --- [api-gateway] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 5198 ms
-2025-12-29T14:15:10.115Z  INFO 370451 --- [api-gateway] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
-2025-12-29T14:15:10.978Z  INFO 370451 --- [api-gateway] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@3611153f
-2025-12-29T14:15:10.980Z  INFO 370451 --- [api-gateway] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
-2025-12-29T14:15:11.092Z  INFO 370451 --- [api-gateway] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
-2025-12-29T14:15:11.217Z  INFO 370451 --- [api-gateway] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.4.10.Final
-2025-12-29T14:15:11.285Z  INFO 370451 --- [api-gateway] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
-2025-12-29T14:15:11.815Z  INFO 370451 --- [api-gateway] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
-2025-12-29T14:15:12.817Z  INFO 370451 --- [api-gateway] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2025-12-29T14:15:12.827Z  INFO 370451 --- [api-gateway] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2025-12-29T14:15:13.589Z  WARN 370451 --- [api-gateway] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2025-12-29T14:15:17.480Z  INFO 370451 --- [api-gateway] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint(s) beneath base path '/actuator'
-2025-12-29T14:15:17.727Z  INFO 370451 --- [api-gateway] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path ''
-2025-12-29T14:15:17.847Z  INFO 370451 --- [api-gateway] [           main] c.e.ApiGateWay.ApiGateWayApplication     : Started ApiGateWayApplication in 15.552 seconds (process running for 16.84)
-2025-12-29T14:16:50.543Z  INFO 370451 --- [api-gateway] [nio-8080-exec-2] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
-2025-12-29T14:16:50.544Z  INFO 370451 --- [api-gateway] [nio-8080-exec-2] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
-2025-12-29T14:16:50.550Z  INFO 370451 --- [api-gateway] [nio-8080-exec-2] o.s.web.servlet.DispatcherServlet        : Completed initialization in 6 ms
+2025-12-29T14:26:27.441Z  INFO 373670 --- [api-gateway] [           main] c.e.ApiGateWay.ApiGateWayApplication     : Starting ApiGateWayApplication using Java 17.0.17 with PID 373670 (/home/vboxuser/Desktop/Kefirchik/KefirInc/Backend/ApiGateWay/target/classes started by vboxuser in /home/vboxuser/Desktop/Kefirchik/KefirInc/Backend/ApiGateWay)
+2025-12-29T14:26:27.447Z  INFO 373670 --- [api-gateway] [           main] c.e.ApiGateWay.ApiGateWayApplication     : The following 1 profile is active: "local"
+2025-12-29T14:26:29.991Z  INFO 373670 --- [api-gateway] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-12-29T14:26:30.049Z  INFO 373670 --- [api-gateway] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 41 ms. Found 0 JPA repository interfaces.
+2025-12-29T14:26:30.776Z  INFO 373670 --- [api-gateway] [           main] o.s.cloud.context.scope.GenericScope     : BeanFactory id=59fb9b51-d11e-3101-8641-30a06713f428
+2025-12-29T14:26:32.311Z  INFO 373670 --- [api-gateway] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2025-12-29T14:26:32.374Z  INFO 373670 --- [api-gateway] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-12-29T14:26:32.374Z  INFO 373670 --- [api-gateway] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.33]
+2025-12-29T14:26:32.575Z  INFO 373670 --- [api-gateway] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-12-29T14:26:32.577Z  INFO 373670 --- [api-gateway] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 5034 ms
+2025-12-29T14:26:33.667Z  INFO 373670 --- [api-gateway] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2025-12-29T14:26:34.558Z  INFO 373670 --- [api-gateway] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@2b9b17ce
+2025-12-29T14:26:34.561Z  INFO 373670 --- [api-gateway] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-12-29T14:26:34.691Z  INFO 373670 --- [api-gateway] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-12-29T14:26:34.808Z  INFO 373670 --- [api-gateway] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.4.10.Final
+2025-12-29T14:26:34.892Z  INFO 373670 --- [api-gateway] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2025-12-29T14:26:35.490Z  INFO 373670 --- [api-gateway] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-12-29T14:26:36.405Z  INFO 373670 --- [api-gateway] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-12-29T14:26:36.414Z  INFO 373670 --- [api-gateway] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-12-29T14:26:37.328Z  WARN 373670 --- [api-gateway] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-12-29T14:26:41.059Z  INFO 373670 --- [api-gateway] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint(s) beneath base path '/actuator'
+2025-12-29T14:26:41.280Z  INFO 373670 --- [api-gateway] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path ''
+2025-12-29T14:26:41.397Z  INFO 373670 --- [api-gateway] [           main] c.e.ApiGateWay.ApiGateWayApplication     : Started ApiGateWayApplication in 15.062 seconds (process running for 15.928)
+2025-12-29T14:28:49.188Z  INFO 373670 --- [api-gateway] [nio-8080-exec-2] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-12-29T14:28:49.190Z  INFO 373670 --- [api-gateway] [nio-8080-exec-2] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-12-29T14:28:49.198Z  INFO 373670 --- [api-gateway] [nio-8080-exec-2] o.s.web.servlet.DispatcherServlet        : Completed initialization in 7 ms
 === GATEWAY LOGIN (HYBRID SUPPORT) ===
-✅ Received hybrid UUID token: auth-31b1e67a-a394-4525-aa79-a2dcd86947f1
-2025-12-29T14:16:52.338Z  INFO 370451 --- [api-gateway] [nio-8080-exec-4] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
-2025-12-29T14:16:52.354Z  INFO 370451 --- [api-gateway] [nio-8080-exec-5] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
-2025-12-29T14:16:53.471Z  INFO 370451 --- [api-gateway] [nio-8080-exec-4] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
-2025-12-29T14:16:53.478Z  INFO 370451 --- [api-gateway] [nio-8080-exec-5] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
+✅ Received hybrid UUID token: auth-685e1873-6633-4fd5-9d07-44b283d7c399
+2025-12-29T14:28:50.969Z  INFO 373670 --- [api-gateway] [nio-8080-exec-4] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
+2025-12-29T14:28:50.980Z  INFO 373670 --- [api-gateway] [nio-8080-exec-5] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
+2025-12-29T14:28:52.031Z  INFO 373670 --- [api-gateway] [nio-8080-exec-4] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
+2025-12-29T14:28:52.055Z  INFO 373670 --- [api-gateway] [nio-8080-exec-5] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
+2025-12-29T14:29:10.023Z  INFO 373670 --- [api-gateway] [nio-8080-exec-6] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
+2025-12-29T14:29:10.134Z  INFO 373670 --- [api-gateway] [nio-8080-exec-6] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
+2025-12-29T14:29:10.173Z  INFO 373670 --- [api-gateway] [nio-8080-exec-7] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
+2025-12-29T14:29:10.311Z  INFO 373670 --- [api-gateway] [nio-8080-exec-7] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
