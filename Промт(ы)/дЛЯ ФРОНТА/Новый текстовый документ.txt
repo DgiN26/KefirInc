@@ -1,0 +1,855 @@
+У нас есть логистическая система. СЕЙЧАС ЕДИНСТВЕННАЯ ЦЕЛЬ - СОЗДАТЬ ФРОНТЕНД ОФИССА!
+
+Вот дизайн!
+Вообще фишка дизайна - некоторые части жлеменотов форнта написаны стилем - рисует ребенок, не твердой детской рукой.
+1. Курсор в виде фломастера
+·Заменю стандартный курсор на кастомный: рисованный кончик фломастера (слегка скошенный, с имитацией следа).
+·При наведении на кликабельные элементы:
+oФломастер может слегка наклоняться.
+oПоявляется лёгкая тень/отметка под курсором (как будто фломастер касается бумаги).
+·Цвет фломастера можно менять в зависимости от раздела (жёлтый для клиента, чёрный для админа).
+2. Переход между страницами как листание блокнота
+·Анимация перехода будет имитировать перелистывание страницы:
+oТекущая страница «отрывается» справа и уходит влево.
+oНовая страница «приезжает» справа, как будто это следующий лист в блокноте.
+·Можно добавить лёгкий шелест бумаги (по желанию, звуковой эффект).
+·Фон страницы может иметь текстуру слегка состаренной бумаги/блокнота.
+
+OFFICEPAGE.js я тебе скинул!
+ОЧЕНЬ ВАЖНО - НИЖЕ РАБОТАЮЩИЙ ДИЗАЙН ПО ТЗ ОФИССА, НУЖНО ЧТО ТО ПРИМЕРНО ПОХОЖЕЕ!
+Приложение офиса
+
+
+Офис получает заявку на отсутсвие заказа от сборщика. Пишет клиенту и или отменяет заказ и он отменяется у сборщика или отправляет сборщику сигнал, что бы он продолжал сборку.
+Все монохромное. То есть черно-белое. Пазиционирование вертикальное. То есть фул хд не должно быть прокрута вниз. ВСЯ СТРАНИЦА ДОЛЖНА ПОМЕЩАТСЯ НА ОДИН ЭКРАН!!!
+Экран поделен на две половины. Слева на 70 процентов экрна прямоугольник верхний правыфй угол которого закрашен черным, сообщение от сборщика. Справа чисто белый прямоугольник с черной кнопкой, кнопка которая отправляет клиенту запрос по форме(имитация письма на email, должен быть email и имя полученые из таблицы  users) - осутсвует товар, ваше решение.две кнопки красная и синяя одобрить, отменить. После нажатие кнопки рещение возвращает заказ в таблицу заказов для сборщиков или удаляет его.
+
+Теперь Дизайн приложения Сборщика.
+
+Все монохромное. То есть черно-белое. Пазиционирование вертикальное. То есть фул хд не должно быть прокрута вниз. ВСЯ СТРАНИЦА ДОЛЖНА ПОМЕЩАТСЯ НА ОДИН ЭКРАН!!!
+Экран поделен на две половины. Слева на 70 процентов экрна прямоугольник верхний правыфй угол которого закрашен черным, тут заказы которые проверяются раз в 15 секунд из таблицы carts и добаляют все со статусом processing. После выбора открывается Справа чисто белый прямоугольник с черной кнопкой, кнопка проверить наличие товара, внутри и кнопка нет товара.
+
+Работа с Постгресс 
+Первый шаг.
+Проверка таблицы carts kefir_db=# SELECT * FROM carts;
+ id | client_id |        created_date        |   status
+----+-----------+----------------------------+------------
+  7 |         4 | 2025-12-28 11:38:44.394046 | processing
+  8 |         5 | 2025-12-28 11:38:44.394046 | pending
+ 14 |        11 | 2025-01-20 11:45:00        | processing
+ 17 |        14 | 2025-01-20 15:30:00        | processing
+ 15 |        12 | 2025-01-20 12:15:00        | waiting
+ 13 |        10 | 2025-01-20 10:30:00        | waiting
+
+После этого для сборщика формируются данные для сборки
+ SELECT * FROM cart_items;
+ id | cart_id | product_id | quantity | price
+----+---------+------------+----------+-------
+(0 rows)
+- картс - для офиса и окончание заказа. Картс итем - для сборщика. Плюс ему нужна кнопка проверить наличие товара, внутри и кнопка нет товар. Кнопка нет товара - пишется id товара в офисс_проблемс добавляются product_id  details то есть айди и что с товаром не так.  Так же в таблице картс меняется статус на проблемся   Если все товары на месте - он отправляет их в orders. Если статус заказа в carts меняется processing или приходя из оффиса он через 15 секунд появляется в cart_items прямоугольник верхний правыфй угол которого закрашен черным, тут заказы которые проверяются раз в 15 секунд из таблицы carts и добаляют все со статусом processing. После выбора открывается Справа чисто белый прямоугольник с черной кнопкой, кнопка проверить наличие товара, внутри и кнопка нет товара.
+
+
+
+
+Миссия приложения
+Для нейросети  добавление внешних проверок (fact-checking), temperature > 0, цепочки верификации (Chain-of-Verification), регулярная перекалибровка. 
+ЕЩЕ ВАЖНЕЕ _ЦЕЛОСТНОСТЬ НАШЕГО ПРИЛОЖЕНИЯ И НАШ НАД НИМ КОНТРОЛЬ, ЕСЛИ В КОДЕ ЧТО ТО ЕСТЬ И МЫ ТЕБЯ ОБ ЭТОМ НЕ СПРАШИВАЕМ ЗНАЧИТ ЭТО ПОЯВИЛОСЬ В КОДЕ ПО НАшей ВОЛЕ
+Когда описываешь метод - ВСЕГДА СВЕРХУ  ПИШИ ЕГО КЛАСС 
+Данную логистическую систему мы создаем из двух соображений. Создать хорошее логистическое приложение и решить проблему с ошибкой.
+Мы собираемся через него разыгрывать ситуацию когда сборщик собирает заказ, заказа нет и он вынужден обращатся в офисс, что бы офис связался с покупателем и уточнил продолжать ли собирать заказ. При этом у офиса должно быть возможность просматривать заказ. По сути клиент должен начинать транзакцию. Мы разыгрываем сдесь ошибку которая реальна произходит в другом приложении и предлогаем изящное решение: Транзакция открыта, сборщик посылает запрос в офис. И если офис принимает от клиента подтверждение на продолжение - транзакция закрывается и клиенту приходят только те товары, которые сборщик пробил до этого. При этом деньги возвращаются только за один товар о котором сборщик сообщил в офис, а все остальные товары которые он не успел пробить до возникновения ошибки - остаются на складе, хоть за них и заплатили деньги.  Клиент требует привезти ему весь товар. Поскольку транзакция закрылась раньше, нельзя гарантировать что оставшийся кроме отмененного товар, который ещё не прокликали, есть на складе. Соответсвенно офису нужно последовательно обзванивать несколько складов. И курьер или идёт по склада и собирает заказ или необходимо что бы курьеры оставляли 6а один склад все товары. Такой заказ везут час вместо обычных 15 минут. 
+Пункт 1.1. Разыграть в нашем приложении эту реально существующую ситуацию с возникновением ошибки. То есть намеренно вызвать ошибку транзакции. 
+Пункт1.2. Когда клиенту привозят нгеполный заказ, и не хватает оплаченных товаров - клиент связывается с офисом, офисс проверяет что эти товары не были пробиты. Далее если клиент настаивает на том что бы ему привезли екго недостоющии товары, а этих товаров нет на складе - офисс вынужден собирать товары по всем складам. То есть нам необходимо семулировать ситуацию, насколько не выгодно допускать эту ошибку. И потом уже давать решение.
+Пункт 2.  Решение следующуе. ЗАкрывать транзакцию если одного товара нет и открывать другую транзакцию, сборщик после звонка должен опять прокликать все товары.Тут проблема как раз в том, что мы точно не знаем в чем ошибка. Если применялись разные подходы, а ошибка остается. Мне кажется лучше всего отменять старую транзакцию. И создавать новую с начальными данными старой транзакции. Сборщик просто должен все перепикать. При неизвестных системных ошибках проще и безопаснее "перезагрузить процесс", чем пытаться его починить. Это как перезапустить зависший компьютер вместо поиска конкретного б
+То есть если цепочка. User зашел, Создал корзину отправил. Юсер вышел. Коллектор зашел отправил запрос в офис, вышел. ОФис зашел позвонил клиенту(симуляция) запрос колектору вышел. Колектор зашел отдал заказ вышел. Клиент зашел отправил вышел. (Симуляция клиент звонит в офис. Офис зашел и общается со сборщиком. Дальше решение миссии в приложение - заходы выходы офиса и сборщика.ага в коде.
+
+Структура проекта: Kefir-React-App
+Подробное описание архитектуры React-приложения с микросервисным подходом
+
+I. КОРНЕВАЯ ДИРЕКТОРИЯ ПРОЕКТА (kefir-react-app/)
+Конфигурационные файлы проекта
+text
+├── .env                    # Основные переменные окружения
+├── .env.development       # Переменные для режима разработки
+├── .env.production        # Переменные для продакшн-сборки
+├── .gitignore             # Игнорируемые Git файлы (node_modules, логи и т.д.)
+├── Dockerfile             # Инструкции сборки Docker-образа
+├── nginx.conf             # Конфигурация веб-сервера Nginx
+├── package.json           # Метаданные, зависимости, скрипты проекта
+├── package-lock.json      # Фиксированные версии зависимостей
+├── README.md              # Документация проекта
+└── webpack.config.js      # Конфигурация сборщика модулей
+Сервисные файлы
+text
+├── docker-compose.full.yml    # Оркестрация всех контейнеров
+├── scripts/                   # Вспомогательные скрипты
+│   ├── check-microservices.sh
+│   └── start-dev.sh
+
+II. ИСХОДНЫЙ КОД ПРОЕКТА (src/)
+Основная структура
+text
+src/
+├── components/           # Переиспользуемые UI-компоненты
+│   ├── admin/           # Компоненты админ-панели
+│   ├── client/          # Компоненты клиентской части
+│   ├── collector/       # Компоненты для сборщиков
+│   ├── courier/         # Компоненты для курьеров
+│   └── layout/          # Компоненты макета (хедер, футер, навигация)
+│
+├── config/              # Конфигурационные файлы
+│   ├── routes.js        # Настройки маршрутизации
+│   ├── constants.js     # Глобальные константы
+│   └── settings.js      # Настройки приложения
+│
+├── context/             # React Context для глобального состояния
+│   ├── AuthContext.js   # Контекст аутентификации
+│   ├── UserContext.js   # Контекст пользователя
+│   └── ThemeContext.js  # Контекст темы оформления
+│
+├── hooks/               # Кастомные React-хуки
+│   ├── useAuth.js       # Хук для работы с аутентификацией
+│   ├── useApi.js        # Хук для API-запросов
+│   └── useLocalStorage.js # Хук для работы с localStorage
+│
+├── pages/               # Компоненты страниц
+│   ├── admin/           # Страницы админ-панели
+│   │   ├── Dashboard.js
+│   │   └── Users.js
+│   ├── client/          # Страницы клиентского портала
+│   │   ├── Home.js
+│   │   ├── Products.js
+│   │   └── Orders.js
+│   ├── collector/       # Страницы приложения сборщика
+│   ├── courier/         # Страницы приложения курьера
+│   └── shared/          # Общие страницы (Login, 404 и т.д.)
+│
+├── services/            # Сервисы для работы с API
+│   ├── api.js          # Базовые настройки HTTP-клиента (axios/fetch)
+│   ├── authService.js  # Сервис аутентификации
+│   ├── productService.js # Сервис работы с продуктами
+│   ├── orderService.js  # Сервис работы с заказами
+│   └── userService.js   # Сервис работы с пользователями
+│
+├── styles/              # Стили и темы
+│   ├── main.scss        # Основные стили
+│   ├── variables.scss   # CSS-переменные
+│   ├── mixins.scss      # SCSS-миксины
+│   └── themes/          # Темы оформления
+│       ├── light.scss
+│       └── dark.scss
+│
+└── utils/               # Вспомогательные утилиты
+    ├── helpers.js       # Общие функции-помощники
+    ├── validators.js    # Функции валидации
+    └── formatters.js    # Функции форматирования
+Ключевые файлы приложения
+text
+src/
+├── App.js              # Корневой компонент приложения (роутинг, провайдеры)
+├── index.js            # Точка входа, монтирование приложения
+├── reportWebVitals.js  # Измерение производительности
+└── setupTests.js       # Конфигурация тестовой среды
+
+III. ФРОНТЕНД-МИКРОСЕРВИСЫ
+1. Клиентский портал (client-portal-microservice/)
+text
+client-portal-microservice/
+├── public/
+│   ├── index.html      # Основной HTML-файл
+│   ├── favicon.ico
+│   └── manifest.json
+│
+├── src/
+│   ├── components/
+│   │   ├── ProductCatalog/  # Компоненты каталога продуктов
+│   │   ├── Cart/           # Компоненты корзины
+│   │   ├── Auth/           # Компоненты аутентификации
+│   │   └── Shared/         # Общие компоненты микросервиса
+│   │
+│   ├── services/
+│   │   ├── api.js          # Клиент API
+│   │   ├── productService.js
+│   │   └── cartService.js
+│   │
+│   ├── styles/             # Стили микросервиса
+│   ├── App.jsx            # Корневой компонент
+│   └── index.js           # Точка входа
+│
+├── Dockerfile             # Сборка образа микросервиса
+├── package.json          # Зависимости микросервиса
+├── webpack.config.js     # Конфигурация сборки
+└── nginx.conf            # Конфигурация Nginx для микросервиса
+2. Приложение сборщика (collector-app-microservice/)
+text
+collector-app-microservice/
+├── src/
+│   ├── components/
+│   │   ├── Orders/        # Компоненты управления заказами
+│   │   ├── Map/          # Компоненты карты
+│   │   └── CollectorDashboard/ # Дашборд сборщика
+│   │
+│   ├── services/
+│   │   ├── collectorApi.js
+│   │   ├── routeService.js
+│   │   └── orderService.js
+│   │
+│   └── ... (аналогичная структура)
+│
+└── ... (конфигурационные файлы)
+3. Приложение курьера (courier-app-microservice/)
+text
+courier-app-microservice/
+├── src/
+│   ├── components/
+│   │   ├── Delivery/      # Компоненты доставки
+│   │   ├── Navigation/    # Навигационные компоненты
+│   │   └── CourierDashboard/ # Дашборд курьера
+│   │
+│   ├── services/
+│   │   ├── courierApi.js
+│   │   ├── deliveryService.js
+│   │   └── trackingService.js
+│   │
+│   └── ... (аналогичная структура)
+│
+└── ... (конфигурационные файлы)
+
+IV. КЛЮЧЕВЫЕ ОСОБЕННОСТИ АРХИТЕКТУРЫ
+Принципы организации
+1.Модульность — каждый микросервис автономен
+2.Переиспользуемость — общие компоненты в корне src/
+3.Масштабируемость — легкое добавление новых микросервисов
+4.Независимость — отдельная сборка и деплой каждого микросервиса
+Взаимодействие между слоями
+text
+Клиентский браузер
+        ↓
+Nginx (прокси/статик)
+        ↓
+Фронтенд-микросервисы
+        ↓
+Общие компоненты (src/)
+        ↓
+Бэкенд-микросервисы (API)
+Типичный поток данных
+text
+1. Микросервис загружается → public/index.html
+2. Инициализируется React-приложение → src/index.js
+3. Загружается корневой компонент → App.js
+4. Подключаются необходимые сервисы → services/
+5. Используются общие компоненты → src/components/
+6. Выполняются API-запросы → services/api.js
+
+Теперь нужные тебе Бекенд  микросервиса Коллектор другие микросервисы не скидываю(если что там созданно больше, спрашивай есть или нет) начиная с бекенд коллектор. package com.example.collector;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestTemplate;
+
+@Configuration
+public class AppConfig {
+    
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
+}package com.example.collector;
+
+
+import javax.persistence.*;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "collectors")
+public class Collector {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "collector_id", unique = true, nullable = false)
+    private String collectorId; // COLLECTOR_1, COLLECTOR_2
+
+    @Column(name = "name", nullable = false)
+    private String name;
+
+    @Column(name = "status")
+    private String status; // ACTIVE, INACTIVE, BUSY
+
+    @Column(name = "current_location")
+    private String currentLocation;
+
+    @Column(name = "created_date")
+    private LocalDateTime createdDate;
+
+    @Column(name = "last_activity")
+    private LocalDateTime lastActivity;
+
+    // Конструкторы
+    public Collector() {}
+
+    public Collector(String collectorId, String name, String status) {
+        this.collectorId = collectorId;
+        this.name = name;
+        this.status = status;
+        this.createdDate = LocalDateTime.now();
+        this.lastActivity = LocalDateTime.now();
+    }
+
+    // Геттеры и сеттеры
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getCollectorId() { return collectorId; }
+    public void setCollectorId(String collectorId) { this.collectorId = collectorId; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) {
+        this.status = status;
+        this.lastActivity = LocalDateTime.now();
+    }
+
+    public String getCurrentLocation() { return currentLocation; }
+    public void setCurrentLocation(String currentLocation) { this.currentLocation = currentLocation; }
+
+    public LocalDateTime getCreatedDate() { return createdDate; }
+    public void setCreatedDate(LocalDateTime createdDate) { this.createdDate = createdDate; }
+
+    public LocalDateTime getLastActivity() { return lastActivity; }
+    public void setLastActivity(LocalDateTime lastActivity) { this.lastActivity = lastActivity; }
+}package com.example.collector;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class CollectorApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(CollectorApplication.class, args);
+	}
+
+}package com.example.collector;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/api/collector")
+public class CollectorController {
+
+    @Autowired
+    private CollectorService collectorService;
+
+    @PostMapping("/collectors")
+    public ResponseEntity<Collector> createCollector(@RequestBody Collector collector) {
+        Collector created = collectorService.createCollector(collector);
+        return ResponseEntity.ok(created);
+    }
+
+    @GetMapping("/collectors")
+    public ResponseEntity<List<Collector>> getAllCollectors() {
+        List<Collector> collectors = collectorService.getAllCollectors();
+        return ResponseEntity.ok(collectors);
+    }
+
+    @GetMapping("/collectors/{collectorId}")
+    public ResponseEntity<Collector> getCollector(@PathVariable String collectorId) {
+        Optional<Collector> collector = collectorService.getCollectorById(collectorId);
+        return collector.map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/collectors/{collectorId}/status")
+    public ResponseEntity<Collector> updateCollectorStatus(
+            @PathVariable String collectorId,
+            @RequestParam String status) {
+        Collector collector = collectorService.updateCollectorStatus(collectorId, status);
+        return ResponseEntity.ok(collector);
+    }
+
+    @PutMapping("/collectors/{collectorId}/location")
+    public ResponseEntity<Collector> updateCollectorLocation(
+            @PathVariable String collectorId,
+            @RequestParam String location) {
+        Collector collector = collectorService.updateCollectorLocation(collectorId, location);
+        return ResponseEntity.ok(collector);
+    }
+
+    @PostMapping("/tasks")
+    public ResponseEntity<CollectorTask> createTask(@RequestBody CollectorTask task) {
+        CollectorTask created = collectorService.createTask(task);
+        return ResponseEntity.ok(created);
+    }
+
+    @GetMapping("/tasks")
+    public ResponseEntity<List<CollectorTask>> getAllTasks() {
+        List<CollectorTask> tasks = collectorService.getAllTasks();
+        return ResponseEntity.ok(tasks);
+    }
+
+    @GetMapping("/tasks/{taskId}")
+    public ResponseEntity<CollectorTask> getTask(@PathVariable String taskId) {
+        Optional<CollectorTask> task = collectorService.getTask(taskId);
+        return task.map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/tasks/collector/{collectorId}")
+    public ResponseEntity<List<CollectorTask>> getCollectorTasks(@PathVariable String collectorId) {
+        List<CollectorTask> tasks = collectorService.getCollectorTasks(collectorId);
+        return ResponseEntity.ok(tasks);
+    }
+
+    @GetMapping("/tasks/pending")
+    public ResponseEntity<List<CollectorTask>> getPendingTasks() {
+        List<CollectorTask> tasks = collectorService.getPendingTasks();
+        return ResponseEntity.ok(tasks);
+    }
+
+    @PutMapping("/tasks/{taskId}/status")
+    public ResponseEntity<CollectorTask> updateTaskStatus(
+            @PathVariable String taskId,
+            @RequestParam String status) {
+        CollectorTask task = collectorService.updateTaskStatus(taskId, status);
+        return ResponseEntity.ok(task);
+    }
+
+    // НОВЫЙ ЭНДПОИНТ ДЛЯ ТРАНЗАКЦИЙ
+    @PostMapping("/transactions/process-order")
+    public ResponseEntity<Map<String, Object>> processOrderTransaction(@RequestBody Map<String, Object> transactionRequest) {
+        try {
+            Map<String, Object> result = collectorService.processOrderTransaction(transactionRequest);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "success", false,
+                "error", e.getMessage(),
+                "taskId", transactionRequest.get("taskId")
+            ));
+        }
+    }
+
+    @PostMapping("/tasks/{taskId}/report-problem")
+    public ResponseEntity<CollectorTask> reportProblem(
+            @PathVariable String taskId,
+            @RequestParam String problemType,
+            @RequestParam String comments) {
+        CollectorTask task = collectorService.reportProblem(taskId, problemType, comments);
+        return ResponseEntity.ok(task);
+    }
+
+    @GetMapping("/tasks/problems")
+    public ResponseEntity<List<CollectorTask>> getProblemTasks() {
+        List<CollectorTask> tasks = collectorService.getProblemTasks();
+        return ResponseEntity.ok(tasks);
+    }
+
+    @PutMapping("/tasks/{taskId}/complete")
+    public ResponseEntity<CollectorTask> completeTask(@PathVariable String taskId) {
+        CollectorTask task = collectorService.completeTask(taskId);
+        return ResponseEntity.ok(task);
+    }
+}
+package com.example.collector;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public interface CollectorRepository extends JpaRepository<Collector, Long> {
+    Optional<Collector> findByCollectorId(String collectorId);
+    List<Collector> findByStatus(String status);
+    boolean existsByCollectorId(String collectorId);
+}package com.example.collector;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+@Service
+public class CollectorService {
+
+    @Autowired
+    private CollectorRepository collectorRepository;
+
+    @Autowired
+    private CollectorTaskRepository taskRepository;
+    
+    @Autowired
+    private RestTemplate restTemplate;
+
+    public Collector createCollector(Collector collector) {
+        if (collectorRepository.existsByCollectorId(collector.getCollectorId())) {
+            throw new RuntimeException("Collector with ID " + collector.getCollectorId() + " already exists");
+        }
+        return collectorRepository.save(collector);
+    }
+
+    public List<Collector> getAllCollectors() {
+        return collectorRepository.findAll();
+    }
+
+    public Optional<Collector> getCollectorById(String collectorId) {
+        return collectorRepository.findByCollectorId(collectorId);
+    }
+
+    public Collector updateCollectorStatus(String collectorId, String status) {
+        Collector collector = collectorRepository.findByCollectorId(collectorId)
+                .orElseThrow(() -> new RuntimeException("Collector not found"));
+        collector.setStatus(status);
+        return collectorRepository.save(collector);
+    }
+
+    public Collector updateCollectorLocation(String collectorId, String location) {
+        Collector collector = collectorRepository.findByCollectorId(collectorId)
+                .orElseThrow(() -> new RuntimeException("Collector not found"));
+        collector.setCurrentLocation(location);
+        return collectorRepository.save(collector);
+    }
+
+    public CollectorTask createTask(CollectorTask task) {
+        if (!collectorRepository.existsByCollectorId(task.getCollectorId())) {
+            throw new RuntimeException("Collector " + task.getCollectorId() + " not found");
+        }
+        return taskRepository.save(task);
+    }
+
+    public List<CollectorTask> getAllTasks() {
+        return taskRepository.findAll();
+    }
+
+    public Optional<CollectorTask> getTask(String taskId) {
+        return taskRepository.findByTaskId(taskId);
+    }
+
+    public List<CollectorTask> getCollectorTasks(String collectorId) {
+        return taskRepository.findByCollectorId(collectorId);
+    }
+
+    public List<CollectorTask> getPendingTasks() {
+        return taskRepository.findByStatus("NEW");
+    }
+
+    public CollectorTask updateTaskStatus(String taskId, String status) {
+        CollectorTask task = taskRepository.findByTaskId(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+        task.setStatus(status);
+        return taskRepository.save(task);
+    }
+
+    @Transactional
+    public Map<String, Object> processOrderTransaction(Map<String, Object> transactionRequest) {
+        String taskId = (String) transactionRequest.get("taskId");
+        String collectorId = (String) transactionRequest.get("collectorId");
+        
+        CollectorTask task = taskRepository.findByTaskId(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+        
+        // Начинаем транзакцию
+        task.setStatus("PROCESSING");
+        task.setStartedDate(LocalDateTime.now());
+        taskRepository.save(task);
+        
+        try {
+            // Проверяем наличие товаров
+            boolean allItemsAvailable = checkItemsAvailability(transactionRequest);
+            
+            if (allItemsAvailable) {
+                // Все товары есть - успешное завершение
+                return completeTransactionSuccess(task, "Все товары доступны");
+            } else {
+                // Товаров нет - создаем возврат в офисе
+                return completeTransactionWithReturn(transactionRequest, task);
+            }
+        } catch (Exception e) {
+            // Откат транзакции при ошибке
+            task.setStatus("FAILED");
+            task.setComments("Ошибка транзакции: " + e.getMessage());
+            taskRepository.save(task);
+            throw new RuntimeException("Транзакция отменена: " + e.getMessage(), e);
+        }
+    }
+    
+    private boolean checkItemsAvailability(Map<String, Object> transactionRequest) {
+        // Реальная логика проверки наличия товаров
+        // Заглушка: 60% вероятность что товары есть
+        return Math.random() > 0.4;
+    }
+    
+    private Map<String, Object> completeTransactionSuccess(CollectorTask task, String message) {
+        task.setStatus("COMPLETED");
+        task.setCompletedDate(LocalDateTime.now());
+        task.setComments(message);
+        taskRepository.save(task);
+        
+        return Map.of(
+            "success", true,
+            "message", message,
+            "taskId", task.getTaskId(),
+            "status", "COMPLETED",
+            "transactionStatus", "COMMITTED",
+            "timestamp", LocalDateTime.now()
+        );
+    }
+    
+    private Map<String, Object> completeTransactionWithReturn(Map<String, Object> transactionRequest, CollectorTask task) {
+        try {
+            // Создаем запрос на возврат в офисе
+            Map<String, Object> officeRequest = Map.of(
+                "requestId", "RETURN_" + task.getTaskId(),
+                "collectorId", task.getCollectorId(),
+                "clientId", transactionRequest.get("clientId"),
+                "productId", transactionRequest.get("productId"),
+                "reason", "Товар отсутствует на складе",
+                "quantity", transactionRequest.get("quantity"),
+                "officeId", "OFFICE_001",
+                "taskId", task.getTaskId()
+            );
+            
+            // Отправляем в офис
+            String officeUrl = "http://localhost:8085/api/office/accept-return-from-collector";
+            Map<String, Object> officeResponse = restTemplate.postForObject(officeUrl, officeRequest, Map.class);
+            
+            if (officeResponse != null && officeResponse.containsKey("id")) {
+                // Успешно создан возврат
+                task.setStatus("COMPLETED_WITH_RETURN");
+                task.setCompletedDate(LocalDateTime.now());
+                task.setComments("Создан РОЗТ: " + officeResponse.get("id"));
+                taskRepository.save(task);
+                
+                return Map.of(
+                    "success", true,
+                    "message", "Транзакция завершена с созданием РОЗТ",
+                    "taskId", task.getTaskId(),
+                    "status", "COMPLETED_WITH_RETURN",
+                    "transactionStatus", "COMMITTED_WITH_RETURN",
+                    "returnId", officeResponse.get("id"),
+                    "timestamp", LocalDateTime.now()
+                );
+            } else {
+                throw new RuntimeException("Не удалось создать возврат в офисе");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка при создании возврата: " + e.getMessage(), e);
+        }
+    }
+
+    public CollectorTask reportProblem(String taskId, String problemType, String comments) {
+        CollectorTask task = taskRepository.findByTaskId(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+        task.setProblemType(problemType);
+        task.setComments(comments);
+        task.setStatus("PROBLEM");
+        task.setPriority("HIGH");
+        return taskRepository.save(task);
+    }
+
+    public List<CollectorTask> getProblemTasks() {
+        return taskRepository.findByProblemTypeIsNotNull();
+    }
+
+    public CollectorTask completeTask(String taskId) {
+        CollectorTask task = taskRepository.findByTaskId(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+        task.setStatus("COMPLETED");
+        return taskRepository.save(task);
+    }
+}package com.example.collector;
+
+
+import javax.persistence.*;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "collector_tasks")
+public class CollectorTask {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "task_id", unique = true, nullable = false)
+    private String taskId;
+
+    @Column(name = "collector_id", nullable = false)
+    private String collectorId;
+
+    @Column(name = "order_id")
+    private String orderId;
+
+    @Column(name = "client_id")
+    private String clientId;
+
+    @Column(name = "product_id")
+    private String productId;
+
+    @Column(name = "product_name")
+    private String productName;
+
+    @Column(name = "quantity")
+    private Integer quantity;
+
+    @Column(name = "task_type")
+    private String taskType;
+
+    @Column(name = "status")
+    private String status;
+
+    @Column(name = "problem_type")
+    private String problemType;
+
+    @Column(name = "location")
+    private String location;
+
+    @Column(name = "comments")
+    private String comments;
+
+    @Column(name = "priority")
+    private String priority;
+
+    @Column(name = "created_date")
+    private LocalDateTime createdDate;
+
+    @Column(name = "started_date")
+    private LocalDateTime startedDate;
+
+    @Column(name = "completed_date")
+    private LocalDateTime completedDate;
+
+    // УДАЛИЛ поле transaction_status и связанные методы
+
+    public CollectorTask() {}
+
+    public CollectorTask(String taskId, String collectorId, String taskType, String status) {
+        this.taskId = taskId;
+        this.collectorId = collectorId;
+        this.taskType = taskType;
+        this.status = status;
+        this.createdDate = LocalDateTime.now();
+        this.priority = "MEDIUM";
+    }
+
+    // Геттеры и сеттеры
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getTaskId() { return taskId; }
+    public void setTaskId(String taskId) { this.taskId = taskId; }
+
+    public String getCollectorId() { return collectorId; }
+    public void setCollectorId(String collectorId) { this.collectorId = collectorId; }
+
+    public String getOrderId() { return orderId; }
+    public void setOrderId(String orderId) { this.orderId = orderId; }
+
+    public String getClientId() { return clientId; }
+    public void setClientId(String clientId) { this.clientId = clientId; }
+
+    public String getProductId() { return productId; }
+    public void setProductId(String productId) { this.productId = productId; }
+
+    public String getProductName() { return productName; }
+    public void setProductName(String productName) { this.productName = productName; }
+
+    public Integer getQuantity() { return quantity; }
+    public void setQuantity(Integer quantity) { this.quantity = quantity; }
+
+    public String getTaskType() { return taskType; }
+    public void setTaskType(String taskType) { this.taskType = taskType; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) {
+        this.status = status;
+        if ("IN_PROGRESS".equals(status) && startedDate == null) {
+            this.startedDate = LocalDateTime.now();
+        } else if ("COMPLETED".equals(status) || "COMPLETED_WITH_RETURN".equals(status)) {
+            this.completedDate = LocalDateTime.now();
+        }
+    }
+
+    public String getProblemType() { return problemType; }
+    public void setProblemType(String problemType) { this.problemType = problemType; }
+
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
+
+    public String getComments() { return comments; }
+    public void setComments(String comments) { this.comments = comments; }
+
+    public String getPriority() { return priority; }
+    public void setPriority(String priority) { this.priority = priority; }
+
+    public LocalDateTime getCreatedDate() { return createdDate; }
+    public void setCreatedDate(LocalDateTime createdDate) { this.createdDate = createdDate; }
+
+    public LocalDateTime getStartedDate() { return startedDate; }
+    public void setStartedDate(LocalDateTime startedDate) { this.startedDate = startedDate; }
+
+    public LocalDateTime getCompletedDate() { return completedDate; }
+    public void setCompletedDate(LocalDateTime completedDate) { this.completedDate = completedDate; }
+}package com.example.collector;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public interface CollectorTaskRepository extends JpaRepository<CollectorTask, Long> {
+    List<CollectorTask> findByCollectorId(String collectorId);
+    List<CollectorTask> findByCollectorIdAndStatus(String collectorId, String status);
+    List<CollectorTask> findByStatus(String status);
+    Optional<CollectorTask> findByTaskId(String taskId);
+    List<CollectorTask> findByProblemTypeIsNotNull();
+}package com.kefir.collector;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
+
+@SpringBootApplication(exclude = {
+        DataSourceAutoConfiguration.class,
+        HibernateJpaAutoConfiguration.class
+})
+public class CollectorApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(CollectorApplication.class, args);
+    }
+}spring.application.name=collector
+server.port=8084
+
+# Database Configuration
+spring.datasource.url=jdbc:postgresql://localhost:5432/kefir_db
+spring.datasource.username=postgres
+spring.datasource.password=Ghbdtnbr123!
+
+# JPA Configuration
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+spring.jpa.properties.hibernate.format_sql=true
+
+# Transaction timeout (30 seconds)
+spring.transaction.default-timeout=30
+
+# Logging
+logging.level.com.example.collector=DEBUG
+logging.level.org.springframework.transaction=DEBUG

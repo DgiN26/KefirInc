@@ -1,0 +1,2900 @@
+C:\Users\2oleg\Downloads\Telegram Desktop\Kefir\Backend ��� ��� ������������
+package com.example.ApiGateWay;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.openfeign.EnableFeignClients;
+
+@SpringBootApplication
+@EnableFeignClients
+public class ApiGateWayApplication {
+	public static void main(String[] args) {
+		SpringApplication.run(ApiGateWayApplication.class, args);
+	}
+}
+__________________________________________________________________________________________________
+package com.example.ApiGateWay;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+
+@FeignClient(name = "office-service", url = "http://localhost:8085")
+public interface OfficeServiceClient {
+
+    @PostMapping("/api/office/accept-return-from-collector")
+    Map<String, Object> acceptReturnFromCollector(@RequestBody Map<String, Object> returnRequest);
+
+    @PostMapping("/api/office/give-return-to-client")
+    Map<String, Object> giveReturnToClient(@RequestBody Map<String, Object> returnRequest);
+
+    @PostMapping("/api/office/send-return-to-collector")
+    Map<String, Object> sendReturnToCollector(@RequestBody Map<String, Object> returnRequest);
+
+    @GetMapping("/api/office/returns")
+    List<Map<String, Object>> getAllReturns();
+
+    @GetMapping("/api/office/returns/{id}")
+    Map<String, Object> getReturnById(@PathVariable("id") Long id);
+
+    @GetMapping("/api/office/returns/client/{clientId}")
+    List<Map<String, Object>> getReturnsByClientId(@PathVariable("clientId") String clientId);
+}
+_______________________________________________________________________________________________
+package com.example.ApiGateWay;
+
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+
+@FeignClient(name = "delivery-service", url = "http://localhost:8088")
+public interface DeliveryServiceClient {
+
+    @PostMapping("/api/deliveries")
+    Object createDelivery(@RequestBody Map<String, Object> deliveryRequest);
+
+    @PostMapping("/api/deliveries/{deliveryId}/assign")
+    Object assignCourier(@PathVariable Integer deliveryId,
+                         @RequestBody Map<String, Object> request);
+
+    @PostMapping("/api/deliveries/{deliveryId}/status")
+    Object updateDeliveryStatus(@PathVariable Integer deliveryId,
+                                @RequestBody Map<String, Object> request);
+
+    @GetMapping("/api/deliveries/client/{clientId}")
+    List<Object> getClientDeliveries(@PathVariable Integer clientId);
+
+    @GetMapping("/api/deliveries/courier/{courierId}")
+    List<Object> getCourierDeliveries(@PathVariable Integer courierId);
+
+    @GetMapping("/api/deliveries/active")
+    List<Object> getActiveDeliveries();
+
+    @GetMapping("/api/deliveries")
+    List<Object> getAllDeliveries();
+
+    @GetMapping("/api/deliveries/order/{orderId}")
+    List<Object> getDeliveriesByOrderId(@PathVariable Integer orderId);
+
+    @GetMapping("/api/deliveries/order/{orderId}/first")
+    Object getFirstDeliveryByOrderId(@PathVariable Integer orderId);
+
+    @PostMapping("/api/deliveries/{deliveryId}/cancel")
+    Object cancelDelivery(@PathVariable Integer deliveryId);
+
+    @GetMapping("/api/deliveries/{deliveryId}")
+    Object getDelivery(@PathVariable Integer deliveryId);
+
+
+}
+________________________________________________________________________________________________
+package com.example.ApiGateWay;
+
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+
+@FeignClient(name = "collector-service", url = "http://localhost:8086")
+public interface CollectorServiceClient {
+
+    @PostMapping("/api/collector/collectors")
+    Map<String, Object> createCollector(@RequestBody Map<String, Object> collector);
+
+    @GetMapping("/api/collector/collectors")
+    List<Map<String, Object>> getAllCollectors();
+
+    @GetMapping("/api/collector/collectors/{collectorId}")
+    Map<String, Object> getCollector(@PathVariable String collectorId);
+
+    @PutMapping("/api/collector/collectors/{collectorId}/status")
+    Map<String, Object> updateCollectorStatus(@PathVariable String collectorId, @RequestParam String status);
+
+    @PutMapping("/api/collector/collectors/{collectorId}/location")
+    Map<String, Object> updateCollectorLocation(@PathVariable String collectorId, @RequestParam String location);
+
+    @PostMapping("/api/collector/tasks")
+    Map<String, Object> createTask(@RequestBody Map<String, Object> task);
+
+    @GetMapping("/api/collector/tasks")
+    List<Map<String, Object>> getAllTasks();
+
+    @GetMapping("/api/collector/tasks/{taskId}")
+    Map<String, Object> getTask(@PathVariable String taskId);
+
+    @GetMapping("/api/collector/tasks/collector/{collectorId}")
+    List<Map<String, Object>> getCollectorTasks(@PathVariable String collectorId);
+
+    @GetMapping("/api/collector/tasks/pending")
+    List<Map<String, Object>> getPendingTasks();
+
+    @PutMapping("/api/collector/tasks/{taskId}/status")
+    Map<String, Object> updateTaskStatus(@PathVariable String taskId, @RequestParam String status);
+
+    @PostMapping("/api/collector/tasks/{taskId}/report-problem")
+    Map<String, Object> reportProblem(@PathVariable String taskId,
+                                      @RequestParam String problemType,
+                                      @RequestParam String comments);
+
+    @GetMapping("/api/collector/tasks/problems")
+    List<Map<String, Object>> getProblemTasks();
+
+    @PutMapping("/api/collector/tasks/{taskId}/complete")
+    Map<String, Object> completeTask(@PathVariable String taskId);
+}
+________________________________________________________________________________________________
+package com.example.ApiGateWay;
+
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
+
+@FeignClient(name = "cart-service", url = "http://localhost:8083")
+public interface CartServiceClient {
+
+    @PostMapping("/api/cart/client/{clientId}")
+    Object createCart(@PathVariable int clientId);
+
+    @PostMapping("/api/cart/{cartId}/add")
+    Object addToCart(@PathVariable int cartId,
+                     @RequestParam int productId,
+                     @RequestParam int quantity,
+                     @RequestParam double price);
+
+    @GetMapping("/api/cart/client/{clientId}")
+    List<Object> getClientCarts(@PathVariable int clientId);
+}
+
+__________________________________________________________________________________________________
+package com.example.ApiGateWay;
+
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
+import java.util.List;
+
+@FeignClient(name = "client-service", url = "http://localhost:8081")
+public interface ClientServiceClient {
+
+    @GetMapping("/api/clients")
+    List<Object> getAllClients();
+
+    @PostMapping("/api/clients")
+    Object createClient(@RequestBody Object client);
+
+    @GetMapping("/api/clients/{id}")
+    Object getClient(@PathVariable int id);
+}
+______________________________________________________________________________________________
+package com.example.ApiGateWay;
+
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
+import java.util.List;
+
+@FeignClient(name = "product-service", url = "http://localhost:8082")
+public interface ProductServiceClient {
+
+    @GetMapping("/api/products")
+    List<Object> getAllProducts();
+
+    @PostMapping("/api/products")
+    Object createProduct(@RequestBody Object product);
+
+    @GetMapping("/api/products/{id}")
+    Object getProduct(@PathVariable int id);
+}
+
+______________________________________________________________________________________________
+package com.example.ApiGateWay;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api")
+public class UnifiedController {
+
+    @Autowired
+    private CollectorServiceClient collectorService;
+
+    @Autowired
+    private ClientServiceClient clientService;
+
+    @Autowired
+    private ProductServiceClient productService;
+
+    @Autowired
+    private CartServiceClient cartService;
+
+    @Autowired
+    private OfficeServiceClient officeService;
+
+    @Autowired
+    private DeliveryServiceClient deliveryService;
+
+    // === Office Endpoints ===
+
+    @PostMapping("/office/accept-return-from-collector")
+    public Map<String, Object> acceptReturnFromCollector(@RequestBody Map<String, Object> returnRequest) {
+        return officeService.acceptReturnFromCollector(returnRequest);
+    }
+
+    @PostMapping("/office/give-return-to-client")
+    public Map<String, Object> giveReturnToClient(@RequestBody Map<String, Object> returnRequest) {
+        return officeService.giveReturnToClient(returnRequest);
+    }
+
+    @PostMapping("/office/send-return-to-collector")
+    public Map<String, Object> sendReturnToCollector(@RequestBody Map<String, Object> returnRequest) {
+        return officeService.sendReturnToCollector(returnRequest);
+    }
+
+    @GetMapping("/office/returns")
+    public List<Map<String, Object>> getAllReturns() {
+        return officeService.getAllReturns();
+    }
+
+    @GetMapping("/office/returns/{id}")
+    public Map<String, Object> getReturnById(@PathVariable Long id) {
+        return officeService.getReturnById(id);
+    }
+
+    @GetMapping("/office/returns/client/{clientId}")
+    public List<Map<String, Object>> getReturnsByClientId(@PathVariable String clientId) {
+        return officeService.getReturnsByClientId(clientId);
+    }
+
+    // === Client Endpoints ===
+
+    @GetMapping("/clients")
+    public List<Object> getAllClients() {
+        return clientService.getAllClients();
+    }
+
+    @PostMapping("/clients")
+    public Object createClient(@RequestBody Map<String, Object> client) {
+        return clientService.createClient(client);
+    }
+
+    @GetMapping("/clients/{id}")
+    public Object getClient(@PathVariable int id) {
+        return clientService.getClient(id);
+    }
+
+    // === Product Endpoints ===
+
+    @GetMapping("/products")
+    public List<Object> getAllProducts() {
+        return productService.getAllProducts();
+    }
+
+    @PostMapping("/products")
+    public Object createProduct(@RequestBody Map<String, Object> product) {
+        return productService.createProduct(product);
+    }
+
+    @GetMapping("/products/{id}")
+    public Object getProduct(@PathVariable int id) {
+        return productService.getProduct(id);
+    }
+
+    // === Cart Endpoints ===
+
+    @PostMapping("/clients/{clientId}/cart")
+    public Object createCart(@PathVariable int clientId) {
+        return cartService.createCart(clientId);
+    }
+
+    @PostMapping("/cart/{cartId}/add")
+    public Object addToCart(@PathVariable int cartId,
+                            @RequestParam int productId,
+                            @RequestParam int quantity,
+                            @RequestParam double price) {
+        return cartService.addToCart(cartId, productId, quantity, price);
+    }
+
+    @GetMapping("/cart/client/{clientId}")
+    public List<Object> getClientCarts(@PathVariable int clientId) {
+        return cartService.getClientCarts(clientId);
+    }
+
+    // === Complex Operations ===
+
+    @GetMapping("/clients/{clientId}/with-carts")
+    public Map<String, Object> getClientWithCarts(@PathVariable int clientId) {
+        Object client = clientService.getClient(clientId);
+        List<Object> carts = cartService.getClientCarts(clientId);
+
+        return Map.of(
+                "client", client,
+                "carts", carts
+        );
+    }
+
+    // Комплексная операция: клиент с корзинами и возвратами
+    @GetMapping("/clients/{clientId}/full-info")
+    public Map<String, Object> getClientFullInfo(@PathVariable int clientId) {
+        Object client = clientService.getClient(clientId);
+        List<Object> carts = cartService.getClientCarts(clientId);
+        List<Map<String, Object>> returns = officeService.getReturnsByClientId(String.valueOf(clientId));
+
+        return Map.of(
+                "client", client,
+                "carts", carts,
+                "returns", returns
+        );
+    }
+
+    @PostMapping("/collector/collectors")
+    public Map<String, Object> createCollector(@RequestBody Map<String, Object> collector) {
+        return collectorService.createCollector(collector);
+    }
+
+    @GetMapping("/collector/collectors")
+    public List<Map<String, Object>> getAllCollectors() {
+        return collectorService.getAllCollectors();
+    }
+
+    @GetMapping("/collector/collectors/{collectorId}")
+    public Map<String, Object> getCollector(@PathVariable String collectorId) {
+        return collectorService.getCollector(collectorId);
+    }
+
+    @PutMapping("/collector/collectors/{collectorId}/status")
+    public Map<String, Object> updateCollectorStatus(@PathVariable String collectorId,
+                                                     @RequestParam String status) {
+        return collectorService.updateCollectorStatus(collectorId, status);
+    }
+
+    @PutMapping("/collector/collectors/{collectorId}/location")
+    public Map<String, Object> updateCollectorLocation(@PathVariable String collectorId,
+                                                       @RequestParam String location) {
+        return collectorService.updateCollectorLocation(collectorId, location);
+    }
+
+    @PostMapping("/collector/tasks")
+    public Map<String, Object> createCollectorTask(@RequestBody Map<String, Object> task) {
+        return collectorService.createTask(task);
+    }
+
+    @GetMapping("/collector/tasks")
+    public List<Map<String, Object>> getAllTasks() {
+        return collectorService.getAllTasks();
+    }
+
+    @GetMapping("/collector/tasks/{taskId}")
+    public Map<String, Object> getTask(@PathVariable String taskId) {
+        return collectorService.getTask(taskId);
+    }
+
+    @GetMapping("/collector/tasks/collector/{collectorId}")
+    public List<Map<String, Object>> getCollectorTasks(@PathVariable String collectorId) {
+        return collectorService.getCollectorTasks(collectorId);
+    }
+
+    @GetMapping("/collector/tasks/pending")
+    public List<Map<String, Object>> getPendingTasks() {
+        return collectorService.getPendingTasks();
+    }
+
+    @PutMapping("/collector/tasks/{taskId}/status")
+    public Map<String, Object> updateTaskStatus(@PathVariable String taskId,
+                                                @RequestParam String status) {
+        return collectorService.updateTaskStatus(taskId, status);
+    }
+
+    @PostMapping("/collector/tasks/{taskId}/report-problem")
+    public Map<String, Object> reportProblem(@PathVariable String taskId,
+                                             @RequestParam String problemType,
+                                             @RequestParam String comments) {
+        return collectorService.reportProblem(taskId, problemType, comments);
+    }
+
+    @GetMapping("/collector/tasks/problems")
+    public List<Map<String, Object>> getProblemTasks() {
+        return collectorService.getProblemTasks();
+    }
+
+    @PutMapping("/collector/tasks/{taskId}/complete")
+    public Map<String, Object> completeTask(@PathVariable String taskId) {
+        return collectorService.completeTask(taskId);
+    }
+
+    // Новая комплексная операция: информация о сборщике с его задачами
+    @GetMapping("/collector/{collectorId}/full-info")
+    public Map<String, Object> getCollectorFullInfo(@PathVariable String collectorId) {
+        Map<String, Object> collector = collectorService.getCollector(collectorId);
+        List<Map<String, Object>> tasks = collectorService.getCollectorTasks(collectorId);
+        List<Map<String, Object>> problemTasks = tasks.stream()
+                .filter(task -> "PROBLEM".equals(task.get("status")))
+                .toList();
+
+        return Map.of(
+                "collector", collector,
+                "totalTasks", tasks.size(),
+                "activeTasks", tasks.stream().filter(task ->
+                        "NEW".equals(task.get("status")) || "IN_PROGRESS".equals(task.get("status"))).count(),
+                "problemTasks", problemTasks.size(),
+                "tasks", tasks
+        );
+    }
+
+    // Комплексная операция: создание проблемы и автоматическое создание РОЗТ
+    @PostMapping("/collector/tasks/{taskId}/report-problem-with-return")
+    public Map<String, Object> reportProblemWithReturn(
+            @PathVariable String taskId,
+            @RequestParam String problemType,
+            @RequestParam String comments,
+            @RequestParam String clientId,
+            @RequestParam String productId,
+            @RequestParam Integer quantity) {
+
+        // 1. Сообщаем о проблеме
+        Map<String, Object> problemTask = collectorService.reportProblem(taskId, problemType, comments);
+
+        // 2. Автоматически создаем РОЗТ в офисе
+        Map<String, Object> returnRequest = Map.of(
+                "requestId", "AUTO_" + taskId,
+                "collectorId", problemTask.get("collectorId"),
+                "clientId", clientId,
+                "productId", productId,
+                "reason", problemType + ": " + comments,
+                "quantity", quantity,
+                "officeId", "OFFICE_001"
+        );
+
+        Map<String, Object> returnResponse = officeService.acceptReturnFromCollector(returnRequest);
+
+        return Map.of(
+                "problemReport", problemTask,
+                "returnCreated", returnResponse,
+                "message", "Проблема зарегистрирована и РОЗТ создан автоматически"
+        );
+    }
+
+    @PostMapping("/deliveries")
+    public Object createDelivery(@RequestBody Map<String, Object> deliveryRequest) {
+        return deliveryService.createDelivery(deliveryRequest);
+    }
+
+    @PostMapping("/deliveries/{deliveryId}/assign")
+    public Object assignCourier(@PathVariable Integer deliveryId,
+                                @RequestBody Map<String, Object> request) {
+        return deliveryService.assignCourier(deliveryId, request);
+    }
+
+    @PostMapping("/deliveries/{deliveryId}/status")
+    public Object updateDeliveryStatus(@PathVariable Integer deliveryId,
+                                       @RequestBody Map<String, Object> request) {
+        return deliveryService.updateDeliveryStatus(deliveryId, request);
+    }
+
+    @GetMapping("/deliveries/client/{clientId}")
+    public List<Object> getClientDeliveries(@PathVariable Integer clientId) {
+        return deliveryService.getClientDeliveries(clientId);
+    }
+
+    @GetMapping("/deliveries/courier/{courierId}")
+    public List<Object> getCourierDeliveries(@PathVariable Integer courierId) {
+        return deliveryService.getCourierDeliveries(courierId);
+    }
+
+    @GetMapping("/deliveries/active")
+    public List<Object> getActiveDeliveries() {
+        return deliveryService.getActiveDeliveries();
+    }
+
+    @GetMapping("/deliveries")
+    public List<Object> getAllDeliveries() {
+        return deliveryService.getAllDeliveries();
+    }
+
+    @GetMapping("/deliveries/order/{orderId}")
+    public List<Object> getDeliveriesByOrderId(@PathVariable Integer orderId) {
+        return deliveryService.getDeliveriesByOrderId(orderId);
+    }
+
+    @GetMapping("/deliveries/order/{orderId}/first")
+    public Object getFirstDeliveryByOrderId(@PathVariable Integer orderId) {
+        return deliveryService.getFirstDeliveryByOrderId(orderId);
+    }
+
+    @PostMapping("/deliveries/{deliveryId}/cancel")
+    public Object cancelDelivery(@PathVariable Integer deliveryId) {
+        return deliveryService.cancelDelivery(deliveryId);
+    }
+
+    @GetMapping("/deliveries/{deliveryId}")
+    public Object getDelivery(@PathVariable Integer deliveryId) {
+        return deliveryService.getDelivery(deliveryId);
+    }
+
+    @GetMapping("/clients/{clientId}/deliveries-info")
+    public Map<String, Object> getClientWithDeliveries(@PathVariable Integer clientId) {
+        Object client = clientService.getClient(clientId);
+        List<Object> deliveries = deliveryService.getClientDeliveries(clientId);
+        List<Object> carts = cartService.getClientCarts(clientId);
+
+        return Map.of(
+                "client", client,
+                "deliveries", deliveries,
+                "carts", carts
+        );
+    }
+
+    @GetMapping("/orders/{orderId}/delivery-full-info")
+    public Map<String, Object> getOrderDeliveryInfo(@PathVariable Integer orderId) {
+        List<Object> deliveries = deliveryService.getDeliveriesByOrderId(orderId);
+        Object firstDelivery = deliveryService.getFirstDeliveryByOrderId(orderId);
+
+        // Подсчет статистики по доставкам
+        long activeDeliveries = deliveries.stream()
+                .filter(delivery -> {
+                    if (delivery instanceof Map) {
+                        Map<String, Object> deliveryMap = (Map<String, Object>) delivery;
+                        String status = (String) deliveryMap.get("deliveryStatus");
+                        return !"DELIVERED".equals(status) && !"CANCELLED".equals(status);
+                    }
+                    return false;
+                })
+                .count();
+
+        return Map.of(
+                "orderId", orderId,
+                "totalDeliveries", deliveries.size(),
+                "activeDeliveries", activeDeliveries,
+                "firstDelivery", firstDelivery,
+                "allDeliveries", deliveries
+        );
+    }
+
+    // Комплексная операция: создание заказа с корзиной и доставкой
+    @PostMapping("/clients/{clientId}/complete-order")
+    public Map<String, Object> createCompleteOrder(
+            @PathVariable Integer clientId,
+            @RequestBody Map<String, Object> orderRequest) {
+
+        // 1. Создаем корзину (если нужно)
+        Object cart = cartService.createCart(clientId);
+
+        // 2. Добавляем товары в корзину (из запроса)
+        List<Map<String, Object>> items = (List<Map<String, Object>>) orderRequest.get("items");
+        if (items != null) {
+            for (Map<String, Object> item : items) {
+                cartService.addToCart(
+                        (Integer) ((Map<String, Object>) cart).get("id"),
+                        (Integer) item.get("productId"),
+                        (Integer) item.get("quantity"),
+                        (Double) item.get("price")
+                );
+            }
+        }
+
+        // 3. Создаем доставку
+        Map<String, Object> deliveryRequest = Map.of(
+                "orderId", orderRequest.get("orderId"),
+                "clientId", clientId,
+                "deliveryAddress", orderRequest.get("deliveryAddress"),
+                "deliveryPhone", orderRequest.get("deliveryPhone")
+        );
+
+        Object delivery = deliveryService.createDelivery(deliveryRequest);
+
+        return Map.of(
+                "clientId", clientId,
+                "cart", cart,
+                "delivery", delivery,
+                "message", "Complete order created successfully"
+        );
+    }
+
+    // Комплексная операция: полная информация о клиенте с доставками и возвратами
+    @GetMapping("/clients/{clientId}/complete-profile")
+    public Map<String, Object> getClientCompleteProfile(@PathVariable Integer clientId) {
+        Object client = clientService.getClient(clientId);
+        List<Object> deliveries = deliveryService.getClientDeliveries(clientId);
+        List<Object> carts = cartService.getClientCarts(clientId);
+        List<Map<String, Object>> returns = officeService.getReturnsByClientId(String.valueOf(clientId));
+
+        // Статистика доставок
+        long pendingDeliveries = deliveries.stream()
+                .filter(delivery -> {
+                    if (delivery instanceof Map) {
+                        Map<String, Object> deliveryMap = (Map<String, Object>) delivery;
+                        String status = (String) deliveryMap.get("deliveryStatus");
+                        return "PENDING".equals(status) || "ASSIGNED".equals(status);
+                    }
+                    return false;
+                })
+                .count();
+
+        long deliveredCount = deliveries.stream()
+                .filter(delivery -> {
+                    if (delivery instanceof Map) {
+                        Map<String, Object> deliveryMap = (Map<String, Object>) delivery;
+                        String status = (String) deliveryMap.get("deliveryStatus");
+                        return "DELIVERED".equals(status);
+                    }
+                    return false;
+                })
+                .count();
+
+        return Map.of(
+                "client", client,
+                "deliveries", Map.of(
+                        "total", deliveries.size(),
+                        "pending", pendingDeliveries,
+                        "delivered", deliveredCount,
+                        "list", deliveries
+                ),
+                "carts", carts,
+                "returns", returns
+        );
+    }
+}
+
+server.port=8080
+spring.application.name=api-gateway
+
+feign.client.config.default.connectTimeout=5000
+feign.client.config.default.readTimeout=5000
+feign.client.config.default.loggerLevel=basic
+
+# URLs ??? ???????? (???????? ?? ???????? ?????)
+client.service.url=http://localhost:8081
+product.service.url=http://localhost:8082
+cart.service.url=http://localhost:8083
+
+# ??????????? ??? ???????
+logging.level.com.example.ApiGateWay.ClientServiceClient=DEBUG
+logging.level.org.springframework.cloud.openfeign=TRACE
+feign.client.config.default.logger-level=full
+
+
+USER
+
+package yand.User;
+
+import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "users")
+public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @Column(name = "username", nullable = false, unique = true, length = 50)
+    private String username;
+
+    @Column(name = "password", nullable = true, length = 50)
+    private String password;
+
+    @Column(name = "firstname", nullable = true, unique = true, length = 50)
+    private String firstname;
+
+    @Column(name = "age")
+    private int age;
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    @Column(name = "city")
+    private String city;
+
+    @Column(name = "mag")
+    private String magaz;
+
+    @Column(name = "emale")
+    private String email;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private UserStatus status;
+
+    public String getName() {
+        return username;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.username = name;
+    }
+
+    public String getFirstname() {
+        return firstname;
+    }
+
+    public void setFirstname(String firstname) {
+        this.firstname = firstname;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public UserStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(UserStatus status) {
+        this.status = status;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getMagaz() {
+        return magaz;
+    }
+
+    public void setMagaz(String magaz) {
+        this.magaz = magaz;
+    }
+
+    public User(Integer id, String name, String firstname, int age, String city, String magaz) {
+        this.id = id;
+        this.username = name;
+        this.firstname = firstname;
+        this.age = age;
+        this.city = city;
+        this.magaz = magaz;
+    }
+
+    public User(String email) {
+        this.email = email;
+    }
+
+    public User() {
+    }
+
+    enum UserStatus {
+        ACTIVE, INACTIVE, BLOCKED
+    }
+}
+
+package yand.User;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class UserApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(UserApplication.class, args);
+	}
+
+}
+
+package yand.User;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional; 
+
+@RestController
+@RequestMapping("/api/clients")
+public class UserController {
+
+    @Autowired
+    private UserRep clientRepository;
+
+    @GetMapping
+    public List<User> getAllClients() {
+        return clientRepository.findAll();
+    }
+
+    @PostMapping
+    public User createClient(@RequestBody User client) {
+        return clientRepository.save(client);
+    }
+
+    @GetMapping("/{id}")
+       public Optional<User> getClient(@PathVariable int id) {
+        return clientRepository.findById(id);
+    }
+}
+
+package yand.User;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface UserRep extends JpaRepository<User, Integer> {
+
+}
+
+# Datasource
+spring.datasource.url=jdbc:postgresql://localhost:5432/mydb
+spring.datasource.username=postgres
+spring.datasource.password=Ghbdtnbr123!
+
+server.port=8081
+
+# JPA
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+spring.jpa.properties.hibernate.format_sql=true
+
+# ??? ??????????
+spring.jpa.defer-datasource-initialization=true
+
+spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration,\
+  org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+
+SKLAD
+
+package com.example.sklad;
+
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "userSklad")
+public class UserSkld {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
+    @Column(name = "name", nullable = false, length = 100)
+    private String name;
+
+    @Column(name = "price", nullable = false, length = 10)
+    private double price;
+
+    @Column(name = "count", nullable = false, length = 100)
+    private int count;
+
+    @Column(name = "akticul", nullable = false, unique = true, length = 50)
+    private long akticul;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    public int getCount() {
+        return count;
+    }
+
+    public void setCount(int count) {
+        this.count = count;
+    }
+
+    public long getAkticul() {
+        return akticul;
+    }
+
+    public void setAkticul(long akticul) {
+        this.akticul = akticul;
+    }
+
+    public UserSkld() {
+    }
+
+    public UserSkld(String name, double price, int count, long akticul) {
+        this.name = name;
+        this.price = price;
+        this.count = count;
+        this.akticul = akticul;
+    }
+}
+
+package com.example.sklad;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+
+@RestController
+@RequestMapping("/api/products")
+public class ProductController {
+    @Autowired
+    private SkladRep productRepository;
+
+    @GetMapping
+    public List<UserSkld> getAllProducts() {
+        return productRepository.findAll();
+    }
+
+    @PostMapping
+    public UserSkld createProduct(@RequestBody UserSkld product) {
+        return productRepository.save(product);
+    }
+
+    @GetMapping("/{id}")
+    public UserSkld getProduct(@PathVariable Integer id) {
+        return productRepository.findById(id).orElse(null);
+    }
+  }
+
+package com.example.sklad;
+
+import jakarta.transaction.Transactional;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
+
+@Transactional
+@Service
+public class ServisSkld {
+    private final SkladRep userRepository;
+
+    public ServisSkld(SkladRep userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    public Optional<UserSkld> getUserByAkticul(Long id) {
+        return userRepository.findByAkticul(id);
+    }
+
+    public UserSkld updateUser(Long id, UserSkld userDetails) {
+        return userRepository.findByAkticul(id)
+                .map(user -> {
+                    user.setName(userDetails.getName());
+                    return userRepository.save(user);
+                })
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+}
+
+package com.example.sklad;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class SkladApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(SkladApplication.class, args);
+	}
+
+}
+
+package com.example.sklad;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+
+@Repository
+public interface SkladRep extends JpaRepository<UserSkld, Integer> {
+
+    Optional<UserSkld> findByAkticul(long akticul);
+}
+
+spring.application.name=sklad
+
+server.port=8082
+
+spring.datasource.url=jdbc:postgresql://localhost:5432/sklad
+spring.datasource.username=postgres
+spring.datasource.password=Ghbdtnbr123!
+
+# JPA
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+spring.jpa.properties.hibernate.format_sql=true
+
+# ??? ??????????
+spring.jpa.defer-datasource-initialization=true
+
+BACKET
+
+package com.example.backet;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class BacketApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(BacketApplication.class, args);
+	}
+
+}
+
+package com.example.backet;
+
+import jakarta.persistence.*;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "carts")
+public class Cart {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
+    @Column(name = "client_id", nullable = false)
+    private int clientId; // ID из клиентского сервиса
+
+    @Column(name = "created_date")
+    private LocalDateTime createdDate;
+
+    @Column(name = "status")
+    private String status;
+
+
+    public Cart() {
+    }
+
+    public Cart(int clientId, String status) {
+        this.clientId = clientId;
+        this.status = status;
+        this.createdDate = LocalDateTime.now();
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(int clientId) {
+        this.clientId = clientId;
+    }
+
+    public LocalDateTime getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(LocalDateTime createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+}
+
+package com.example.backet;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.ArrayList; 
+import java.util.HashMap;   
+import java.util.Map;  
+
+@RestController
+@RequestMapping("/api/cart")
+public class CartController {
+
+    @Autowired
+    private CartRepository cartRepository;
+
+    @Autowired
+    private CartItemRepository cartItemRepository;
+
+    @PostMapping("/client/{clientId}")
+    public Cart createCart(@PathVariable int clientId) {
+        Cart activeCart = cartRepository.findByClientIdAndStatus(clientId, "active");
+        if (activeCart != null) {
+            return activeCart;
+        }
+        Cart cart = new Cart(clientId, "active");
+        return cartRepository.save(cart);
+    }
+
+    @PostMapping("/{cartId}/add")
+    public CartItem addToCart(@PathVariable int cartId,
+                              @RequestParam int productId,
+                              @RequestParam int quantity,
+                              @RequestParam double price) {
+        CartItem existingItem = cartItemRepository.findByCartIdAndProductId(cartId, productId);
+        if (existingItem != null) {
+            existingItem.setQuantity(existingItem.getQuantity() + quantity);
+            return cartItemRepository.save(existingItem);
+        } else {
+            CartItem newItem = new CartItem(cartId, productId, quantity, price);
+            return cartItemRepository.save(newItem);
+        }
+    }
+
+    @GetMapping("/{cartId}/items")
+    public Map<String, Object> getCartWithItems(@PathVariable int cartId) {
+        Cart cart = cartRepository.findById(cartId).orElse(null);
+        if (cart == null) {
+            return Map.of("error", "Cart not found");
+        }
+        
+        List<CartItem> items = cartItemRepository.findByCartId(cartId);
+        
+        return Map.of(
+            "cart", cart,
+            "items", items
+        );
+    }
+
+    // Получить все корзины клиента с товарами
+    @GetMapping("/client/{clientId}/with-items")
+    public List<Map<String, Object>> getClientCartsWithItems(@PathVariable int clientId) {
+        List<Cart> carts = cartRepository.findByClientId(clientId);
+        List<Map<String, Object>> result = new ArrayList<>();
+        
+        for (Cart cart : carts) {
+            List<CartItem> items = cartItemRepository.findByCartId(cart.getId());
+            result.add(Map.of(
+                "cart", cart,
+                "items", items
+            ));
+        }
+        
+        return result;
+    }
+
+    @GetMapping("/client/{clientId}")
+    public List<Cart> getClientCarts(@PathVariable int clientId) {
+        return cartRepository.findByClientId(clientId);
+    }
+}
+
+package com.example.backet;
+
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "cart_items")
+public class CartItem {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
+    @Column(name = "cart_id", nullable = false)
+    private int cartId;
+
+    @Column(name = "product_id", nullable = false)
+    private int productId; // ID из сервиса товаров
+
+    @Column(name = "quantity", nullable = false)
+    private int quantity;
+
+    @Column(name = "price", nullable = false)
+    private double price;
+
+    // Конструкторы, геттеры, сеттеры
+    public CartItem() {
+    }
+
+    public CartItem(int cartId, int productId, int quantity, double price) {
+        this.cartId = cartId;
+        this.productId = productId;
+        this.quantity = quantity;
+        this.price = price;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getCartId() {
+        return cartId;
+    }
+
+    public void setCartId(int cartId) {
+        this.cartId = cartId;
+    }
+
+    public int getProductId() {
+        return productId;
+    }
+
+    public void setProductId(int productId) {
+        this.productId = productId;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+}
+
+package com.example.backet;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface CartItemRepository extends JpaRepository<CartItem, Integer> {
+    List<CartItem> findByCartId(int cartId);
+    CartItem findByCartIdAndProductId(int cartId, int productId);
+}
+
+package com.example.backet;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface CartRepository extends JpaRepository<Cart, Integer> {
+    List<Cart> findByClientId(int clientId);
+    Cart findByClientIdAndStatus(int clientId, String status);
+}
+
+server.port=8083
+spring.datasource.url=jdbc:postgresql://localhost:5432/backet
+spring.datasource.username=postgres
+spring.datasource.password=Ghbdtnbr123!
+
+# JPA
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+spring.jpa.properties.hibernate.format_sql=true
+
+OFFICE
+
+package office.office;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class OfficeApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(OfficeApplication.class, args);
+	}
+
+}
+
+package office.office;
+
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/office")
+public class OfficeController {
+
+    @Autowired
+    private OfficeService officeService;
+
+    // Принять РОЗТ от сборщика (нет товара)
+    @PostMapping("/accept-return-from-collector")
+    public ResponseEntity<ReturnResponse> acceptReturnFromCollector(@RequestBody ReturnRequest returnRequest) {
+        ReturnResponse response = officeService.processCollectorReturn(returnRequest);
+        return ResponseEntity.ok(response);
+    }
+
+    // Отдать РОЗТ клиенту
+    @PostMapping("/give-return-to-client")
+    public ResponseEntity<ReturnResponse> giveReturnToClient(@RequestBody ReturnRequest returnRequest) {
+        ReturnResponse response = officeService.processClientReturn(returnRequest);
+        return ResponseEntity.ok(response);
+    }
+
+    // Отправить РОЗТ сборщику
+    @PostMapping("/send-return-to-collector")
+    public ResponseEntity<ReturnResponse> sendReturnToCollector(@RequestBody ReturnRequest returnRequest) {
+        ReturnResponse response = officeService.sendReturnToCollector(returnRequest);
+        return ResponseEntity.ok(response);
+    }
+
+    // Получить все РОЗТ
+    @GetMapping("/returns")
+    public ResponseEntity<List<ReturnResponse>> getAllReturns() {
+        List<ReturnResponse> returns = officeService.getAllReturns();
+        return ResponseEntity.ok(returns);
+    }
+
+    // Получить РОЗТ по ID
+    @GetMapping("/returns/{id}")
+    public ResponseEntity<ReturnResponse> getReturnById(@PathVariable Long id) {
+        ReturnResponse returnResponse = officeService.getReturnById(id);
+        return ResponseEntity.ok(returnResponse);
+    }
+
+    // Получить РОЗТ по ID клиента
+    @GetMapping("/returns/client/{clientId}")
+    public ResponseEntity<List<ReturnResponse>> getReturnsByClientId(@PathVariable String clientId) {
+        List<ReturnResponse> returns = officeService.getReturnsByClientId(clientId);
+        return ResponseEntity.ok(returns);
+    }
+}
+
+package office.office;
+
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+
+@Service
+public class OfficeService {
+
+    private final ConcurrentHashMap<Long, ReturnResponse> returnsDatabase = new ConcurrentHashMap<>();
+    private final AtomicLong idCounter = new AtomicLong(1);
+
+    public ReturnResponse processCollectorReturn(ReturnRequest request) {
+        ReturnResponse response = new ReturnResponse();
+        response.setId(idCounter.getAndIncrement());
+        response.setRequestId(request.getRequestId());
+        response.setCollectorId(request.getCollectorId());
+        response.setClientId(request.getClientId());
+        response.setProductId(request.getProductId());
+        response.setQuantity(request.getQuantity());
+        response.setReason("Нет товара на складе");
+        response.setStatus("Принято от сборщика");
+        response.setTimestamp(LocalDateTime.now());
+        response.setOfficeId("OFFICE_001");
+
+        returnsDatabase.put(response.getId(), response);
+
+        return response;
+    }
+
+    public ReturnResponse processClientReturn(ReturnRequest request) {
+        ReturnResponse response = new ReturnResponse();
+        response.setId(idCounter.getAndIncrement());
+        response.setRequestId(request.getRequestId());
+        response.setClientId(request.getClientId());
+        response.setProductId(request.getProductId());
+        response.setQuantity(request.getQuantity());
+        response.setReason(request.getReason());
+        response.setStatus("Выдано клиенту");
+        response.setTimestamp(LocalDateTime.now());
+        response.setOfficeId("OFFICE_001");
+
+        returnsDatabase.put(response.getId(), response);
+
+        return response;
+    }
+
+    public ReturnResponse sendReturnToCollector(ReturnRequest request) {
+        ReturnResponse response = new ReturnResponse();
+        response.setId(idCounter.getAndIncrement());
+        response.setRequestId(request.getRequestId());
+        response.setCollectorId(request.getCollectorId());
+        response.setProductId(request.getProductId());
+        response.setQuantity(request.getQuantity());
+        response.setReason("Возврат на склад для утилизации");
+        response.setStatus("Отправлено сборщику");
+        response.setTimestamp(LocalDateTime.now());
+        response.setOfficeId("OFFICE_001");
+
+        returnsDatabase.put(response.getId(), response);
+
+        return response;
+    }
+
+    public List<ReturnResponse> getAllReturns() {
+        return new ArrayList<>(returnsDatabase.values());
+    }
+
+    public ReturnResponse getReturnById(Long id) {
+        ReturnResponse response = returnsDatabase.get(id);
+        if (response == null) {
+            throw new RuntimeException("РОЗТ с ID " + id + " не найден");
+        }
+        return response;
+    }
+
+    public List<ReturnResponse> getReturnsByClientId(String clientId) {
+        return returnsDatabase.values().stream()
+                .filter(returnItem -> clientId.equals(returnItem.getClientId()))
+                .collect(Collectors.toList());
+    }
+}
+
+package office.office;
+
+public class ReturnRequest {
+    private String requestId;
+    private String collectorId;
+    private String clientId;
+    private String productId;
+    private String reason;
+    private Integer quantity;
+    private String officeId;
+
+    public ReturnRequest() {}
+
+    public ReturnRequest(String requestId, String collectorId, String clientId, String productId,
+                         String reason, Integer quantity, String officeId) {
+        this.requestId = requestId;
+        this.collectorId = collectorId;
+        this.clientId = clientId;
+        this.productId = productId;
+        this.reason = reason;
+        this.quantity = quantity;
+        this.officeId = officeId;
+    }
+
+    // Геттеры и сеттеры
+    public String getRequestId() { return requestId; }
+    public void setRequestId(String requestId) { this.requestId = requestId; }
+
+    public String getCollectorId() { return collectorId; }
+    public void setCollectorId(String collectorId) { this.collectorId = collectorId; }
+
+    public String getClientId() { return clientId; }
+    public void setClientId(String clientId) { this.clientId = clientId; }
+
+    public String getProductId() { return productId; }
+    public void setProductId(String productId) { this.productId = productId; }
+
+    public String getReason() { return reason; }
+    public void setReason(String reason) { this.reason = reason; }
+
+    public Integer getQuantity() { return quantity; }
+    public void setQuantity(Integer quantity) { this.quantity = quantity; }
+
+    public String getOfficeId() { return officeId; }
+    public void setOfficeId(String officeId) { this.officeId = officeId; }
+}
+
+package office.office;
+
+import java.time.LocalDateTime;
+
+public class ReturnResponse {
+    private Long id;
+    private String requestId;
+    private String collectorId;
+    private String clientId;
+    private String productId;
+    private String reason;
+    private String status;
+    private LocalDateTime timestamp;
+    private String officeId;
+    private Integer quantity;
+
+    public ReturnResponse() {}
+
+    public ReturnResponse(Long id, String requestId, String collectorId, String clientId,
+                          String productId, String reason, String status, LocalDateTime timestamp,
+                          String officeId, Integer quantity) {
+        this.id = id;
+        this.requestId = requestId;
+        this.collectorId = collectorId;
+        this.clientId = clientId;
+        this.productId = productId;
+        this.reason = reason;
+        this.status = status;
+        this.timestamp = timestamp;
+        this.officeId = officeId;
+        this.quantity = quantity;
+    }
+
+    // Геттеры и сеттеры
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getRequestId() { return requestId; }
+    public void setRequestId(String requestId) { this.requestId = requestId; }
+
+    public String getCollectorId() { return collectorId; }
+    public void setCollectorId(String collectorId) { this.collectorId = collectorId; }
+
+    public String getClientId() { return clientId; }
+    public void setClientId(String clientId) { this.clientId = clientId; }
+
+    public String getProductId() { return productId; }
+    public void setProductId(String productId) { this.productId = productId; }
+
+    public String getReason() { return reason; }
+    public void setReason(String reason) { this.reason = reason; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public LocalDateTime getTimestamp() { return timestamp; }
+    public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
+
+    public String getOfficeId() { return officeId; }
+    public void setOfficeId(String officeId) { this.officeId = officeId; }
+
+    public Integer getQuantity() { return quantity; }
+    public void setQuantity(Integer quantity) { this.quantity = quantity; }
+}
+
+spring.application.name=office
+server.port=8085
+
+# Logging
+logging.level.com.example.office=DEBUG
+
+# Spring Boot Configuration
+spring.main.banner-mode=off
+
+DELIVERY
+
+package com.example.delivery;
+
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "deliveries")
+public class Delivery {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @Column(name = "order_id", nullable = false)
+    private Integer orderId;
+
+    @Column(name = "client_id", nullable = false)
+    private Integer clientId;
+
+    @Column(name = "delivery_address", nullable = false)
+    private String deliveryAddress;
+
+    @Column(name = "delivery_phone")
+    private String deliveryPhone;
+
+    @Column(name = "delivery_status")
+    @Enumerated(EnumType.STRING)
+    private DeliveryStatus deliveryStatus;
+
+    @Column(name = "assigned_courier_id")
+    private Integer assignedCourierId;
+
+    @Column(name = "estimated_delivery_time")
+    private LocalDateTime estimatedDeliveryTime;
+
+    @Column(name = "actual_delivery_time")
+    private LocalDateTime actualDeliveryTime;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    // Конструкторы
+    public Delivery() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+        this.deliveryStatus = DeliveryStatus.PENDING;
+    }
+
+    public Delivery(Integer orderId, Integer clientId, String deliveryAddress, String deliveryPhone) {
+        this();
+        this.orderId = orderId;
+        this.clientId = clientId;
+        this.deliveryAddress = deliveryAddress;
+        this.deliveryPhone = deliveryPhone;
+    }
+
+    // Геттеры и сеттеры
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
+
+    public Integer getOrderId() { return orderId; }
+    public void setOrderId(Integer orderId) { this.orderId = orderId; }
+
+    public Integer getClientId() { return clientId; }
+    public void setClientId(Integer clientId) { this.clientId = clientId; }
+
+    public String getDeliveryAddress() { return deliveryAddress; }
+    public void setDeliveryAddress(String deliveryAddress) { this.deliveryAddress = deliveryAddress; }
+
+    public String getDeliveryPhone() { return deliveryPhone; }
+    public void setDeliveryPhone(String deliveryPhone) { this.deliveryPhone = deliveryPhone; }
+
+    public DeliveryStatus getDeliveryStatus() { return deliveryStatus; }
+    public void setDeliveryStatus(DeliveryStatus deliveryStatus) {
+        this.deliveryStatus = deliveryStatus;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public Integer getAssignedCourierId() { return assignedCourierId; }
+    public void setAssignedCourierId(Integer assignedCourierId) { this.assignedCourierId = assignedCourierId; }
+
+    public LocalDateTime getEstimatedDeliveryTime() { return estimatedDeliveryTime; }
+    public void setEstimatedDeliveryTime(LocalDateTime estimatedDeliveryTime) { this.estimatedDeliveryTime = estimatedDeliveryTime; }
+
+    public LocalDateTime getActualDeliveryTime() { return actualDeliveryTime; }
+    public void setActualDeliveryTime(LocalDateTime actualDeliveryTime) { this.actualDeliveryTime = actualDeliveryTime; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+}
+
+
+package com.example.delivery;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class DeliveryApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(DeliveryApplication.class, args);
+	}
+}
+
+package com.example.delivery;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/api/deliveries")
+public class DeliveryController {
+    
+    @Autowired
+    private DeliveryService deliveryService;
+    
+    // Создание новой доставки
+    @PostMapping
+    public ResponseEntity<Delivery> createDelivery(@RequestBody Map<String, Object> deliveryRequest) {
+        try {
+            Integer orderId = (Integer) deliveryRequest.get("orderId");
+            Integer clientId = (Integer) deliveryRequest.get("clientId");
+            String address = (String) deliveryRequest.get("deliveryAddress");
+            String phone = (String) deliveryRequest.get("deliveryPhone");
+            
+            Delivery delivery = deliveryService.createDelivery(orderId, clientId, address, phone);
+            return ResponseEntity.ok(delivery);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    // Назначение курьера
+    @PostMapping("/{deliveryId}/assign")
+    public ResponseEntity<Delivery> assignCourier(
+            @PathVariable Integer deliveryId,
+            @RequestBody Map<String, Object> request) {
+        try {
+            Integer courierId = (Integer) request.get("courierId");
+            Delivery delivery = deliveryService.assignCourier(deliveryId, courierId);
+            return ResponseEntity.ok(delivery);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    // Обновление статуса доставки
+    @PostMapping("/{deliveryId}/status")
+    public ResponseEntity<Delivery> updateStatus(
+            @PathVariable Integer deliveryId,
+            @RequestBody Map<String, Object> request) {
+        try {
+            String statusStr = (String) request.get("status");
+            DeliveryStatus status = DeliveryStatus.valueOf(statusStr.toUpperCase());
+            Delivery delivery = deliveryService.updateStatus(deliveryId, status);
+            return ResponseEntity.ok(delivery);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    // Получение всех доставок клиента
+    @GetMapping("/client/{clientId}")
+    public ResponseEntity<List<Delivery>> getClientDeliveries(@PathVariable Integer clientId) {
+        List<Delivery> deliveries = deliveryService.getClientDeliveries(clientId);
+        return ResponseEntity.ok(deliveries);
+    }
+    
+    // Получение доставок курьера
+    @GetMapping("/courier/{courierId}")
+    public ResponseEntity<List<Delivery>> getCourierDeliveries(@PathVariable Integer courierId) {
+        List<Delivery> deliveries = deliveryService.getCourierDeliveries(courierId);
+        return ResponseEntity.ok(deliveries);
+    }
+    
+    // Получение активных доставок
+    @GetMapping("/active")
+    public ResponseEntity<List<Delivery>> getActiveDeliveries() {
+        List<Delivery> deliveries = deliveryService.getActiveDeliveries();
+        return ResponseEntity.ok(deliveries);
+    }
+
+    // ✅ НОВЫЙ МЕТОД: Получение ВСЕХ доставок
+    @GetMapping
+    public ResponseEntity<List<Delivery>> getAllDeliveries() {
+        List<Delivery> deliveries = deliveryService.getAllDeliveries();
+        return ResponseEntity.ok(deliveries);
+    }
+    
+    // Получение доставок по ID заказа
+    @GetMapping("/order/{orderId}")
+    public ResponseEntity<List<Delivery>> getDeliveriesByOrderId(@PathVariable Integer orderId) {
+        List<Delivery> deliveries = deliveryService.getDeliveriesByOrderId(orderId);
+        return ResponseEntity.ok(deliveries);
+    }
+    
+    // Получение первой доставки по orderId
+    @GetMapping("/order/{orderId}/first")
+    public ResponseEntity<Delivery> getFirstDeliveryByOrderId(@PathVariable Integer orderId) {
+        Optional<Delivery> delivery = deliveryService.getFirstDeliveryByOrderId(orderId);
+        return delivery.map(ResponseEntity::ok)
+                      .orElse(ResponseEntity.notFound().build());
+    }
+    
+    // Отмена доставки
+    @PostMapping("/{deliveryId}/cancel")
+    public ResponseEntity<Delivery> cancelDelivery(@PathVariable Integer deliveryId) {
+        try {
+            Delivery delivery = deliveryService.cancelDelivery(deliveryId);
+            return ResponseEntity.ok(delivery);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+    
+    // Получение доставки по ID
+    @GetMapping("/{deliveryId}")
+    public ResponseEntity<Delivery> getDelivery(@PathVariable Integer deliveryId) {
+        Optional<Delivery> delivery = deliveryService.getDeliveryById(deliveryId);
+        return delivery.map(ResponseEntity::ok)
+                      .orElse(ResponseEntity.notFound().build());
+    }
+}
+
+package com.example.delivery;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public interface DeliveryRepository extends JpaRepository<Delivery, Integer> {
+    
+    List<Delivery> findByClientId(Integer clientId);
+    
+    List<Delivery> findByAssignedCourierId(Integer courierId);
+    
+    List<Delivery> findByDeliveryStatus(DeliveryStatus status);
+    
+    // ВАЖНО: Этот метод должен возвращать List<Delivery>
+    List<Delivery> findByOrderId(Integer orderId);
+    
+    @Query("SELECT d FROM Delivery d WHERE d.deliveryStatus IN :statuses")
+    List<Delivery> findByDeliveryStatusIn(@Param("statuses") List<DeliveryStatus> statuses);
+    
+    @Query("SELECT COUNT(d) FROM Delivery d WHERE d.assignedCourierId = :courierId AND d.deliveryStatus IN :statuses")
+    Long countActiveDeliveriesByCourier(@Param("courierId") Integer courierId, 
+                                       @Param("statuses") List<DeliveryStatus> statuses);
+}
+
+package com.example.delivery;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+@Service
+@Transactional
+public class DeliveryService {
+    
+    @Autowired
+    private DeliveryRepository deliveryRepository;
+    
+    public Delivery createDelivery(Integer orderId, Integer clientId, String address, String phone) {
+        Delivery delivery = new Delivery(orderId, clientId, address, phone);
+        return deliveryRepository.save(delivery);
+    }
+    
+    public Delivery assignCourier(Integer deliveryId, Integer courierId) {
+        Delivery delivery = deliveryRepository.findById(deliveryId)
+                .orElseThrow(() -> new RuntimeException("Delivery not found"));
+        
+        delivery.setAssignedCourierId(courierId);
+        delivery.setDeliveryStatus(DeliveryStatus.ASSIGNED);
+        delivery.setEstimatedDeliveryTime(LocalDateTime.now().plusHours(2));
+        
+        return deliveryRepository.save(delivery);
+    }
+    
+    public Delivery updateStatus(Integer deliveryId, DeliveryStatus newStatus) {
+        Delivery delivery = deliveryRepository.findById(deliveryId)
+                .orElseThrow(() -> new RuntimeException("Delivery not found"));
+        
+        delivery.setDeliveryStatus(newStatus);
+        
+        if (newStatus == DeliveryStatus.DELIVERED) {
+            delivery.setActualDeliveryTime(LocalDateTime.now());
+        }
+        
+        return deliveryRepository.save(delivery);
+    }
+    
+    public List<Delivery> getClientDeliveries(Integer clientId) {
+        return deliveryRepository.findByClientId(clientId);
+    }
+    
+    public List<Delivery> getCourierDeliveries(Integer courierId) {
+        return deliveryRepository.findByAssignedCourierId(courierId);
+    }
+    
+    public List<Delivery> getActiveDeliveries() {
+        return deliveryRepository.findByDeliveryStatusIn(List.of(
+            DeliveryStatus.ASSIGNED, 
+            DeliveryStatus.PICKED_UP, 
+            DeliveryStatus.IN_TRANSIT, 
+            DeliveryStatus.OUT_FOR_DELIVERY
+        ));
+    }
+    
+    // ВАЖНО: Этот метод должен возвращать List<Delivery>
+    public List<Delivery> getDeliveriesByOrderId(Integer orderId) {
+        return deliveryRepository.findByOrderId(orderId);
+    }
+
+     // Получение ВСЕХ доставок
+    public List<Delivery> getAllDeliveries() {
+        return deliveryRepository.findAll();
+    }
+    
+    // Этот метод возвращает Optional<Delivery>
+    public Optional<Delivery> getFirstDeliveryByOrderId(Integer orderId) {
+        List<Delivery> deliveries = deliveryRepository.findByOrderId(orderId);
+        return deliveries.isEmpty() ? Optional.empty() : Optional.of(deliveries.get(0));
+    }
+    
+    public Delivery cancelDelivery(Integer deliveryId) {
+        Delivery delivery = deliveryRepository.findById(deliveryId)
+                .orElseThrow(() -> new RuntimeException("Delivery not found"));
+        
+        delivery.setDeliveryStatus(DeliveryStatus.CANCELLED);
+        return deliveryRepository.save(delivery);
+    }
+    
+    public Optional<Delivery> getDeliveryById(Integer deliveryId) {
+        return deliveryRepository.findById(deliveryId);
+    }
+}
+
+package com.example.delivery;
+
+    enum DeliveryStatus {
+        PENDING,        // Ожидает назначения
+        ASSIGNED,       // Назначен курьеру
+        PICKED_UP,      // Забран со склада
+        IN_TRANSIT,     // В пути
+        OUT_FOR_DELIVERY, // Доставляется
+        DELIVERED,      // Доставлен
+        FAILED,         // Не удалось доставить
+        CANCELLED       // Отменен
+    }
+
+# Application
+spring.application.name=delivery-service
+server.port=8088
+
+# Database
+spring.datasource.url=jdbc:postgresql://localhost:5432/delivery
+spring.datasource.username=postgres
+spring.datasource.password=Ghbdtnbr123!
+
+# JPA
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+spring.jpa.properties.hibernate.format_sql=true
+
+# Defer datasource initialization
+spring.jpa.defer-datasource-initialization=true
+
+# Exclude security auto-configuration
+spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration,\
+  org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+
+COLLECTOR
+
+package com.example.collector;
+
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "collectors")
+public class Collector {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "collector_id", unique = true, nullable = false)
+    private String collectorId; // COLLECTOR_1, COLLECTOR_2
+
+    @Column(name = "name", nullable = false)
+    private String name;
+
+    @Column(name = "status")
+    private String status; // ACTIVE, INACTIVE, BUSY
+
+    @Column(name = "current_location")
+    private String currentLocation;
+
+    @Column(name = "created_date")
+    private LocalDateTime createdDate;
+
+    @Column(name = "last_activity")
+    private LocalDateTime lastActivity;
+
+    // Конструкторы
+    public Collector() {}
+
+    public Collector(String collectorId, String name, String status) {
+        this.collectorId = collectorId;
+        this.name = name;
+        this.status = status;
+        this.createdDate = LocalDateTime.now();
+        this.lastActivity = LocalDateTime.now();
+    }
+
+    // Геттеры и сеттеры
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getCollectorId() { return collectorId; }
+    public void setCollectorId(String collectorId) { this.collectorId = collectorId; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) {
+        this.status = status;
+        this.lastActivity = LocalDateTime.now();
+    }
+
+    public String getCurrentLocation() { return currentLocation; }
+    public void setCurrentLocation(String currentLocation) { this.currentLocation = currentLocation; }
+
+    public LocalDateTime getCreatedDate() { return createdDate; }
+    public void setCreatedDate(LocalDateTime createdDate) { this.createdDate = createdDate; }
+
+    public LocalDateTime getLastActivity() { return lastActivity; }
+    public void setLastActivity(LocalDateTime lastActivity) { this.lastActivity = lastActivity; }
+}
+
+package com.example.collector;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class CollectorApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(CollectorApplication.class, args);
+	}
+
+}
+
+package com.example.collector;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/api/collector")
+public class CollectorController {
+
+    @Autowired
+    private CollectorService collectorService;
+
+    // === Collector Endpoints ===
+
+    @PostMapping("/collectors")
+    public ResponseEntity<Collector> createCollector(@RequestBody Collector collector) {
+        Collector created = collectorService.createCollector(collector);
+        return ResponseEntity.ok(created);
+    }
+
+    @GetMapping("/collectors")
+    public ResponseEntity<List<Collector>> getAllCollectors() {
+        List<Collector> collectors = collectorService.getAllCollectors();
+        return ResponseEntity.ok(collectors);
+    }
+
+    @GetMapping("/collectors/{collectorId}")
+    public ResponseEntity<Collector> getCollector(@PathVariable String collectorId) {
+        Optional<Collector> collector = collectorService.getCollectorById(collectorId);
+        return collector.map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/collectors/{collectorId}/status")
+    public ResponseEntity<Collector> updateCollectorStatus(
+            @PathVariable String collectorId,
+            @RequestParam String status) {
+        Collector collector = collectorService.updateCollectorStatus(collectorId, status);
+        return ResponseEntity.ok(collector);
+    }
+
+    // === Task Endpoints ===
+
+    @PostMapping("/tasks")
+    public ResponseEntity<CollectorTask> createTask(@RequestBody CollectorTask task) {
+        CollectorTask created = collectorService.createTask(task);
+        return ResponseEntity.ok(created);
+    }
+
+    @GetMapping("/tasks/collector/{collectorId}")
+    public ResponseEntity<List<CollectorTask>> getCollectorTasks(@PathVariable String collectorId) {
+        List<CollectorTask> tasks = collectorService.getCollectorTasks(collectorId);
+        return ResponseEntity.ok(tasks);
+    }
+
+    @GetMapping("/tasks/pending")
+    public ResponseEntity<List<CollectorTask>> getPendingTasks() {
+        List<CollectorTask> tasks = collectorService.getPendingTasks();
+        return ResponseEntity.ok(tasks);
+    }
+
+    @PutMapping("/tasks/{taskId}/status")
+    public ResponseEntity<CollectorTask> updateTaskStatus(
+            @PathVariable String taskId,
+            @RequestParam String status) {
+        CollectorTask task = collectorService.updateTaskStatus(taskId, status);
+        return ResponseEntity.ok(task);
+    }
+
+    @PostMapping("/tasks/{taskId}/report-problem")
+    public ResponseEntity<CollectorTask> reportProblem(
+            @PathVariable String taskId,
+            @RequestParam String problemType,
+            @RequestParam String comments) {
+        CollectorTask task = collectorService.reportProblem(taskId, problemType, comments);
+        return ResponseEntity.ok(task);
+    }
+
+    @GetMapping("/tasks/problems")
+    public ResponseEntity<List<CollectorTask>> getProblemTasks() {
+        List<CollectorTask> tasks = collectorService.getProblemTasks();
+        return ResponseEntity.ok(tasks);
+    }
+
+    @PutMapping("/tasks/{taskId}/complete")
+    public ResponseEntity<CollectorTask> completeTask(@PathVariable String taskId) {
+        CollectorTask task = collectorService.completeTask(taskId);
+        return ResponseEntity.ok(task);
+    }
+}
+
+package com.example.collector;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public interface CollectorRepository extends JpaRepository<Collector, Long> {
+    Optional<Collector> findByCollectorId(String collectorId);
+    List<Collector> findByStatus(String status);
+    boolean existsByCollectorId(String collectorId);
+}
+
+package com.example.collector;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class CollectorService {
+
+    @Autowired
+    private CollectorRepository collectorRepository;
+
+    @Autowired
+    private CollectorTaskRepository taskRepository;
+
+    // === Collector Management ===
+
+    public Collector createCollector(Collector collector) {
+        if (collectorRepository.existsByCollectorId(collector.getCollectorId())) {
+            throw new RuntimeException("Collector with ID " + collector.getCollectorId() + " already exists");
+        }
+        return collectorRepository.save(collector);
+    }
+
+    public List<Collector> getAllCollectors() {
+        return collectorRepository.findAll();
+    }
+
+    public Optional<Collector> getCollectorById(String collectorId) {
+        return collectorRepository.findByCollectorId(collectorId);
+    }
+
+    public Collector updateCollectorStatus(String collectorId, String status) {
+        Collector collector = collectorRepository.findByCollectorId(collectorId)
+                .orElseThrow(() -> new RuntimeException("Collector not found"));
+        collector.setStatus(status);
+        return collectorRepository.save(collector);
+    }
+
+    // === Task Management ===
+
+    public CollectorTask createTask(CollectorTask task) {
+        // Проверяем существование сборщика
+        if (!collectorRepository.existsByCollectorId(task.getCollectorId())) {
+            throw new RuntimeException("Collector " + task.getCollectorId() + " not found");
+        }
+        return taskRepository.save(task);
+    }
+
+    public List<CollectorTask> getCollectorTasks(String collectorId) {
+        return taskRepository.findByCollectorId(collectorId);
+    }
+
+    public List<CollectorTask> getPendingTasks() {
+        return taskRepository.findByStatus("NEW");
+    }
+
+    public CollectorTask updateTaskStatus(String taskId, String status) {
+        CollectorTask task = taskRepository.findByTaskId(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+        task.setStatus(status);
+        return taskRepository.save(task);
+    }
+
+    public CollectorTask reportProblem(String taskId, String problemType, String comments) {
+        CollectorTask task = taskRepository.findByTaskId(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+        task.setProblemType(problemType);
+        task.setComments(comments);
+        task.setStatus("PROBLEM");
+        task.setPriority("HIGH");
+        return taskRepository.save(task);
+    }
+
+    public List<CollectorTask> getProblemTasks() {
+        return taskRepository.findByProblemTypeIsNotNull();
+    }
+
+    public CollectorTask completeTask(String taskId) {
+        CollectorTask task = taskRepository.findByTaskId(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+        task.setStatus("COMPLETED");
+        return taskRepository.save(task);
+    }
+}
+
+package com.example.collector;
+
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "collector_tasks")
+public class CollectorTask {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "task_id", unique = true, nullable = false)
+    private String taskId;
+
+    @Column(name = "collector_id", nullable = false)
+    private String collectorId;
+
+    @Column(name = "order_id")
+    private String orderId;
+
+    @Column(name = "client_id")
+    private String clientId;
+
+    @Column(name = "product_id")
+    private String productId;
+
+    @Column(name = "product_name")
+    private String productName;
+
+    @Column(name = "quantity")
+    private Integer quantity;
+
+    @Column(name = "task_type")
+    private String taskType; // PICKUP, DELIVERY, RETURN, CHECK
+
+    @Column(name = "status")
+    private String status; // NEW, IN_PROGRESS, COMPLETED, PROBLEM
+
+    @Column(name = "problem_type")
+    private String problemType; // ITEM_NOT_VISIBLE, DAMAGED, WRONG_ITEM
+
+    @Column(name = "location")
+    private String location;
+
+    @Column(name = "comments")
+    private String comments;
+
+    @Column(name = "priority")
+    private String priority; // LOW, MEDIUM, HIGH, URGENT
+
+    @Column(name = "created_date")
+    private LocalDateTime createdDate;
+
+    @Column(name = "started_date")
+    private LocalDateTime startedDate;
+
+    @Column(name = "completed_date")
+    private LocalDateTime completedDate;
+
+    // Конструкторы
+    public CollectorTask() {}
+
+    public CollectorTask(String taskId, String collectorId, String taskType, String status) {
+        this.taskId = taskId;
+        this.collectorId = collectorId;
+        this.taskType = taskType;
+        this.status = status;
+        this.createdDate = LocalDateTime.now();
+        this.priority = "MEDIUM";
+    }
+
+    // Геттеры и сеттеры
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getTaskId() { return taskId; }
+    public void setTaskId(String taskId) { this.taskId = taskId; }
+
+    public String getCollectorId() { return collectorId; }
+    public void setCollectorId(String collectorId) { this.collectorId = collectorId; }
+
+    public String getOrderId() { return orderId; }
+    public void setOrderId(String orderId) { this.orderId = orderId; }
+
+    public String getClientId() { return clientId; }
+    public void setClientId(String clientId) { this.clientId = clientId; }
+
+    public String getProductId() { return productId; }
+    public void setProductId(String productId) { this.productId = productId; }
+
+    public String getProductName() { return productName; }
+    public void setProductName(String productName) { this.productName = productName; }
+
+    public Integer getQuantity() { return quantity; }
+    public void setQuantity(Integer quantity) { this.quantity = quantity; }
+
+    public String getTaskType() { return taskType; }
+    public void setTaskType(String taskType) { this.taskType = taskType; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) {
+        this.status = status;
+        if ("IN_PROGRESS".equals(status) && startedDate == null) {
+            this.startedDate = LocalDateTime.now();
+        } else if ("COMPLETED".equals(status)) {
+            this.completedDate = LocalDateTime.now();
+        }
+    }
+
+    public String getProblemType() { return problemType; }
+    public void setProblemType(String problemType) { this.problemType = problemType; }
+
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
+
+    public String getComments() { return comments; }
+    public void setComments(String comments) { this.comments = comments; }
+
+    public String getPriority() { return priority; }
+    public void setPriority(String priority) { this.priority = priority; }
+
+    public LocalDateTime getCreatedDate() { return createdDate; }
+    public void setCreatedDate(LocalDateTime createdDate) { this.createdDate = createdDate; }
+
+    public LocalDateTime getStartedDate() { return startedDate; }
+    public void setStartedDate(LocalDateTime startedDate) { this.startedDate = startedDate; }
+
+    public LocalDateTime getCompletedDate() { return completedDate; }
+    public void setCompletedDate(LocalDateTime completedDate) { this.completedDate = completedDate; }
+}
+
+package com.example.collector;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public interface CollectorTaskRepository extends JpaRepository<CollectorTask, Long> {
+    List<CollectorTask> findByCollectorId(String collectorId);
+    List<CollectorTask> findByCollectorIdAndStatus(String collectorId, String status);
+    List<CollectorTask> findByStatus(String status);
+    Optional<CollectorTask> findByTaskId(String taskId);
+    List<CollectorTask> findByProblemTypeIsNotNull();
+}
+
+spring.application.name=collector
+server.port=8086
+
+# Database Configuration
+spring.datasource.url=jdbc:postgresql://localhost:5432/collector_db
+spring.datasource.username=postgres
+spring.datasource.password=Ghbdtnbr123!
+
+# JPA Configuration
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+
+# Logging
+logging.level.com.example.collector=DEBUG
+package com.example.Auth;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class AuthApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(AuthApplication.class, args);
+	}
+
+}
+package com.example.Auth;
+
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/auth")
+public class AuthController {
+
+    @Autowired
+    private AuthService authService;
+
+    @PostMapping("/login")
+    public ResponseEntity<Map<String, Object>> login(@RequestBody Map<String, String> request) {
+        try {
+            String username = request.get("username");
+            String password = request.get("password");
+
+            Map<String, Object> response = authService.login(username, password);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<Map<String, Object>> register(@RequestBody Map<String, String> request) {
+        try {
+            String username = request.get("username");
+            String password = request.get("password");
+            String firstname = request.get("firstname");
+            String role = request.get("role");
+
+            Map<String, Object> response = authService.register(username, password, firstname, role);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    @PostMapping("/validate")
+    public ResponseEntity<Map<String, Object>> validate(@RequestBody Map<String, String> request) {
+        String token = request.get("token");
+        Map<String, Object> response = authService.validateToken(token);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/check")
+    public ResponseEntity<Map<String, Object>> check() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "Auth service is running");
+        response.put("timestamp", new Date());
+        return ResponseEntity.ok(response);
+    }
+}package com.example.Auth;
+
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@Service
+public class AuthService {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private CustomUserDetailsService userDetailsService;
+
+    public Map<String, Object> login(String username, String password) {
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(username, password)
+            );
+        } catch (Exception e) {
+            throw new RuntimeException("Неверный логин или пароль");
+        }
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+
+        if (user.getStatus() != User.UserStatus.ACTIVE) {
+            throw new RuntimeException("Пользователь заблокирован");
+        }
+
+        String token = jwtUtil.generateToken(username);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", token);
+        response.put("username", user.getUsername());
+        response.put("role", user.getRole().name());
+        response.put("firstname", user.getFirstname());
+        response.put("userId", user.getId());
+        response.put("message", "Успешный вход");
+        return response;
+    }
+
+    public Map<String, Object> register(String username, String password,
+                                        String firstname, String role) {
+        if (userRepository.existsByUsername(username)) {
+            throw new RuntimeException("Пользователь уже существует");
+        }
+
+        User user = new User();
+        user.setUsername(username);
+        user.setPassword(passwordEncoder.encode(password));
+        user.setFirstname(firstname);
+        user.setRole(User.UserRole.valueOf(role.toUpperCase()));
+        user.setStatus(User.UserStatus.ACTIVE);
+
+        userRepository.save(user);
+
+        String token = jwtUtil.generateToken(username);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", token);
+        response.put("username", user.getUsername());
+        response.put("role", user.getRole().name());
+        response.put("message", "Регистрация успешна");
+        return response;
+    }
+
+    public Map<String, Object> validateToken(String token) {
+        try {
+            String username = jwtUtil.extractUsername(token);
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("valid", true);
+            response.put("username", user.getUsername());
+            response.put("role", user.getRole().name());
+            return response;
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("valid", false);
+            response.put("error", e.getMessage());
+            return response;
+        }
+    }
+}package com.example.Auth;
+
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+
+import java.util.Collections;
+
+@Service
+public class CustomUserDetailsService implements UserDetailsService {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        return new org.springframework.security.core.userdetails.User(
+                user.getUsername(),
+                user.getPassword(),
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
+        );
+    }
+}package com.example.Auth;
+
+
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import javax.crypto.SecretKey;
+import java.util.Date;
+
+@Component
+public class JwtUtil {
+
+    @Value("${jwt.secret}")
+    private String secret;
+
+    @Value("${jwt.expiration}")
+    private Long expiration;
+
+    private SecretKey getSigningKey() {
+        return Keys.hmacShaKeyFor(secret.getBytes());
+    }
+
+    public String extractUsername(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
+    }
+
+    public String generateToken(String username) {
+        return Jwts.builder()
+                .setSubject(username)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + expiration))
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+}package com.example.Auth;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+
+@Configuration
+public class SecurityConfig {
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> {})  // Для Spring Security 6.x
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .anyRequest().authenticated()
+                );
+
+        return http.build();
+    }
+}package com.example.Auth;
+
+
+import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "users")
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @Column(nullable = false, unique = true)
+    private String username;
+
+    @Column(nullable = false)
+    private String password;
+
+    private String firstname;
+    private Integer age;
+    private String city;
+    private String mag;
+    private String email;
+
+    @Enumerated(EnumType.STRING)
+    private UserStatus status = UserStatus.ACTIVE;
+
+    @CreationTimestamp
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UserRole role;
+
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
+
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
+
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+
+    public String getFirstname() { return firstname; }
+    public void setFirstname(String firstname) { this.firstname = firstname; }
+
+    public Integer getAge() { return age; }
+    public void setAge(Integer age) { this.age = age; }
+
+    public String getCity() { return city; }
+    public void setCity(String city) { this.city = city; }
+
+    public String getMag() { return mag; }
+    public void setMag(String mag) { this.mag = mag; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public UserStatus getStatus() { return status; }
+    public void setStatus(UserStatus status) { this.status = status; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public UserRole getRole() { return role; }
+    public void setRole(UserRole role) { this.role = role; }
+
+    public enum UserStatus {
+        ACTIVE, INACTIVE, BLOCKED
+    }
+
+    public enum UserRole {
+        ADMIN, CLIENT, COLLECTOR, COURIER, OFFICE
+    }
+}package com.example.Auth;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+
+@Repository
+public interface UserRepository extends JpaRepository<User, Integer> {
+    Optional<User> findByUsername(String username);
+    boolean existsByUsername(String username);
+}server.port=8097
+spring.application.name=Auth
+
+spring.datasource.url=jdbc:postgresql://localhost:5432/kefir_db
+spring.datasource.username=postgres
+spring.datasource.password=Ghbdtnbr123!
+
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+
+jwt.secret=kefir-logistics-secret-key
+jwt.expiration=86400000

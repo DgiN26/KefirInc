@@ -1,0 +1,66 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------------< com.example:delivery-service >--------------------
+[INFO] Building delivery-service 1.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] >>> spring-boot:3.2.0:run (default-cli) > test-compile @ delivery-service >>>
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ delivery-service ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] Copying 0 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ delivery-service ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ delivery-service ---
+[INFO] skip non existing resourceDirectory /home/vboxuser/Desktop/Kefir/Backend/Delivery/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ delivery-service ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] <<< spring-boot:3.2.0:run (default-cli) < test-compile @ delivery-service <<<
+[INFO] 
+[INFO] 
+[INFO] --- spring-boot:3.2.0:run (default-cli) @ delivery-service ---
+[INFO] Attaching agents: []
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.0)
+
+2025-12-12T20:46:02.192Z  INFO 19292 --- [delivery-service] [  restartedMain] c.example.delivery.DeliveryApplication   : Starting DeliveryApplication using Java 17.0.17 with PID 19292 (/home/vboxuser/Desktop/Kefir/Backend/Delivery/target/classes started by vboxuser in /home/vboxuser/Desktop/Kefir/Backend/Delivery)
+2025-12-12T20:46:02.198Z  INFO 19292 --- [delivery-service] [  restartedMain] c.example.delivery.DeliveryApplication   : The following 1 profile is active: "local"
+2025-12-12T20:46:02.292Z  INFO 19292 --- [delivery-service] [  restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2025-12-12T20:46:02.293Z  INFO 19292 --- [delivery-service] [  restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2025-12-12T20:46:03.855Z  INFO 19292 --- [delivery-service] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-12-12T20:46:04.025Z  INFO 19292 --- [delivery-service] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 156 ms. Found 1 JPA repository interface.
+2025-12-12T20:46:04.457Z  INFO 19292 --- [delivery-service] [  restartedMain] o.s.cloud.context.scope.GenericScope     : BeanFactory id=5a1040e4-041a-367e-9aa7-fdae56995f20
+2025-12-12T20:46:05.913Z  INFO 19292 --- [delivery-service] [  restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8083 (http)
+2025-12-12T20:46:05.935Z  INFO 19292 --- [delivery-service] [  restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-12-12T20:46:05.936Z  INFO 19292 --- [delivery-service] [  restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.16]
+2025-12-12T20:46:06.057Z  INFO 19292 --- [delivery-service] [  restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-12-12T20:46:06.060Z  INFO 19292 --- [delivery-service] [  restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 3764 ms
+2025-12-12T20:46:06.424Z  INFO 19292 --- [delivery-service] [  restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-12-12T20:46:06.540Z  INFO 19292 --- [delivery-service] [  restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.3.1.Final
+2025-12-12T20:46:06.616Z  INFO 19292 --- [delivery-service] [  restartedMain] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2025-12-12T20:46:07.131Z  INFO 19292 --- [delivery-service] [  restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-12-12T20:46:07.185Z  INFO 19292 --- [delivery-service] [  restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2025-12-12T20:46:07.915Z  INFO 19292 --- [delivery-service] [  restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@3843dc61
+2025-12-12T20:46:07.919Z  INFO 19292 --- [delivery-service] [  restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-12-12T20:46:08.005Z  WARN 19292 --- [delivery-service] [  restartedMain] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-12-12T20:46:10.365Z  INFO 19292 --- [delivery-service] [  restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-12-12T20:46:10.521Z  INFO 19292 --- [delivery-service] [  restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-12-12T20:46:11.337Z  INFO 19292 --- [delivery-service] [  restartedMain] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-12-12T20:46:13.041Z  WARN 19292 --- [delivery-service] [  restartedMain] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-12-12T20:46:14.159Z  INFO 19292 --- [delivery-service] [  restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2025-12-12T20:46:14.458Z  INFO 19292 --- [delivery-service] [  restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8083 (http) with context path ''
+2025-12-12T20:46:14.546Z  INFO 19292 --- [delivery-service] [  restartedMain] c.example.delivery.DeliveryApplication   : Started DeliveryApplication in 13.793 seconds (process running for 15.492)
+2025-12-12T20:53:38.624Z  INFO 19292 --- [delivery-service] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-12-12T20:53:38.632Z  INFO 19292 --- [delivery-service] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2025-12-12T20:53:38.817Z  INFO 19292 --- [delivery-service] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.

@@ -1,0 +1,45 @@
+{
+  "groups": [
+    {
+      "name": "launcher",
+      "type": "com.kefir.logistics.launcher_service.config.ApplicationProperties",
+      "sourceType": "com.kefir.logistics.launcher_service.config.ApplicationProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "launcher.base-dir",
+      "type": "java.lang.String",
+      "description": "Base directory for all services",
+      "sourceType": "com.kefir.logistics.launcher_service.config.ApplicationProperties"
+    },
+    {
+      "name": "launcher.logs-dir",
+      "type": "java.lang.String",
+      "description": "Directory for log files",
+      "sourceType": "com.kefir.logistics.launcher_service.config.ApplicationProperties"
+    },
+    {
+      "name": "launcher.startup-delay-ms",
+      "type": "java.lang.Integer",
+      "description": "Delay between service startups in milliseconds",
+      "sourceType": "com.kefir.logistics.launcher_service.config.ApplicationProperties",
+      "defaultValue": 5000
+    },
+    {
+      "name": "launcher.health-check-timeout-sec",
+      "type": "java.lang.Integer",
+      "description": "Health check timeout in seconds",
+      "sourceType": "com.kefir.logistics.launcher_service.config.ApplicationProperties",
+      "defaultValue": 30
+    },
+    {
+      "name": "launcher.auto-restart",
+      "type": "java.lang.Boolean",
+      "description": "Enable automatic restart of failed services",
+      "sourceType": "com.kefir.logistics.launcher_service.config.ApplicationProperties",
+      "defaultValue": true
+    }
+  ],
+  "hints": []
+}

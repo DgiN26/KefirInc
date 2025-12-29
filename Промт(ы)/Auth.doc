@@ -1,0 +1,1607 @@
+=== BlacklistedToken.java ===
+package com.Auth;
+
+import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "blacklisted_tokens")
+public class BlacklistedToken {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "token", nullable = false, unique = true, length = 500)
+    private String token;
+
+    @Column(name = "username", nullable = false, length = 50)
+    private String username;
+
+    @Column(name = "expires_at", nullable = false)
+    private LocalDateTime expiresAt;
+
+    @CreationTimestamp
+    @Column(name = "blacklisted_at", updatable = false)
+    private LocalDateTime blacklistedAt;
+
+    @Column(name = "reason", length = 100)
+    private String reason;
+
+    public BlacklistedToken() {
+    }
+
+    public BlacklistedToken(String token, String username, LocalDateTime expiresAt) {
+        this.token = token;
+        this.username = username;
+        this.expiresAt = expiresAt;
+        this.reason = "logout";
+    }
+
+    public BlacklistedToken(String token, String username, LocalDateTime expiresAt, String reason) {
+        this.token = token;
+        this.username = username;
+        this.expiresAt = expiresAt;
+        this.reason = reason;
+    }
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getToken() { return token; }
+    public void setToken(String token) { this.token = token; }
+
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
+
+    public LocalDateTime getExpiresAt() { return expiresAt; }
+    public void setExpiresAt(LocalDateTime expiresAt) { this.expiresAt = expiresAt; }
+
+    public LocalDateTime getBlacklistedAt() { return blacklistedAt; }
+    public void setBlacklistedAt(LocalDateTime blacklistedAt) { this.blacklistedAt = blacklistedAt; }
+
+    public String getReason() { return reason; }
+    public void setReason(String reason) { this.reason = reason; }
+}
+
+=== UserSessionRepository.java ===
+package com.Auth;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public interface UserSessionRepository extends JpaRepository<UserSession, Long> {
+
+    Optional<UserSession> findBySessionUUID(String sessionUUID);
+
+    Optional<UserSession> findBySessionUUIDAndIsActive(String sessionUUID, Boolean isActive);
+
+    @Query("SELECT s FROM UserSession s WHERE s.userId = :userId AND s.isActive = true")
+    List<UserSession> findActiveSessionsByUserId(@Param("userId") Integer userId);
+
+    @Query("SELECT s FROM UserSession s WHERE s.userId = :userId AND s.isActive = true ORDER BY s.createdAt DESC")
+    List<UserSession> findLatestActiveSessionByUserId(@Param("userId") Integer userId);
+
+    @Modifying
+    @Query("UPDATE UserSession s SET s.isActive = false WHERE s.userId = :userId")
+    void deactivateUserSessions(@Param("userId") Integer userId);
+
+    @Modifying
+    @Query("DELETE FROM UserSession s WHERE s.expiresAt < :now")
+    void deleteExpiredSessions(@Param("now") LocalDateTime now);
+
+    @Query("SELECT s FROM UserSession s WHERE s.jwtToken = :jwtToken AND s.isActive = true")
+    Optional<UserSession> findByJwtToken(@Param("jwtToken") String jwtToken);
+
+    @Query("SELECT COUNT(s) FROM UserSession s WHERE s.isActive = true AND s.expiresAt > :now")
+    long countActiveSessions(@Param("now") LocalDateTime now);
+}
+
+=== SessionController.java ===
+package com.Auth;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/api/sessions")
+@CrossOrigin(origins = "*")
+public class SessionController {
+
+    @Autowired
+    private SessionService sessionService;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @GetMapping("/validate/{clientToken}")
+    public ResponseEntity<?> validateSession(@PathVariable String clientToken) {
+        try {
+            Optional<UserSession> sessionOpt = sessionService.validateSession(clientToken);
+
+            if (sessionOpt.isPresent()) {
+                UserSession session = sessionOpt.get();
+                Optional<User> userOpt = userRepository.findById(session.getUserId());
+
+                if (userOpt.isPresent()) {
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("valid", true);
+                    response.put("sessionId", session.getSessionUUID());
+                    response.put("userId", session.getUserId());
+                    response.put("user", createUserResponse(userOpt.get()));
+                    response.put("createdAt", session.getCreatedAt());
+                    response.put("expiresAt", session.getExpiresAt());
+                    response.put("isActive", session.getIsActive());
+                    return ResponseEntity.ok(response);
+                }
+            }
+
+            return ResponseEntity.status(401)
+                    .body(Map.of(
+                            "valid", false,
+                            "message", "Session is invalid or expired"
+                    ));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(500)
+                    .body(Map.of("error", "Failed to validate session"));
+        }
+    }
+
+    @GetMapping("/jwt/{clientToken}")
+    public ResponseEntity<?> getJwtBySession(@PathVariable String clientToken) {
+        try {
+            if (!clientToken.startsWith("auth-")) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Invalid client token format"));
+            }
+
+            String sessionUUID = clientToken.substring(5);
+            Optional<String> jwtOpt = sessionService.getJwtTokenBySession(sessionUUID);
+
+            if (jwtOpt.isPresent()) {
+                return ResponseEntity.ok(Map.of(
+                        "success", true,
+                        "jwtToken", jwtOpt.get(),
+                        "sessionUUID", sessionUUID
+                ));
+            } else {
+                return ResponseEntity.status(404)
+                        .body(Map.of(
+                                "success", false,
+                                "error", "JWT token not found for session"
+                        ));
+            }
+
+        } catch (Exception e) {
+            return ResponseEntity.status(500)
+                    .body(Map.of("error", "Failed to get JWT token"));
+        }
+    }
+
+    @GetMapping("/session/{jwtToken}")
+    public ResponseEntity<?> getSessionByJwt(@PathVariable String jwtToken) {
+        try {
+            Optional<String> sessionUuidOpt = sessionService.getSessionUuidByJwt(jwtToken);
+
+            if (sessionUuidOpt.isPresent()) {
+                return ResponseEntity.ok(Map.of(
+                        "success", true,
+                        "sessionUUID", sessionUuidOpt.get(),
+                        "clientToken", "auth-" + sessionUuidOpt.get()
+                ));
+            } else {
+                return ResponseEntity.status(404)
+                        .body(Map.of(
+                                "success", false,
+                                "error", "Session not found for JWT token"
+                        ));
+            }
+
+        } catch (Exception e) {
+            return ResponseEntity.status(500)
+                    .body(Map.of("error", "Failed to get session"));
+        }
+    }
+
+    @PostMapping("/invalidate/{clientToken}")
+    public ResponseEntity<?> invalidateSession(@PathVariable String clientToken) {
+        try {
+            if (!clientToken.startsWith("auth-")) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Invalid client token format"));
+            }
+
+            String sessionUUID = clientToken.substring(5);
+            sessionService.invalidateSession(sessionUUID);
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "Session invalidated successfully",
+                    "sessionUUID", sessionUUID
+            ));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(500)
+                    .body(Map.of("error", "Failed to invalidate session"));
+        }
+    }
+
+    @GetMapping("/stats")
+    public ResponseEntity<?> getSessionStats() {
+        try {
+            long activeSessions = sessionService.getActiveSessionsCount();
+
+            Map<String, Object> stats = new HashMap<>();
+            stats.put("activeSessions", activeSessions);
+            stats.put("timestamp", LocalDateTime.now().toString());
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "stats", stats
+            ));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(500)
+                    .body(Map.of("error", "Failed to get session stats"));
+        }
+    }
+
+    private Map<String, Object> createUserResponse(User user) {
+        Map<String, Object> userResponse = new HashMap<>();
+        userResponse.put("id", user.getId());
+        userResponse.put("username", user.getUsername());
+        userResponse.put("firstname", user.getFirstname() != null ? user.getFirstname() : "");
+        userResponse.put("email", user.getEmail() != null ? user.getEmail() : "");
+        userResponse.put("role", user.getRole() != null ? user.getRole() : "client");
+        userResponse.put("status", user.getStatus() != null ? user.getStatus() : "active");
+        return userResponse;
+    }
+}
+
+=== PasswordEncoderConfig.java ===
+package com.Auth;
+
+import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class PasswordEncoderConfig {
+
+    @Bean
+    public PasswordEncoderConfig.PasswordEncoder customPasswordEncoder() {
+        return new PasswordEncoder();
+    }
+
+    public static class PasswordEncoder {
+        public String encode(String rawPassword) {
+            return BCrypt.hashpw(rawPassword, BCrypt.gensalt());
+        }
+
+        public boolean matches(String rawPassword, String encodedPassword) {
+            try {
+                return BCrypt.checkpw(rawPassword, encodedPassword);
+            } catch (Exception e) {
+                return false;
+            }
+        }
+    }
+}
+
+=== SessionService.java ===
+package com.Auth;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
+
+@Service
+public class SessionService {
+
+    @Autowired
+    private UserSessionRepository userSessionRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Transactional
+    public UserSession createUserSession(String sessionUUID, Integer userId, String jwtToken) {
+        System.out.println("Creating user session: UUID=" + sessionUUID + ", userId=" + userId);
+
+        userSessionRepository.deactivateUserSessions(userId);
+
+        UserSession session = new UserSession();
+        session.setSessionUUID(sessionUUID);
+        session.setUserId(userId);
+        session.setJwtToken(jwtToken);
+        session.setClientToken("auth-" + sessionUUID);
+        session.setIsActive(true);
+        session.setCreatedAt(LocalDateTime.now());
+        session.setExpiresAt(LocalDateTime.now().plusDays(1));
+
+        UserSession savedSession = userSessionRepository.save(session);
+        System.out.println("User session created with ID: " + savedSession.getId());
+
+        return savedSession;
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<UserSession> validateSession(String clientToken) {
+        if (clientToken == null || !clientToken.startsWith("auth-")) {
+            return Optional.empty();
+        }
+
+        String sessionUUID = clientToken.substring(5);
+        return userSessionRepository.findBySessionUUIDAndIsActive(sessionUUID, true)
+                .filter(session -> session.getExpiresAt().isAfter(LocalDateTime.now()));
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<User> getUserBySession(String clientToken) {
+        return validateSession(clientToken)
+                .flatMap(session -> userRepository.findById(session.getUserId()));
+    }
+
+    @Transactional
+    public void invalidateSession(String sessionUUID) {
+        userSessionRepository.findBySessionUUID(sessionUUID)
+                .ifPresent(session -> {
+                    session.setIsActive(false);
+                    userSessionRepository.save(session);
+                    System.out.println("Session invalidated: " + sessionUUID);
+                });
+    }
+
+    @Transactional
+    public void invalidateAllUserSessions(Integer userId) {
+        userSessionRepository.deactivateUserSessions(userId);
+        System.out.println("All sessions invalidated for user ID: " + userId);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<String> getJwtTokenBySession(String sessionUUID) {
+        return userSessionRepository.findBySessionUUID(sessionUUID)
+                .map(UserSession::getJwtToken);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<String> getSessionUuidByJwt(String jwtToken) {
+        return userSessionRepository.findAll().stream()
+                .filter(session -> jwtToken.equals(session.getJwtToken()) && Boolean.TRUE.equals(session.getIsActive()))
+                .findFirst()
+                .map(UserSession::getSessionUUID);
+    }
+
+    @Transactional
+    public void cleanupExpiredSessions() {
+        LocalDateTime now = LocalDateTime.now();
+        userSessionRepository.deleteExpiredSessions(now);
+        System.out.println("Expired sessions cleanup completed at: " + now);
+    }
+
+    @Transactional(readOnly = true)
+    public long getActiveSessionsCount() {
+        return userSessionRepository.findAll().stream()
+                .filter(session -> Boolean.TRUE.equals(session.getIsActive()))
+                .filter(session -> session.getExpiresAt().isAfter(LocalDateTime.now()))
+                .count();
+    }
+
+    @Scheduled(fixedRate = 3600000)
+    @Transactional
+    public void scheduledSessionCleanup() {
+        System.out.println("=== STARTING SCHEDULED SESSION CLEANUP ===");
+        try {
+            cleanupExpiredSessions();
+            System.out.println("Session cleanup completed successfully");
+        } catch (Exception e) {
+            System.err.println("Error during scheduled session cleanup: " + e.getMessage());
+        }
+        System.out.println("=== SCHEDULED SESSION CLEANUP COMPLETED ===");
+    }
+}
+
+=== TokenBlacklistService.java ===
+package com.Auth;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.Date;
+
+@Service
+public class TokenBlacklistService {
+
+    @Autowired
+    private BlacklistedTokenRepository blacklistedTokenRepository;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @Transactional
+    public void blacklistToken(String token) {
+        try {
+            String username = jwtUtil.extractUsername(token);
+            Date expirationDate = jwtUtil.extractExpiration(token);
+            LocalDateTime expiresAt = expirationDate.toInstant()
+                    .atZone(java.time.ZoneId.systemDefault())
+                    .toLocalDateTime();
+
+            if (!blacklistedTokenRepository.existsByToken(token)) {
+                BlacklistedToken blacklistedToken = new BlacklistedToken(token, username, expiresAt);
+                blacklistedTokenRepository.save(blacklistedToken);
+                System.out.println("Token blacklisted for user: " + username);
+            }
+        } catch (Exception e) {
+            System.err.println("Error blacklisting token: " + e.getMessage());
+            throw new RuntimeException("Failed to blacklist token");
+        }
+    }
+
+    public boolean isTokenBlacklisted(String token) {
+        return blacklistedTokenRepository.existsByToken(token);
+    }
+
+    @Transactional
+    public void removeFromBlacklist(String token) {
+        try {
+            blacklistedTokenRepository.deleteByToken(token);
+            System.out.println("Removed token from blacklist");
+        } catch (Exception e) {
+            System.err.println("Error removing token from blacklist: " + e.getMessage());
+        }
+    }
+
+    @Scheduled(fixedRate = 3600000)
+    @Transactional
+    public void cleanupExpiredTokens() {
+        try {
+            LocalDateTime now = LocalDateTime.now();
+            System.out.println("Starting cleanup of expired blacklisted tokens...");
+
+            long beforeCount = blacklistedTokenRepository.count();
+            System.out.println("Tokens before cleanup: " + beforeCount);
+
+            if (beforeCount > 0) {
+                blacklistedTokenRepository.deleteExpiredTokens(now);
+                long afterCount = blacklistedTokenRepository.count();
+                long removedCount = beforeCount - afterCount;
+
+                if (removedCount > 0) {
+                    System.out.println("Cleaned up " + removedCount + " expired blacklisted tokens");
+                } else {
+                    System.out.println("No expired tokens found to clean up");
+                }
+            } else {
+                System.out.println("No blacklisted tokens to clean up");
+            }
+
+            System.out.println("Cleanup of expired blacklisted tokens completed");
+        } catch (Exception e) {
+            System.err.println("Error cleaning up expired tokens: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public long getBlacklistedTokensCount() {
+        return blacklistedTokenRepository.count();
+    }
+
+    public long getBlacklistedTokensCountForUser(String username) {
+        return blacklistedTokenRepository.countByUsername(username);
+    }
+}
+
+=== AuthController.java ===
+package com.Auth;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.*;
+
+@RestController
+@RequestMapping("/api/auth")
+@CrossOrigin(origins = "*")
+public class AuthController {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoderConfig.PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @Autowired
+    private TokenBlacklistService tokenBlacklistService;
+
+    @Autowired
+    private AuthService authService;
+
+    @Autowired
+    private SessionService sessionService;
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody Map<String, String> request) {
+        try {
+            System.out.println("=== AUTH SERVICE LOGIN (HYBRID UUID+JWT) ===");
+
+            String username = request.get("username");
+            String password = request.get("password");
+
+            System.out.println("Username: " + username);
+
+            Optional<User> userOpt = userRepository.findByUsername(username);
+
+            if (userOpt.isEmpty()) {
+                System.out.println("User not found: " + username);
+                return ResponseEntity.status(400)
+                        .body(Map.of(
+                                "success", false,
+                                "error", "Пользователь не найден"
+                        ));
+            }
+
+            User user = userOpt.get();
+            System.out.println("User found: " + user.getUsername());
+
+            // Проверяем статус
+            if ("banned".equalsIgnoreCase(user.getStatus())) {
+                return ResponseEntity.status(403)
+                        .body(Map.of(
+                                "success", false,
+                                "error", "Ваш аккаунт заблокирован",
+                                "status", "banned"
+                        ));
+            }
+
+            // Проверяем пароль с BCrypt
+            boolean passwordMatches = passwordEncoder.matches(password, user.getPassword());
+            System.out.println("Password matches: " + passwordMatches);
+
+            if (passwordMatches) {
+                // === ГИБРИДНЫЙ ПОДХОД (UUID + JWT) ===
+
+                // 1. Генерируем UUID для сессии
+                String sessionUUID = UUID.randomUUID().toString();
+                System.out.println("Generated session UUID: " + sessionUUID);
+
+                // 2. Создаем упрощенный токен для клиента (UUID-based)
+                String clientToken = "auth-" + sessionUUID;
+
+                // 3. Создаем JWT с дополнительными claims
+                String jwtToken = null;
+                try {
+                    jwtToken = createJwtToken(user, sessionUUID);
+                    System.out.println("JWT created successfully");
+                } catch (Exception jwtError) {
+                    System.err.println("⚠️ JWT creation failed: " + jwtError.getMessage());
+                    // Продолжаем без JWT
+                    jwtToken = "jwt-error-" + sessionUUID;
+                }
+
+                // 4. Сохраняем сессию в базе через SessionService
+                try {
+                    sessionService.createUserSession(sessionUUID, user.getId(), jwtToken);
+                    System.out.println("Session saved successfully");
+                } catch (Exception sessionError) {
+                    System.err.println("⚠️ Session creation failed: " + sessionError.getMessage());
+                }
+
+                // 5. Формируем ответ
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", true);
+                response.put("token", clientToken);  // Клиент получает UUID-based токен
+                response.put("sessionId", sessionUUID);
+                response.put("user", createUserResponse(user));
+                response.put("message", "Вход выполнен успешно");
+
+                if (jwtToken != null && !jwtToken.startsWith("jwt-error-")) {
+                    response.put("jwtToken", jwtToken);
+                    response.put("tokenType", "hybrid-uuid-jwt");
+                } else {
+                    response.put("tokenType", "uuid-only");
+                    response.put("warning", "JWT не сгенерирован, используется только UUID");
+                }
+
+                System.out.println("✅ Login successful for user: " + username);
+                System.out.println("Response structure: " + response.keySet());
+
+                return ResponseEntity.ok(response);
+
+            } else {
+                System.out.println("Invalid password for user: " + username);
+                return ResponseEntity.status(400)
+                        .body(Map.of(
+                                "success", false,
+                                "error", "Неверный пароль"
+                        ));
+            }
+
+        } catch (Exception e) {
+            System.err.println("ERROR in login: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500)
+                    .body(Map.of(
+                            "success", false,
+                            "error", "Внутренняя ошибка сервера: " + e.getMessage()
+                    ));
+        }
+    }
+
+    @PostMapping("/logout-test")
+    public ResponseEntity<?> logoutTest() {
+        System.out.println("=== LOGOUT TEST ENDPOINT ===");
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Logout endpoint is working",
+                "timestamp", System.currentTimeMillis()
+        ));
+    }
+
+    @PostMapping("/validate")
+    public ResponseEntity<?> validateToken(@RequestHeader(value = "Authorization", required = false) String authHeader,
+                                           @RequestParam(value = "clientToken", required = false) String clientToken) {
+        try {
+            System.out.println("=== VALIDATE TOKEN (DUAL MODE) ===");
+
+            String tokenToValidate = null;
+            String tokenType = "unknown";
+
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                tokenToValidate = authHeader.substring(7);
+                tokenType = "jwt";
+                System.out.println("Validating JWT token from Authorization header");
+            }
+            else if (clientToken != null && clientToken.startsWith("auth-")) {
+                tokenToValidate = clientToken;
+                tokenType = "uuid";
+                System.out.println("Validating UUID token from clientToken");
+            }
+
+            if (tokenToValidate == null) {
+                return ResponseEntity.status(401)
+                        .body(Map.of(
+                                "valid", false,
+                                "message", "No valid token provided"
+                        ));
+            }
+
+            Map<String, Object> validationResult;
+
+            if ("jwt".equals(tokenType)) {
+                validationResult = validateJwtToken(tokenToValidate);
+            } else {
+                validationResult = validateUuidToken(tokenToValidate);
+            }
+
+            boolean isValid = (boolean) validationResult.get("valid");
+
+            if (isValid) {
+                return ResponseEntity.ok(validationResult);
+            } else {
+                return ResponseEntity.status(401)
+                        .body(validationResult);
+            }
+
+        } catch (Exception e) {
+            System.err.println("ERROR in validateToken: " + e.getMessage());
+            return ResponseEntity.status(500)
+                    .body(Map.of(
+                            "valid", false,
+                            "error", "Internal server error",
+                            "message", e.getMessage()
+                    ));
+        }
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(@RequestHeader(value = "Authorization", required = false) String authHeader,
+                                            @RequestParam(value = "clientToken", required = false) String clientToken) {
+        try {
+            Optional<User> userOpt = Optional.empty();
+
+            if (clientToken != null && clientToken.startsWith("auth-")) {
+                userOpt = getUserByUuidToken(clientToken);
+            }
+            else if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                userOpt = getUserByJwtToken(authHeader.substring(7));
+            }
+
+            if (userOpt.isPresent()) {
+                User user = userOpt.get();
+                return ResponseEntity.ok(Map.of(
+                        "success", true,
+                        "user", createUserResponse(user)
+                ));
+            } else {
+                return ResponseEntity.status(401)
+                        .body(Map.of(
+                                "success", false,
+                                "error", "Authentication required"
+                        ));
+            }
+
+        } catch (Exception e) {
+            System.err.println("ERROR in getCurrentUser: " + e.getMessage());
+            return ResponseEntity.status(500)
+                    .body(Map.of("success", false, "error", "Failed to get current user"));
+        }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestHeader(value = "Authorization", required = false) String authHeader,
+                                    @RequestParam(value = "clientToken", required = false) String clientToken) {
+        try {
+            System.out.println("=== AUTH SERVICE LOGOUT ===");
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Logout successful");
+            response.put("timestamp", System.currentTimeMillis());
+
+            boolean tokenInvalidated = false;
+
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String jwtToken = authHeader.substring(7);
+                try {
+                    String username = jwtUtil.extractUsername(jwtToken);
+                    if (jwtUtil.validateToken(jwtToken, username)) {
+                        tokenBlacklistService.blacklistToken(jwtToken);
+                        response.put("details", "JWT token invalidated");
+                        response.put("username", username);
+                        tokenInvalidated = true;
+                        System.out.println("JWT Token blacklisted for user: " + username);
+                    }
+                } catch (Exception e) {
+                    System.out.println("JWT validation failed during logout: " + e.getMessage());
+                }
+            }
+
+            if (clientToken != null && clientToken.startsWith("auth-")) {
+                String sessionUUID = clientToken.substring(5);
+                sessionService.invalidateSession(sessionUUID);
+                response.put("details", "UUID session invalidated");
+                tokenInvalidated = true;
+                System.out.println("UUID session invalidated: " + sessionUUID);
+            }
+
+            if (!tokenInvalidated) {
+                response.put("details", "No valid token provided");
+                System.out.println("Logout without valid token");
+            }
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            System.err.println("ERROR in logout: " + e.getMessage());
+            e.printStackTrace();
+
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("error", "Internal server error");
+            errorResponse.put("message", e.getMessage());
+
+            return ResponseEntity.status(500).body(errorResponse);
+        }
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @RequestBody Map<String, String> request) {
+        try {
+            String currentPassword = request.get("currentPassword");
+            String newPassword = request.get("newPassword");
+
+            if (currentPassword == null || newPassword == null) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("success", false, "error", "Both current and new password are required"));
+            }
+
+            String username = null;
+
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String token = authHeader.substring(7);
+                username = jwtUtil.extractUsername(token);
+                if (!jwtUtil.validateToken(token, username)) {
+                    return ResponseEntity.status(401)
+                            .body(Map.of("success", false, "error", "Invalid or expired token"));
+                }
+            } else {
+                return ResponseEntity.status(401)
+                        .body(Map.of("success", false, "error", "Authorization required"));
+            }
+
+            Optional<User> userOpt = userRepository.findByUsername(username);
+            if (userOpt.isEmpty()) {
+                return ResponseEntity.status(404)
+                        .body(Map.of("success", false, "error", "User not found"));
+            }
+
+            User user = userOpt.get();
+
+            if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+                return ResponseEntity.status(400)
+                        .body(Map.of("success", false, "error", "Current password is incorrect"));
+            }
+
+            user.setPassword(passwordEncoder.encode(newPassword));
+            userRepository.save(user);
+
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String token = authHeader.substring(7);
+                tokenBlacklistService.blacklistToken(token);
+            }
+
+            sessionService.invalidateAllUserSessions(user.getId());
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "Password changed successfully. Please login again."
+            ));
+
+        } catch (Exception e) {
+            System.err.println("ERROR in changePassword: " + e.getMessage());
+            return ResponseEntity.status(500)
+                    .body(Map.of("success", false, "error", "Failed to change password"));
+        }
+    }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<?> refreshToken(@RequestHeader(value = "Authorization", required = false) String authHeader,
+                                          @RequestParam(value = "clientToken", required = false) String clientToken) {
+        try {
+            System.out.println("=== REFRESH TOKEN ===");
+
+            String username = null;
+            User user = null;
+
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String oldToken = authHeader.substring(7);
+                username = jwtUtil.extractUsername(oldToken);
+                if (!jwtUtil.validateToken(oldToken, username)) {
+                    return ResponseEntity.status(401)
+                            .body(Map.of("success", false, "error", "Invalid or expired token"));
+                }
+                user = userRepository.findByUsername(username)
+                        .orElseThrow(() -> new RuntimeException("User not found"));
+            }
+            else if (clientToken != null && clientToken.startsWith("auth-")) {
+                Optional<UserSession> sessionOpt = sessionService.validateSession(clientToken);
+                if (sessionOpt.isEmpty()) {
+                    return ResponseEntity.status(401)
+                            .body(Map.of("success", false, "error", "Invalid or expired session"));
+                }
+                user = userRepository.findById(sessionOpt.get().getUserId())
+                        .orElseThrow(() -> new RuntimeException("User not found"));
+                username = user.getUsername();
+            } else {
+                return ResponseEntity.status(401)
+                        .body(Map.of("success", false, "error", "No valid token provided"));
+            }
+
+            String sessionUUID = UUID.randomUUID().toString();
+            String newJwtToken = createJwtToken(user, sessionUUID);
+            String newClientToken = "auth-" + sessionUUID;
+
+            sessionService.createUserSession(sessionUUID, user.getId(), newJwtToken);
+
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String oldToken = authHeader.substring(7);
+                tokenBlacklistService.blacklistToken(oldToken);
+            }
+
+            if (clientToken != null && clientToken.startsWith("auth-")) {
+                String oldSessionUUID = clientToken.substring(5);
+                sessionService.invalidateSession(oldSessionUUID);
+            }
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("token", newClientToken);
+            response.put("jwtToken", newJwtToken);
+            response.put("sessionId", sessionUUID);
+            response.put("expiresIn", 86400000L);
+            response.put("message", "Token refreshed successfully");
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            System.err.println("ERROR in refreshToken: " + e.getMessage());
+            return ResponseEntity.status(500)
+                    .body(Map.of("success", false, "error", "Failed to refresh token"));
+        }
+    }
+
+    @GetMapping("/security/hash-password")
+    public ResponseEntity<?> hashPassword(@RequestParam String password) {
+        try {
+            String hashedPassword = passwordEncoder.encode(password);
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "hashedPassword", hashedPassword,
+                    "algorithm", "BCrypt"
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(500)
+                    .body(Map.of("success", false, "error", "Failed to hash password"));
+        }
+    }
+
+    @PostMapping("/security/verify-password")
+    public ResponseEntity<?> verifyPassword(@RequestBody Map<String, String> request) {
+        try {
+            String rawPassword = request.get("rawPassword");
+            String hashedPassword = request.get("hashedPassword");
+
+            if (rawPassword == null || hashedPassword == null) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("success", false, "error", "Both rawPassword and hashedPassword are required"));
+            }
+
+            boolean matches = passwordEncoder.matches(rawPassword, hashedPassword);
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "matches", matches,
+                    "algorithm", "BCrypt"
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(500)
+                    .body(Map.of("success", false, "error", "Failed to verify password"));
+        }
+    }
+
+    @GetMapping("/stats")
+    public ResponseEntity<?> getStats() {
+        try {
+            long totalUsers = userRepository.count();
+            long blacklistedTokens = tokenBlacklistService.getBlacklistedTokensCount();
+            long activeSessions = sessionService.getActiveSessionsCount();
+
+            Map<String, Object> stats = new HashMap<>();
+            stats.put("totalUsers", totalUsers);
+            stats.put("blacklistedTokens", blacklistedTokens);
+            stats.put("activeSessions", activeSessions);
+            stats.put("service", "Auth Service");
+            stats.put("timestamp", System.currentTimeMillis());
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "stats", stats
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(500)
+                    .body(Map.of("success", false, "error", "Failed to get stats"));
+        }
+    }
+
+    @GetMapping("/system/info")
+    public ResponseEntity<?> getSystemInfo() {
+        Map<String, Object> info = new HashMap<>();
+        info.put("service", "Authentication Service");
+        info.put("version", "2.0.0");
+        info.put("authentication", "Hybrid (JWT + UUID)");
+        info.put("passwordEncoding", "BCrypt");
+        info.put("database", "PostgreSQL");
+        info.put("timestamp", new Date().toString());
+        info.put("features", Arrays.asList(
+                "JWT Token Authentication",
+                "UUID Session Management",
+                "Token Blacklisting",
+                "BCrypt Password Hashing",
+                "Session Invalidation",
+                "Dual Token Validation"
+        ));
+
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "info", info
+        ));
+    }
+
+    @GetMapping("/health")
+    public ResponseEntity<?> healthCheck() {
+        Map<String, Object> health = new HashMap<>();
+        health.put("status", "UP");
+        health.put("service", "Auth Service");
+        health.put("timestamp", new Date().toString());
+        health.put("version", "1.0.0");
+
+        try {
+            userRepository.count();
+            health.put("database", "Connected");
+        } catch (Exception e) {
+            health.put("database", "Disconnected: " + e.getMessage());
+        }
+
+        return ResponseEntity.ok(health);
+    }
+
+    @GetMapping("/test")
+    public ResponseEntity<String> test() {
+        return ResponseEntity.ok("Auth service is working!");
+    }
+
+    @GetMapping("/users/count")
+    public ResponseEntity<?> getUsersCount() {
+        try {
+            long count = userRepository.count();
+            return ResponseEntity.ok(Map.of("count", count));
+        } catch (Exception e) {
+            return ResponseEntity.status(500)
+                    .body(Map.of("error", "Database connection error", "message", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/check-user/{username}")
+    public ResponseEntity<?> checkUser(@PathVariable String username) {
+        try {
+            Optional<User> userOpt = userRepository.findByUsername(username);
+
+            if (userOpt.isPresent()) {
+                User user = userOpt.get();
+                return ResponseEntity.ok(Map.of(
+                        "exists", true,
+                        "user", Map.of(
+                                "id", user.getId(),
+                                "username", user.getUsername(),
+                                "role", user.getRole()
+                        )
+                ));
+            } else {
+                return ResponseEntity.ok(Map.of("exists", false));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(500)
+                    .body(Map.of("error", "Failed to check user", "message", e.getMessage()));
+        }
+    }
+
+    private String createJwtToken(User user, String sessionUUID) {
+        try {
+            System.out.println("Creating JWT token for user: " + user.getUsername());
+
+            Map<String, Object> claims = new HashMap<>();
+            claims.put("sessionId", sessionUUID);
+            claims.put("userId", user.getId());
+            claims.put("role", user.getRole());
+            claims.put("status", user.getStatus());
+            claims.put("firstname", user.getFirstname());
+            claims.put("email", user.getEmail());
+
+            String jwtToken = jwtUtil.generateTokenWithClaims(user.getUsername(), claims);
+            System.out.println("✅ JWT token created successfully");
+            System.out.println("JWT Token preview: " + (jwtToken != null ?
+                    jwtToken.substring(0, Math.min(50, jwtToken.length())) + "..." : "null"));
+
+            return jwtToken;
+        } catch (Exception e) {
+            System.err.println("❌ Failed to create JWT token: " + e.getMessage());
+            e.printStackTrace();
+
+            // Временный токен на случай ошибки JWT
+            return "temp-jwt-" + sessionUUID + "-" + System.currentTimeMillis();
+        }
+    }
+
+    private Map<String, Object> validateJwtToken(String token) {
+        if (tokenBlacklistService.isTokenBlacklisted(token)) {
+            return Map.of(
+                    "valid", false,
+                    "message", "Token has been invalidated (logged out)"
+            );
+        }
+
+        String username = jwtUtil.extractUsername(token);
+        boolean isValid = jwtUtil.validateToken(token, username);
+
+        if (isValid) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("valid", true);
+            response.put("tokenType", "jwt");
+            response.put("username", username);
+            response.put("userId", jwtUtil.getClaimFromToken(token, claims -> claims.get("userId", Integer.class)));
+            response.put("role", jwtUtil.getClaimFromToken(token, claims -> claims.get("role", String.class)));
+            response.put("status", jwtUtil.getClaimFromToken(token, claims -> claims.get("status", String.class)));
+            response.put("sessionId", jwtUtil.getClaimFromToken(token, claims -> claims.get("sessionId", String.class)));
+            response.put("message", "JWT token is valid");
+
+            Optional<User> userOpt = userRepository.findByUsername(username);
+            if (userOpt.isPresent()) {
+                response.put("user", createUserResponse(userOpt.get()));
+            }
+
+            return response;
+        } else {
+            return Map.of(
+                    "valid", false,
+                    "message", "JWT token is invalid or expired"
+            );
+        }
+    }
+
+    private Map<String, Object> validateUuidToken(String clientToken) {
+        String sessionUUID = clientToken.substring(5);
+
+        Optional<UserSession> sessionOpt = sessionService.validateSession(clientToken);
+
+        if (sessionOpt.isPresent()) {
+            UserSession session = sessionOpt.get();
+            Optional<User> userOpt = userRepository.findById(session.getUserId());
+
+            if (userOpt.isPresent()) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("valid", true);
+                response.put("tokenType", "uuid");
+                response.put("sessionId", sessionUUID);
+                response.put("userId", session.getUserId());
+                response.put("user", createUserResponse(userOpt.get()));
+                response.put("message", "UUID session is valid");
+                return response;
+            }
+        }
+
+        return Map.of(
+                "valid", false,
+                "message", "UUID session is invalid or expired"
+        );
+    }
+
+    private Optional<User> getUserByJwtToken(String jwtToken) {
+        try {
+            if (tokenBlacklistService.isTokenBlacklisted(jwtToken)) {
+                return Optional.empty();
+            }
+
+            String username = jwtUtil.extractUsername(jwtToken);
+            if (jwtUtil.validateToken(jwtToken, username)) {
+                return userRepository.findByUsername(username);
+            }
+        } catch (Exception e) {
+            System.err.println("Error getting user by JWT: " + e.getMessage());
+        }
+        return Optional.empty();
+    }
+
+    private Optional<User> getUserByUuidToken(String clientToken) {
+        Optional<UserSession> sessionOpt = sessionService.validateSession(clientToken);
+        if (sessionOpt.isPresent()) {
+            return userRepository.findById(sessionOpt.get().getUserId());
+        }
+        return Optional.empty();
+    }
+
+    private Map<String, Object> createUserResponse(User user) {
+        Map<String, Object> userResponse = new HashMap<>();
+        userResponse.put("id", user.getId());
+        userResponse.put("username", user.getUsername());
+        userResponse.put("firstname", user.getFirstname() != null ? user.getFirstname() : "");
+        userResponse.put("age", user.getAge() != null ? user.getAge() : 0);
+        userResponse.put("city", user.getCity() != null ? user.getCity() : "");
+        userResponse.put("magaz", user.getMagaz() != null ? user.getMagaz() : "");
+        userResponse.put("email", user.getEmail() != null ? user.getEmail() : "");
+        userResponse.put("status", user.getStatus() != null ? user.getStatus() : "active");
+        userResponse.put("role", user.getRole() != null ? user.getRole() : "client");
+        userResponse.put("createdAt", user.getCreatedAt() != null ? user.getCreatedAt().toString() : "");
+        userResponse.put("updatedAt", user.getUpdatedAt() != null ? user.getUpdatedAt().toString() : "");
+        return userResponse;
+    }
+}
+
+=== AuthService.java ===
+package com.Auth;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class AuthService {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoderConfig.PasswordEncoder passwordEncoder;
+
+    public User authenticate(String username, String password) {
+        System.out.println("AuthService: authenticating " + username);
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new RuntimeException("Invalid password");
+        }
+
+        return user;
+    }
+
+    public boolean verifyPassword(String rawPassword, String encodedPassword) {
+        return passwordEncoder.matches(rawPassword, encodedPassword);
+    }
+
+    public String hashPassword(String rawPassword) {
+        return passwordEncoder.encode(rawPassword);
+    }
+}
+
+=== JwtUtil.java ===
+package com.Auth;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.function.Function;
+
+@Component
+public class JwtUtil {
+
+    @Value("${jwt.secret}")
+    private String secret;
+
+    @Value("${jwt.expiration}")
+    private Long expiration;
+
+    private SecretKey getSigningKey() {
+        // ✅ ИСПРАВЛЕНО: Используем безопасный метод создания ключа
+        if (secret.length() < 32) {
+            // Если секрет слишком короткий, дополняем его
+            StringBuilder paddedSecret = new StringBuilder(secret);
+            while (paddedSecret.length() < 64) {
+                paddedSecret.append("0");
+            }
+            secret = paddedSecret.toString();
+        }
+
+        // Конвертируем строку в байты и создаем ключ
+        byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    public String generateToken(String username) {
+        Map<String, Object> claims = new HashMap<>();
+        return createToken(claims, username);
+    }
+
+    public String generateTokenWithClaims(String username, Map<String, Object> claims) {
+        return createToken(claims, username);
+    }
+
+    private String createToken(Map<String, Object> claims, String subject) {
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(subject)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + expiration))
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256) // ✅ ИСПРАВЛЕНО
+                .compact();
+    }
+
+    public Boolean validateToken(String token, String username) {
+        try {
+            final String extractedUsername = extractUsername(token);
+            return (extractedUsername.equals(username) && !isTokenExpired(token));
+        } catch (Exception e) {
+            System.err.println("Token validation failed: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public String extractUsername(String token) {
+        return extractClaim(token, Claims::getSubject);
+    }
+
+    public Date extractExpiration(String token) {
+        return extractClaim(token, Claims::getExpiration);
+    }
+
+    public <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = extractAllClaims(token);
+        return claimsResolver.apply(claims);
+    }
+
+    private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = extractAllClaims(token);
+        return claimsResolver.apply(claims);
+    }
+
+    private Claims extractAllClaims(String token) {
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(getSigningKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (Exception e) {
+            System.err.println("Failed to parse JWT claims: " + e.getMessage());
+            throw e;
+        }
+    }
+
+    private Boolean isTokenExpired(String token) {
+        try {
+            return extractExpiration(token).before(new Date());
+        } catch (Exception e) {
+            System.err.println("Failed to check token expiration: " + e.getMessage());
+            return true;
+        }
+    }
+}
+
+=== UserSession.java ===
+package com.Auth;
+
+import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "user_sessions")
+public class UserSession {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "session_uuid", nullable = false, unique = true, length = 36)
+    private String sessionUUID;
+
+    @Column(name = "user_id", nullable = false)
+    private Integer userId;
+
+    @Column(name = "jwt_token", length = 500)
+    private String jwtToken;
+
+    @Column(name = "client_token", length = 100)
+    private String clientToken;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "expires_at")
+    private LocalDateTime expiresAt;
+
+    @Column(name = "is_active")
+    private Boolean isActive = true;
+
+    @Column(name = "ip_address", length = 45)
+    private String ipAddress;
+
+    @Column(name = "user_agent", length = 500)
+    private String userAgent;
+
+    public UserSession() {}
+
+    public UserSession(String sessionUUID, Integer userId) {
+        this.sessionUUID = sessionUUID;
+        this.userId = userId;
+        this.expiresAt = LocalDateTime.now().plusDays(1);
+        this.isActive = true;
+    }
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getSessionUUID() { return sessionUUID; }
+    public void setSessionUUID(String sessionUUID) { this.sessionUUID = sessionUUID; }
+
+    public Integer getUserId() { return userId; }
+    public void setUserId(Integer userId) { this.userId = userId; }
+
+    public String getJwtToken() { return jwtToken; }
+    public void setJwtToken(String jwtToken) { this.jwtToken = jwtToken; }
+
+    public String getClientToken() { return clientToken; }
+    public void setClientToken(String clientToken) { this.clientToken = clientToken; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public LocalDateTime getExpiresAt() { return expiresAt; }
+    public void setExpiresAt(LocalDateTime expiresAt) { this.expiresAt = expiresAt; }
+
+    public Boolean getIsActive() { return isActive; }
+    public void setIsActive(Boolean isActive) { this.isActive = isActive; }
+
+    public String getIpAddress() { return ipAddress; }
+    public void setIpAddress(String ipAddress) { this.ipAddress = ipAddress; }
+
+    public String getUserAgent() { return userAgent; }
+    public void setUserAgent(String userAgent) { this.userAgent = userAgent; }
+}
+
+=== UserRepository.java ===
+package com.Auth;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import java.util.Optional;
+
+@Repository
+public interface UserRepository extends JpaRepository<User, Integer> {
+    Optional<User> findByUsername(String username);
+}
+
+=== AuthApplication.java ===
+package com.Auth;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
+
+@EnableScheduling
+@SpringBootApplication
+public class AuthApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(AuthApplication.class, args);
+    }
+}
+
+=== BlacklistedTokenRepository.java ===
+package com.Auth;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
+
+@Repository
+public interface BlacklistedTokenRepository extends JpaRepository<BlacklistedToken, Long> {
+
+    Optional<BlacklistedToken> findByToken(String token);
+
+    boolean existsByToken(String token);
+
+    @Query("SELECT COUNT(b) FROM BlacklistedToken b WHERE b.username = :username")
+    long countByUsername(@Param("username") String username);
+
+    @Modifying
+    @Query("DELETE FROM BlacklistedToken b WHERE b.expiresAt < :now")
+    int deleteExpiredTokens(@Param("now") LocalDateTime now);
+
+    @Modifying
+    @Query("DELETE FROM BlacklistedToken b WHERE b.token = :token")
+    int deleteByToken(@Param("token") String token);
+}
+
+=== User.java ===
+package com.Auth;
+
+import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "users")
+public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
+    @Column(name = "username", nullable = false, unique = true, length = 50)
+    private String username;
+
+    @Column(name = "password", nullable = false, length = 255)
+    private String password;
+
+    @Column(name = "firstname", length = 50)
+    private String firstname;
+
+    @Column(name = "age")
+    private Integer age;
+
+    @Column(name = "city")
+    private String city;
+
+    @Column(name = "mag")
+    private String magaz;
+
+    @Column(name = "email")
+    private String email;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @Column(name = "status", length = 20)
+    private String status;
+
+    @Column(name = "role", length = 20)
+    private String role;
+
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
+
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+
+    public String getFirstname() { return firstname; }
+    public void setFirstname(String firstname) { this.firstname = firstname; }
+
+    public Integer getAge() { return age; }
+    public void setAge(Integer age) { this.age = age; }
+
+    public String getCity() { return city; }
+    public void setCity(String city) { this.city = city; }
+
+    public String getMagaz() { return magaz; }
+    public void setMagaz(String magaz) { this.magaz = magaz; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
+
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
+
+    public User() {
+        this.role = "client";
+        this.status = "active";
+    }
+
+    public User(String username, String password) {
+        this.username = username;
+        this.password = password;
+        this.role = "client";
+        this.status = "active";
+    }
+}

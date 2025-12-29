@@ -1,0 +1,7 @@
+server.port=8086
+spring.datasource.url=jdbc:h2:mem:collectordb
+spring.datasource.driver-class-name=org.h2.Driver
+spring.jpa.hibernate.ddl-auto=update
+spring.datasource.url=jdbc:postgresql://localhost:5432/kefir_db
+spring.datasource.username=postgres
+spring.datasource.password=Ghbdtnbr123!

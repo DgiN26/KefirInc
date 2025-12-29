@@ -1,0 +1,82 @@
+server:
+  port: 8099
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: launcher-service
+  datasource:
+    url: jdbc:h2:file:./data/launcherdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  main:
+    banner-mode: off
+
+launcher:
+  base-dir: "../"
+  logs-dir: "./logs"
+  startup-delay-ms: 5000
+  health-check-timeout-sec: 30
+  auto-restart: true
+  services:
+    AUTH:
+      directory: "C:/Users/2oleg/Downloads/Telegram Desktop/Kefir/Backend/Auth"
+      port: 8097
+      display-name: "Auth Service"
+    USER:
+      directory: "C:/Users/2oleg/Downloads/Telegram Desktop/Kefir/Backend/User"
+      port: 8081
+      display-name: "User Service"
+    Sklad:
+      directory: "C:/Users/2oleg/Downloads/Telegram Desktop/Kefir/Backend/Sklad"
+      port: 8082
+      display-name: "Warehouse Service"
+    backet-service:
+      directory: "C:/Users/2oleg/Downloads/Telegram Desktop/Kefir/Backend/Backet"
+      port: 8083
+      display-name: "Shopping Cart Service"
+    Office:
+      directory: "C:/Users/2oleg/Downloads/Telegram Desktop/Kefir/Backend/Office"
+      port: 8085
+      display-name: "Office Service"
+    COLLECTOR:
+      directory: "C:/Users/2oleg/Downloads/Telegram Desktop/Kefir/Backend/Collector"
+      port: 8086
+      display-name: "Collector Service"
+    Delivery:
+      directory: "C:/Users/2oleg/Downloads/Telegram Desktop/Kefir/Backend/Delivery"
+      port: 8088
+      display-name: "Delivery Service"
+    TransactionSaga:
+      directory: "C:/Users/2oleg/Downloads/Telegram Desktop/Kefir/Backend/TransactionSaga"
+      port: 8090
+      display-name: "Transaction Saga"
+    ApiGateWay:
+      directory: "C:/Users/2oleg/Downloads/Telegram Desktop/Kefir/Backend/ApiGateWay"
+      port: 8080
+      display-name: "API Gateway"
+  auto-start: true
+  auto-start-delay-ms: 5000
+  auto-demo-delay-ms: 35000
+  min-services-for-demo: 7
+logging:
+  level:
+    com.kefir.logistics.launcher_service: INFO
+    org.springframework.web: INFO
+  file:
+    name: logs/launcher-service.log
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

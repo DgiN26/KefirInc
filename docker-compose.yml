@@ -1,0 +1,86 @@
+# ~/Desktop/Kefir/docker-compose.yml
+version: '3.8'
+
+services:
+  # React Frontend
+  frontend:
+    build: ./kefir-react-app
+    ports:
+      - "3000:80"
+    environment:
+      - REACT_APP_API_GATEWAY=http://api-gateway:8080
+      - REACT_APP_USE_REAL_API=true
+    depends_on:
+      - api-gateway
+    networks:
+      - kefir-network
+
+  # API Gateway
+  api-gateway:
+    build: ./Backend/ApiGateWay
+    ports:
+      - "8080:8080"
+    environment:
+      - EUREKA_SERVER=http://eureka-server:8761/eureka
+      - USER_SERVICE_URL=http://user-service:8081
+      - SKLAD_SERVICE_URL=http://sklad-service:8082
+    depends_on:
+      - eureka-server
+      - user-service
+      - sklad-service
+    networks:
+      - kefir-network
+
+  # Eureka Server
+  eureka-server:
+    build: 
+      context: ./Backend
+      dockerfile: Dockerfile.eureka  # Вам нужно создать этот Dockerfile
+    ports:
+      - "8761:8761"
+    networks:
+      - kefir-network
+
+  # User Service
+  user-service:
+    build: ./Backend/User
+    environment:
+      - EUREKA_SERVER=http://eureka-server:8761/eureka
+      - DB_HOST=postgres
+      - DB_PORT=5432
+    depends_on:
+      - eureka-server
+      - postgres
+    networks:
+      - kefir-network
+
+  # Sklad Service
+  sklad-service:
+    build: ./Backend/Sklad
+    environment:
+      - EUREKA_SERVER=http://eureka-server:8761/eureka
+    depends_on:
+      - eureka-server
+    networks:
+      - kefir-network
+
+  # PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=kefir_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=Ghbdtnbr123!
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - kefir-network
+
+networks:
+  kefir-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

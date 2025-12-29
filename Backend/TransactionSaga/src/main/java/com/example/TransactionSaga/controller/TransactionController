@@ -1,0 +1,81 @@
+package com.example.TransactionSaga.controller;
+
+import com.example.TransactionSaga.model.dto.*;
+import com.example.TransactionSaga.model.entity.TransactionEntity;
+import com.example.TransactionSaga.service.TransactionService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/api/transactions")
+public class TransactionController {
+
+    private final TransactionService transactionService;
+
+    @Autowired
+    public TransactionController(TransactionService transactionService) {
+        this.transactionService = transactionService;
+    }
+
+    @PostMapping
+    public ResponseEntity<TransactionEntity> createTransaction(
+            @RequestBody TransactionRequest request) {
+        TransactionEntity transaction = transactionService.createTransaction(request);
+        return ResponseEntity.ok(transaction);
+    }
+
+    @PostMapping("/{transactionId}/scan")
+    public ResponseEntity<TransactionEntity> scanItem(
+            @PathVariable String transactionId,
+            @RequestBody ScanItemRequest request) {
+        TransactionEntity transaction = transactionService.scanItem(transactionId, request);
+        return ResponseEntity.ok(transaction);
+    }
+
+    @PostMapping("/{transactionId}/report-problem")
+    public ResponseEntity<TransactionEntity> reportProblem(
+            @PathVariable String transactionId,
+            @RequestBody ProblemReportRequest request) {
+        TransactionEntity transaction = transactionService.reportProblem(transactionId, request);
+        return ResponseEntity.ok(transaction);
+    }
+
+    @PostMapping("/{transactionId}/client-decision")
+    public ResponseEntity<TransactionEntity> clientDecision(
+            @PathVariable String transactionId,
+            @RequestBody ClientDecisionRequest request) {
+        TransactionEntity transaction = transactionService.processClientDecision(transactionId, request);
+        return ResponseEntity.ok(transaction);
+    }
+
+    @GetMapping("/{transactionId}")
+    public ResponseEntity<TransactionEntity> getTransaction(@PathVariable String transactionId) {
+        Optional<TransactionEntity> transaction = transactionService.getTransaction(transactionId);
+        return transaction.map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/collector/{collectorId}")
+    public ResponseEntity<List<TransactionEntity>> getCollectorTransactions(
+            @PathVariable String collectorId) {
+        List<TransactionEntity> transactions =
+                transactionService.getTransactionsByCollector(collectorId);
+        return ResponseEntity.ok(transactions);
+    }
+
+    @GetMapping("/active")
+    public ResponseEntity<List<TransactionEntity>> getActiveTransactions() {
+        List<TransactionEntity> transactions = transactionService.getActiveTransactions();
+        return ResponseEntity.ok(transactions);
+    }
+
+    @GetMapping("/paused")
+    public ResponseEntity<List<TransactionEntity>> getPausedTransactions() {
+        List<TransactionEntity> transactions = transactionService.getPausedTransactions();
+        return ResponseEntity.ok(transactions);
+    }
+}

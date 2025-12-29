@@ -1,0 +1,53 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------------< com.example:office-service >---------------------
+[INFO] Building office-service 1.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] >>> spring-boot:2.7.0:run (default-cli) > test-compile @ office-service >>>
+[INFO] 
+[INFO] --- resources:3.2.0:resources (default-resources) @ office-service ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Using 'UTF-8' encoding to copy filtered properties files.
+[INFO] Copying 1 resource
+[INFO] Copying 0 resource
+[INFO] 
+[INFO] --- compiler:3.10.1:compile (default-compile) @ office-service ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- resources:3.2.0:testResources (default-testResources) @ office-service ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Using 'UTF-8' encoding to copy filtered properties files.
+[INFO] skip non existing resourceDirectory /home/vboxuser/Desktop/Kefir/Backend/Office/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.10.1:testCompile (default-testCompile) @ office-service ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] <<< spring-boot:2.7.0:run (default-cli) < test-compile @ office-service <<<
+[INFO] 
+[INFO] 
+[INFO] --- spring-boot:2.7.0:run (default-cli) @ office-service ---
+[INFO] Attaching agents: []
+2025-12-12 20:47:05.297  INFO 19980 --- [           main] office.office.OfficeApplication          : Starting OfficeApplication using Java 17.0.17 on Babun with PID 19980 (/home/vboxuser/Desktop/Kefir/Backend/Office/target/classes started by vboxuser in /home/vboxuser/Desktop/Kefir/Backend/Office)
+2025-12-12 20:47:05.302  INFO 19980 --- [           main] office.office.OfficeApplication          : The following 1 profile is active: "local"
+2025-12-12 20:47:07.068  INFO 19980 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8086 (http)
+2025-12-12 20:47:07.093  INFO 19980 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-12-12 20:47:07.094  INFO 19980 --- [           main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.63]
+2025-12-12 20:47:07.303  INFO 19980 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-12-12 20:47:07.303  INFO 19980 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1903 ms
+2025-12-12 20:47:08.039  INFO 19980 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8086 (http) with context path ''
+2025-12-12 20:47:08.072  INFO 19980 --- [           main] office.office.OfficeApplication          : Started OfficeApplication in 3.594 seconds (JVM running for 4.396)
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  06:40 min
+[INFO] Finished at: 2025-12-12T20:53:38Z
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.springframework.boot:spring-boot-maven-plugin:2.7.0:run (default-cli) on project office-service: Application finished with exit code: 143 -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException

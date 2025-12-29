@@ -1,0 +1,232 @@
+/* Clients.css - дополнение */
+.clients-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.client-card {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  border: 1px solid #e0e0e0;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.client-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid #eee;
+  background: #f8f9fa;
+  border-radius: 10px 10px 0 0;
+}
+
+.client-name {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.card-body {
+  padding: 20px;
+}
+
+.client-info {
+  margin-bottom: 20px;
+  padding: 15px;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+
+.client-info p {
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+.client-info strong {
+  color: #555;
+  min-width: 80px;
+  display: inline-block;
+}
+
+/* Панель действий */
+.client-actions-panel {
+  border-top: 1px solid #eee;
+  padding-top: 15px;
+}
+
+.action-buttons-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+  color: white;
+  text-align: center;
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+}
+
+.btn-edit {
+  background: #007bff;
+}
+
+.btn-view {
+  background: #17a2b8;
+}
+
+.btn-status {
+  background: #ffc107;
+  color: #212529;
+}
+
+.btn-message {
+  background: #6f42c1;
+}
+
+.btn-order {
+  background: #20c997;
+}
+
+.btn-delete {
+  background: #dc3545;
+}
+
+.quick-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.quick-btn {
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.quick-btn:hover {
+  background: #f8f9fa;
+  border-color: #007bff;
+}
+
+.quick-btn.small {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+/* Статусы */
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+}
+
+.status-green {
+  background: #28a745;
+}
+
+.status-red {
+  background: #dc3545;
+}
+
+.status-orange {
+  background: #fd7e14;
+}
+
+.status-gray {
+  background: #6c757d;
+}
+
+/* Кнопки общего назначения */
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background: #007bff;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #0056b3;
+}
+
+.btn-success {
+  background: #28a745;
+  color: white;
+}
+
+.btn-success:hover {
+  background: #1e7e34;
+}
+
+.no-clients {
+  text-align: center;
+  padding: 40px;
+  background: white;
+  border-radius: 10px;
+  border: 2px dashed #ddd;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .action-buttons-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .clients-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .clients-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .search-box {
+    max-width: 100%;
+  }
+  
+  .filters {
+    flex-wrap: wrap;
+  }
+}
