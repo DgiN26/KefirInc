@@ -15,7 +15,7 @@
 [INFO] Nothing to compile - all classes are up to date
 [INFO] 
 [INFO] --- resources:3.3.1:testResources (default-testResources) @ Auth ---
-[INFO] skip non existing resourceDirectory /home/vboxuser/Desktop/Kefir/Backend/Auth/src/test/resources
+[INFO] skip non existing resourceDirectory /home/vboxuser/Desktop/Kefirchik/KefirInc/Backend/Auth/src/test/resources
 [INFO] 
 [INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ Auth ---
 [INFO] Nothing to compile - all classes are up to date
@@ -34,36 +34,36 @@
  =========|_|==============|___/=/_/_/_/
  :: Spring Boot ::               (v3.2.12)
 
-2025-12-22T03:44:31.524Z  INFO 8076 --- [           main] com.Auth.AuthApplication                 : Starting AuthApplication using Java 17.0.17 with PID 8076 (/home/vboxuser/Desktop/Kefir/Backend/Auth/target/classes started by vboxuser in /home/vboxuser/Desktop/Kefir/Backend/Auth)
-2025-12-22T03:44:31.534Z DEBUG 8076 --- [           main] com.Auth.AuthApplication                 : Running with Spring Boot v3.2.12, Spring v6.1.15
-2025-12-22T03:44:31.536Z  INFO 8076 --- [           main] com.Auth.AuthApplication                 : The following 1 profile is active: "local"
-2025-12-22T03:44:33.058Z  INFO 8076 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2025-12-22T03:44:33.197Z  INFO 8076 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 116 ms. Found 3 JPA repository interfaces.
-2025-12-22T03:44:34.712Z  INFO 8076 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8097 (http)
-2025-12-22T03:44:34.750Z  INFO 8076 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2025-12-22T03:44:34.751Z  INFO 8076 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.33]
-2025-12-22T03:44:34.880Z  INFO 8076 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-2025-12-22T03:44:34.882Z  INFO 8076 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 3212 ms
-2025-12-22T03:44:35.304Z  INFO 8076 --- [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
-2025-12-22T03:44:35.457Z  INFO 8076 --- [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.4.10.Final
-2025-12-22T03:44:35.525Z  INFO 8076 --- [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
-2025-12-22T03:44:36.130Z  INFO 8076 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
-2025-12-22T03:44:36.183Z  INFO 8076 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
-2025-12-22T03:44:37.109Z  INFO 8076 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@365cef67
-2025-12-22T03:44:37.112Z  INFO 8076 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
-2025-12-22T03:44:37.204Z  WARN 8076 --- [           main] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-12-22T03:44:39.582Z  INFO 8076 --- [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2025-12-22T03:44:39.729Z  INFO 8076 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2025-12-22T03:44:40.534Z  INFO 8076 --- [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
-2025-12-22T03:44:41.983Z  WARN 8076 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2025-12-22T03:44:42.206Z DEBUG 8076 --- [           main] s.w.s.m.m.a.RequestMappingHandlerMapping : 22 mappings in 'requestMappingHandlerMapping'
-2025-12-22T03:44:42.536Z DEBUG 8076 --- [           main] o.s.w.s.handler.SimpleUrlHandlerMapping  : Patterns [/webjars/**, /**] in 'resourceHandlerMapping'
-2025-12-22T03:44:42.622Z DEBUG 8076 --- [           main] s.w.s.m.m.a.RequestMappingHandlerAdapter : ControllerAdvice beans: 0 @ModelAttribute, 0 @InitBinder, 1 RequestBodyAdvice, 1 ResponseBodyAdvice
-2025-12-22T03:44:42.694Z DEBUG 8076 --- [           main] .m.m.a.ExceptionHandlerExceptionResolver : ControllerAdvice beans: 0 @ExceptionHandler, 1 ResponseBodyAdvice
-2025-12-22T03:44:42.957Z  INFO 8076 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8097 (http) with context path ''
-2025-12-22T03:44:42.998Z  INFO 8076 --- [           main] com.Auth.AuthApplication                 : Started AuthApplication in 12.463 seconds (process running for 13.32)
+2025-12-29T13:35:10.037Z  INFO 366884 --- [           main] com.Auth.AuthApplication                 : Starting AuthApplication using Java 17.0.17 with PID 366884 (/home/vboxuser/Desktop/Kefirchik/KefirInc/Backend/Auth/target/classes started by vboxuser in /home/vboxuser/Desktop/Kefirchik/KefirInc/Backend/Auth)
+2025-12-29T13:35:10.043Z DEBUG 366884 --- [           main] com.Auth.AuthApplication                 : Running with Spring Boot v3.2.12, Spring v6.1.15
+2025-12-29T13:35:10.045Z  INFO 366884 --- [           main] com.Auth.AuthApplication                 : The following 1 profile is active: "local"
+2025-12-29T13:35:11.679Z  INFO 366884 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-12-29T13:35:11.812Z  INFO 366884 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 117 ms. Found 3 JPA repository interfaces.
+2025-12-29T13:35:13.271Z  INFO 366884 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8097 (http)
+2025-12-29T13:35:13.309Z  INFO 366884 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-12-29T13:35:13.309Z  INFO 366884 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.33]
+2025-12-29T13:35:13.440Z  INFO 366884 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-12-29T13:35:13.443Z  INFO 366884 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 3285 ms
+2025-12-29T13:35:13.874Z  INFO 366884 --- [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-12-29T13:35:14.060Z  INFO 366884 --- [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.4.10.Final
+2025-12-29T13:35:14.155Z  INFO 366884 --- [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2025-12-29T13:35:14.735Z  INFO 366884 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-12-29T13:35:14.796Z  INFO 366884 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2025-12-29T13:35:15.697Z  INFO 366884 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@69bc9584
+2025-12-29T13:35:15.701Z  INFO 366884 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-12-29T13:35:15.783Z  WARN 366884 --- [           main] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-12-29T13:35:18.026Z  INFO 366884 --- [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-12-29T13:35:18.182Z  INFO 366884 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-12-29T13:35:19.108Z  INFO 366884 --- [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-12-29T13:35:20.924Z  WARN 366884 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-12-29T13:35:21.154Z DEBUG 366884 --- [           main] s.w.s.m.m.a.RequestMappingHandlerMapping : 22 mappings in 'requestMappingHandlerMapping'
+2025-12-29T13:35:21.482Z DEBUG 366884 --- [           main] o.s.w.s.handler.SimpleUrlHandlerMapping  : Patterns [/webjars/**, /**] in 'resourceHandlerMapping'
+2025-12-29T13:35:21.573Z DEBUG 366884 --- [           main] s.w.s.m.m.a.RequestMappingHandlerAdapter : ControllerAdvice beans: 0 @ModelAttribute, 0 @InitBinder, 1 RequestBodyAdvice, 1 ResponseBodyAdvice
+2025-12-29T13:35:21.646Z DEBUG 366884 --- [           main] .m.m.a.ExceptionHandlerExceptionResolver : ControllerAdvice beans: 0 @ExceptionHandler, 1 ResponseBodyAdvice
+2025-12-29T13:35:21.900Z  INFO 366884 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8097 (http) with context path ''
+2025-12-29T13:35:21.939Z  INFO 366884 --- [           main] com.Auth.AuthApplication                 : Started AuthApplication in 13.082 seconds (process running for 14.044)
 Starting cleanup of expired blacklisted tokens...
-2025-12-22T03:44:43.186Z DEBUG 8076 --- [   scheduling-1] org.hibernate.SQL                        : 
+2025-12-29T13:35:22.086Z DEBUG 366884 --- [   scheduling-1] org.hibernate.SQL                        : 
     select
         count(*) 
     from
@@ -77,7 +77,7 @@ Tokens before cleanup: 0
 No blacklisted tokens to clean up
 Cleanup of expired blacklisted tokens completed
 === STARTING SCHEDULED SESSION CLEANUP ===
-2025-12-22T03:44:43.269Z DEBUG 8076 --- [   scheduling-1] org.hibernate.SQL                        : 
+2025-12-29T13:35:22.165Z DEBUG 366884 --- [   scheduling-1] org.hibernate.SQL                        : 
     delete 
     from
         user_sessions 
@@ -89,93 +89,24 @@ Hibernate:
         user_sessions 
     where
         expires_at<?
-Expired sessions cleanup completed at: 2025-12-22T03:44:43.222478572
+Expired sessions cleanup completed at: 2025-12-29T13:35:22.107381832
 Session cleanup completed successfully
 === SCHEDULED SESSION CLEANUP COMPLETED ===
-Starting cleanup of expired blacklisted tokens...
-2025-12-22T04:44:43.001Z DEBUG 8076 --- [   scheduling-1] org.hibernate.SQL                        : 
-    select
-        count(*) 
-    from
-        blacklisted_tokens bt1_0
-Hibernate: 
-    select
-        count(*) 
-    from
-        blacklisted_tokens bt1_0
-Tokens before cleanup: 0
-No blacklisted tokens to clean up
-Cleanup of expired blacklisted tokens completed
-=== STARTING SCHEDULED SESSION CLEANUP ===
-2025-12-22T04:44:43.008Z DEBUG 8076 --- [   scheduling-1] org.hibernate.SQL                        : 
-    delete 
-    from
-        user_sessions 
-    where
-        expires_at<?
-Hibernate: 
-    delete 
-    from
-        user_sessions 
-    where
-        expires_at<?
-Expired sessions cleanup completed at: 2025-12-22T04:44:43.006806201
-Session cleanup completed successfully
-=== SCHEDULED SESSION CLEANUP COMPLETED ===
-Starting cleanup of expired blacklisted tokens...
-2025-12-22T05:44:43.001Z DEBUG 8076 --- [   scheduling-1] org.hibernate.SQL                        : 
-    select
-        count(*) 
-    from
-        blacklisted_tokens bt1_0
-Hibernate: 
-    select
-        count(*) 
-    from
-        blacklisted_tokens bt1_0
-Tokens before cleanup: 0
-No blacklisted tokens to clean up
-Cleanup of expired blacklisted tokens completed
-=== STARTING SCHEDULED SESSION CLEANUP ===
-2025-12-22T05:44:43.011Z DEBUG 8076 --- [   scheduling-1] org.hibernate.SQL                        : 
-    delete 
-    from
-        user_sessions 
-    where
-        expires_at<?
-Hibernate: 
-    delete 
-    from
-        user_sessions 
-    where
-        expires_at<?
-Expired sessions cleanup completed at: 2025-12-22T05:44:43.009859229
-Session cleanup completed successfully
-=== SCHEDULED SESSION CLEANUP COMPLETED ===
-2025-12-22T05:49:29.341Z  INFO 8076 --- [nio-8097-exec-2] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
-2025-12-22T05:49:29.344Z  INFO 8076 --- [nio-8097-exec-2] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
-2025-12-22T05:49:29.344Z DEBUG 8076 --- [nio-8097-exec-2] o.s.web.servlet.DispatcherServlet        : Detected StandardServletMultipartResolver
-2025-12-22T05:49:29.353Z DEBUG 8076 --- [nio-8097-exec-2] o.s.web.servlet.DispatcherServlet        : Detected AcceptHeaderLocaleResolver
-2025-12-22T05:49:29.353Z DEBUG 8076 --- [nio-8097-exec-2] o.s.web.servlet.DispatcherServlet        : Detected FixedThemeResolver
-2025-12-22T05:49:29.355Z DEBUG 8076 --- [nio-8097-exec-2] o.s.web.servlet.DispatcherServlet        : Detected org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator@291fba9
-2025-12-22T05:49:29.356Z DEBUG 8076 --- [nio-8097-exec-2] o.s.web.servlet.DispatcherServlet        : Detected org.springframework.web.servlet.support.SessionFlashMapManager@75c5ab79
-2025-12-22T05:49:29.356Z DEBUG 8076 --- [nio-8097-exec-2] o.s.web.servlet.DispatcherServlet        : enableLoggingRequestDetails='false': request parameters and headers will be masked to prevent unsafe logging of potentially sensitive data
-2025-12-22T05:49:29.357Z  INFO 8076 --- [nio-8097-exec-2] o.s.web.servlet.DispatcherServlet        : Completed initialization in 13 ms
-2025-12-22T05:49:29.392Z DEBUG 8076 --- [nio-8097-exec-2] o.s.web.servlet.DispatcherServlet        : POST "/api/auth/logout", parameters={}
-2025-12-22T05:49:29.441Z DEBUG 8076 --- [nio-8097-exec-2] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to com.Auth.AuthController#logout(String, String)
-=== AUTH SERVICE LOGOUT ===
-Failed to parse JWT claims: JWT strings must contain exactly 2 period characters. Found: 0
-JWT validation failed during logout: JWT strings must contain exactly 2 period characters. Found: 0
-Logout without valid token
-2025-12-22T05:49:29.801Z DEBUG 8076 --- [nio-8097-exec-2] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Using 'application/json', given [application/json, application/*+json] and supported [application/json, application/*+json]
-2025-12-22T05:49:29.804Z DEBUG 8076 --- [nio-8097-exec-2] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Writing [{success=true, details=No valid token provided, message=Logout successful, timestamp=1766382569627}]
-2025-12-22T05:49:29.856Z DEBUG 8076 --- [nio-8097-exec-2] o.s.web.servlet.DispatcherServlet        : Completed 200 OK
-2025-12-22T05:50:19.954Z DEBUG 8076 --- [nio-8097-exec-3] o.s.web.servlet.DispatcherServlet        : POST "/api/auth/login", parameters={}
-2025-12-22T05:50:19.958Z DEBUG 8076 --- [nio-8097-exec-3] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to com.Auth.AuthController#login(Map)
-2025-12-22T05:50:20.017Z DEBUG 8076 --- [nio-8097-exec-3] m.m.a.RequestResponseBodyMethodProcessor : Read "application/json;charset=UTF-8" to [{username=admin, password=admin}]
+2025-12-29T13:38:03.171Z  INFO 366884 --- [nio-8097-exec-4] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-12-29T13:38:03.172Z  INFO 366884 --- [nio-8097-exec-4] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-12-29T13:38:03.173Z DEBUG 366884 --- [nio-8097-exec-4] o.s.web.servlet.DispatcherServlet        : Detected StandardServletMultipartResolver
+2025-12-29T13:38:03.174Z DEBUG 366884 --- [nio-8097-exec-4] o.s.web.servlet.DispatcherServlet        : Detected AcceptHeaderLocaleResolver
+2025-12-29T13:38:03.174Z DEBUG 366884 --- [nio-8097-exec-4] o.s.web.servlet.DispatcherServlet        : Detected FixedThemeResolver
+2025-12-29T13:38:03.176Z DEBUG 366884 --- [nio-8097-exec-4] o.s.web.servlet.DispatcherServlet        : Detected org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator@626edbe0
+2025-12-29T13:38:03.177Z DEBUG 366884 --- [nio-8097-exec-4] o.s.web.servlet.DispatcherServlet        : Detected org.springframework.web.servlet.support.SessionFlashMapManager@5e8f1db2
+2025-12-29T13:38:03.178Z DEBUG 366884 --- [nio-8097-exec-4] o.s.web.servlet.DispatcherServlet        : enableLoggingRequestDetails='false': request parameters and headers will be masked to prevent unsafe logging of potentially sensitive data
+2025-12-29T13:38:03.179Z  INFO 366884 --- [nio-8097-exec-4] o.s.web.servlet.DispatcherServlet        : Completed initialization in 6 ms
+2025-12-29T13:38:03.195Z DEBUG 366884 --- [nio-8097-exec-4] o.s.web.servlet.DispatcherServlet        : POST "/api/auth/login", parameters={}
+2025-12-29T13:38:03.215Z DEBUG 366884 --- [nio-8097-exec-4] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to com.Auth.AuthController#login(Map)
+2025-12-29T13:38:03.329Z DEBUG 366884 --- [nio-8097-exec-4] m.m.a.RequestResponseBodyMethodProcessor : Read "application/json;charset=UTF-8" to [{username=admin, password=admin}]
 === AUTH SERVICE LOGIN (HYBRID UUID+JWT) ===
 Username: admin
-2025-12-22T05:50:20.092Z DEBUG 8076 --- [nio-8097-exec-3] org.hibernate.SQL                        : 
+2025-12-29T13:38:03.424Z DEBUG 366884 --- [nio-8097-exec-4] org.hibernate.SQL                        : 
     select
         u1_0.id,
         u1_0.age,
@@ -213,13 +144,13 @@ Hibernate:
         u1_0.username=?
 User found: admin
 Password matches: true
-Generated session UUID: cc32fb04-0980-4919-a6af-0e6be57e5c23
+Generated session UUID: f8cf91ef-1da9-41cc-a5f4-6ce3ba5bbe13
 Creating JWT token for user: admin
 ✅ JWT token created successfully
 JWT Token preview: eyJhbGciOiJIUzI1NiJ9.eyJmaXJzdG5hbWUiOiJBZG1pbiIsI...
 JWT created successfully
-Creating user session: UUID=cc32fb04-0980-4919-a6af-0e6be57e5c23, userId=25
-2025-12-22T05:50:21.057Z DEBUG 8076 --- [nio-8097-exec-3] org.hibernate.SQL                        : 
+Creating user session: UUID=f8cf91ef-1da9-41cc-a5f4-6ce3ba5bbe13, userId=25
+2025-12-29T13:38:04.497Z DEBUG 366884 --- [nio-8097-exec-4] org.hibernate.SQL                        : 
     update
         user_sessions 
     set
@@ -233,7 +164,7 @@ Hibernate:
         is_active=false 
     where
         user_id=?
-2025-12-22T05:50:21.096Z DEBUG 8076 --- [nio-8097-exec-3] org.hibernate.SQL                        : 
+2025-12-29T13:38:04.527Z DEBUG 366884 --- [nio-8097-exec-4] org.hibernate.SQL                        : 
     insert 
     into
         user_sessions
@@ -247,97 +178,10 @@ Hibernate:
         (client_token, created_at, expires_at, ip_address, is_active, jwt_token, session_uuid, user_agent, user_id) 
     values
         (?, ?, ?, ?, ?, ?, ?, ?, ?)
-User session created with ID: 21
+User session created with ID: 76
 Session saved successfully
 ✅ Login successful for user: admin
 Response structure: [success, jwtToken, sessionId, message, tokenType, user, token]
-2025-12-22T05:50:21.156Z DEBUG 8076 --- [nio-8097-exec-3] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Using 'application/json', given [application/json, application/*+json] and supported [application/json, application/*+json]
-2025-12-22T05:50:21.157Z DEBUG 8076 --- [nio-8097-exec-3] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Writing [{success=true, jwtToken=eyJhbGciOiJIUzI1NiJ9.eyJmaXJzdG5hbWUiOiJBZG1pbiIsInJvbGUiOiJhZG1pbiIsInNlc3N (truncated)...]
-2025-12-22T05:50:21.160Z DEBUG 8076 --- [nio-8097-exec-3] o.s.web.servlet.DispatcherServlet        : Completed 200 OK
-2025-12-22T05:50:21.394Z DEBUG 8076 --- [nio-8097-exec-4] o.s.web.servlet.DispatcherServlet        : POST "/api/auth/login", parameters={}
-2025-12-22T05:50:21.394Z DEBUG 8076 --- [nio-8097-exec-4] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to com.Auth.AuthController#login(Map)
-2025-12-22T05:50:21.400Z DEBUG 8076 --- [nio-8097-exec-4] m.m.a.RequestResponseBodyMethodProcessor : Read "application/json;charset=UTF-8" to [{username=admin, password=admin}]
-=== AUTH SERVICE LOGIN (HYBRID UUID+JWT) ===
-Username: admin
-2025-12-22T05:50:21.408Z DEBUG 8076 --- [nio-8097-exec-4] org.hibernate.SQL                        : 
-    select
-        u1_0.id,
-        u1_0.age,
-        u1_0.city,
-        u1_0.created_at,
-        u1_0.email,
-        u1_0.firstname,
-        u1_0.mag,
-        u1_0.password,
-        u1_0.role,
-        u1_0.status,
-        u1_0.updated_at,
-        u1_0.username 
-    from
-        users u1_0 
-    where
-        u1_0.username=?
-Hibernate: 
-    select
-        u1_0.id,
-        u1_0.age,
-        u1_0.city,
-        u1_0.created_at,
-        u1_0.email,
-        u1_0.firstname,
-        u1_0.mag,
-        u1_0.password,
-        u1_0.role,
-        u1_0.status,
-        u1_0.updated_at,
-        u1_0.username 
-    from
-        users u1_0 
-    where
-        u1_0.username=?
-User found: admin
-Password matches: true
-Generated session UUID: 122a0223-a30e-4fea-b7ce-1f6f75cc5565
-Creating JWT token for user: admin
-✅ JWT token created successfully
-JWT Token preview: eyJhbGciOiJIUzI1NiJ9.eyJmaXJzdG5hbWUiOiJBZG1pbiIsI...
-JWT created successfully
-Creating user session: UUID=122a0223-a30e-4fea-b7ce-1f6f75cc5565, userId=25
-2025-12-22T05:50:22.327Z DEBUG 8076 --- [nio-8097-exec-4] org.hibernate.SQL                        : 
-    update
-        user_sessions 
-    set
-        is_active=false 
-    where
-        user_id=?
-Hibernate: 
-    update
-        user_sessions 
-    set
-        is_active=false 
-    where
-        user_id=?
-2025-12-22T05:50:22.347Z DEBUG 8076 --- [nio-8097-exec-4] org.hibernate.SQL                        : 
-    insert 
-    into
-        user_sessions
-        (client_token, created_at, expires_at, ip_address, is_active, jwt_token, session_uuid, user_agent, user_id) 
-    values
-        (?, ?, ?, ?, ?, ?, ?, ?, ?)
-Hibernate: 
-    insert 
-    into
-        user_sessions
-        (client_token, created_at, expires_at, ip_address, is_active, jwt_token, session_uuid, user_agent, user_id) 
-    values
-        (?, ?, ?, ?, ?, ?, ?, ?, ?)
-User session created with ID: 22
-Session saved successfully
-✅ Login successful for user: admin
-Response structure: [success, jwtToken, sessionId, message, tokenType, user, token]
-2025-12-22T05:50:22.353Z DEBUG 8076 --- [nio-8097-exec-4] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Using 'application/json', given [application/json, application/*+json] and supported [application/json, application/*+json]
-2025-12-22T05:50:22.354Z DEBUG 8076 --- [nio-8097-exec-4] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Writing [{success=true, jwtToken=eyJhbGciOiJIUzI1NiJ9.eyJmaXJzdG5hbWUiOiJBZG1pbiIsInJvbGUiOiJhZG1pbiIsInNlc3N (truncated)...]
-2025-12-22T05:50:22.356Z DEBUG 8076 --- [nio-8097-exec-4] o.s.web.servlet.DispatcherServlet        : Completed 200 OK
-2025-12-22T06:19:40.045Z  INFO 8076 --- [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
-2025-12-22T06:19:40.061Z  INFO 8076 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
-2025-12-22T06:19:40.140Z  INFO 8076 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2025-12-29T13:38:04.571Z DEBUG 366884 --- [nio-8097-exec-4] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Using 'application/json', given [application/json, application/*+json] and supported [application/json, application/*+json]
+2025-12-29T13:38:04.573Z DEBUG 366884 --- [nio-8097-exec-4] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Writing [{success=true, jwtToken=eyJhbGciOiJIUzI1NiJ9.eyJmaXJzdG5hbWUiOiJBZG1pbiIsInJvbGUiOiJhZG1pbiIsInNlc3N (truncated)...]
+2025-12-29T13:38:04.592Z DEBUG 366884 --- [nio-8097-exec-4] o.s.web.servlet.DispatcherServlet        : Completed 200 OK
