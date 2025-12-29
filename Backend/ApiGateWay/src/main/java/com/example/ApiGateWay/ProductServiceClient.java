@@ -19,6 +19,9 @@ public interface ProductServiceClient {
     @GetMapping("/products/{id}")
     Map<String, Object> getProduct(@PathVariable int id);
 
+    @GetMapping("/products/{id}")
+    Map<String, Object> getProductById(@PathVariable int id);
+
     @PutMapping("/products/{id}")
     Map<String, Object> updateProduct(@PathVariable int id, @RequestBody Map<String, Object> product);
 

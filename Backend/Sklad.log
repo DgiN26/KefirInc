@@ -35,24 +35,24 @@
 
  :: Spring Boot ::                (v3.5.7)
 
-2025-12-29 14:27:38 - Starting SkladApplication using Java 17.0.17 with PID 374524 (/home/vboxuser/Desktop/Kefirchik/KefirInc/Backend/Sklad/target/classes started by vboxuser in /home/vboxuser/Desktop/Kefirchik/KefirInc/Backend/Sklad)
-2025-12-29 14:27:38 - The following 1 profile is active: "local"
-2025-12-29 14:27:40 - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2025-12-29 14:27:40 - Finished Spring Data repository scanning in 85 ms. Found 1 JPA repository interface.
-2025-12-29 14:27:42 - Tomcat initialized with port 8082 (http)
-2025-12-29 14:27:42 - Starting service [Tomcat]
-2025-12-29 14:27:42 - Starting Servlet engine: [Apache Tomcat/10.1.48]
-2025-12-29 14:27:42 - Initializing Spring embedded WebApplicationContext
-2025-12-29 14:27:42 - Root WebApplicationContext: initialization completed in 3811 ms
-2025-12-29 14:27:42 - HHH000204: Processing PersistenceUnitInfo [name: default]
-2025-12-29 14:27:43 - HHH000412: Hibernate ORM core version 6.6.33.Final
-2025-12-29 14:27:43 - HHH000026: Second-level cache disabled
-2025-12-29 14:27:43 - No LoadTimeWeaver setup: ignoring JPA class transformer
-2025-12-29 14:27:43 - HikariPool-1 - Starting...
-2025-12-29 14:27:44 - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@2f0cab82
-2025-12-29 14:27:44 - HikariPool-1 - Start completed.
-2025-12-29 14:27:44 - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-12-29 14:27:45 - HHH10001005: Database info:
+2025-12-29 15:57:53 - Starting SkladApplication using Java 17.0.17 with PID 384101 (/home/vboxuser/Desktop/Kefirchik/KefirInc/Backend/Sklad/target/classes started by vboxuser in /home/vboxuser/Desktop/Kefirchik/KefirInc/Backend/Sklad)
+2025-12-29 15:57:53 - The following 1 profile is active: "local"
+2025-12-29 15:57:57 - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-12-29 15:57:57 - Finished Spring Data repository scanning in 106 ms. Found 1 JPA repository interface.
+2025-12-29 15:57:59 - Tomcat initialized with port 8082 (http)
+2025-12-29 15:57:59 - Starting service [Tomcat]
+2025-12-29 15:57:59 - Starting Servlet engine: [Apache Tomcat/10.1.48]
+2025-12-29 15:57:59 - Initializing Spring embedded WebApplicationContext
+2025-12-29 15:57:59 - Root WebApplicationContext: initialization completed in 6202 ms
+2025-12-29 15:58:00 - HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-12-29 15:58:01 - HHH000412: Hibernate ORM core version 6.6.33.Final
+2025-12-29 15:58:01 - HHH000026: Second-level cache disabled
+2025-12-29 15:58:02 - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-12-29 15:58:02 - HikariPool-1 - Starting...
+2025-12-29 15:58:03 - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@eb91027
+2025-12-29 15:58:03 - HikariPool-1 - Start completed.
+2025-12-29 15:58:03 - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-12-29 15:58:03 - HHH10001005: Database info:
 	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
 	Database driver: undefined/unknown
 	Database version: 16.11
@@ -60,17 +60,17 @@
 	Isolation level: undefined/unknown
 	Minimum pool size: undefined/unknown
 	Maximum pool size: undefined/unknown
-2025-12-29 14:27:47 - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2025-12-29 14:27:47 - Initialized JPA EntityManagerFactory for persistence unit 'default'
-2025-12-29 14:27:48 - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2025-12-29 14:27:50 - Exposing 2 endpoints beneath base path '/actuator'
-2025-12-29 14:27:50 - Tomcat started on port 8082 (http) with context path '/'
-2025-12-29 14:27:50 - Started SkladApplication in 13.549 seconds (process running for 14.496)
-2025-12-29 14:28:51 - Initializing Spring DispatcherServlet 'dispatcherServlet'
-2025-12-29 14:28:51 - Initializing Servlet 'dispatcherServlet'
-2025-12-29 14:28:51 - Completed initialization in 7 ms
-2025-12-29 14:28:51 - Получение всех товаров
-2025-12-29 14:28:51 - Получение всех товаров
+2025-12-29 15:58:06 - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-12-29 15:58:06 - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-12-29 15:58:08 - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-12-29 15:58:11 - Exposing 2 endpoints beneath base path '/actuator'
+2025-12-29 15:58:11 - Tomcat started on port 8082 (http) with context path '/'
+2025-12-29 15:58:11 - Started SkladApplication in 20.469 seconds (process running for 21.843)
+2025-12-29 15:59:40 - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-12-29 15:59:40 - Initializing Servlet 'dispatcherServlet'
+2025-12-29 15:59:40 - Completed initialization in 4 ms
+2025-12-29 15:59:40 - Получение всех товаров
+2025-12-29 15:59:40 - Получение всех товаров
 Hibernate: 
     select
         us1_0.id,
@@ -99,7 +99,8 @@ Hibernate:
         us1_0.updated_at 
     from
         usersklad us1_0
-2025-12-29 14:29:10 - Получение всех товаров
+2025-12-29 16:00:55 - Получение всех товаров
+2025-12-29 16:00:55 - Получение всех товаров
 Hibernate: 
     select
         us1_0.id,
@@ -114,7 +115,5659 @@ Hibernate:
         us1_0.updated_at 
     from
         usersklad us1_0
-2025-12-29 14:29:10 - Получение всех товаров
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0
+2025-12-29 16:00:59 - Получение товара с ID: 90
+2025-12-29 16:00:59 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:00:59 - Получение товара с ID: 60
+2025-12-29 16:00:59 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:00:59 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:00:59 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:00:59 - Получение товара с ID: 55
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:00:59 - Получение товара с ID: 55
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:00:59 - Получение товара с ID: 90
+2025-12-29 16:00:59 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:00:59 - Получение товара с ID: 73
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:00:59 - Получение товара с ID: 149
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:00:59 - Получение товара с ID: 73
+2025-12-29 16:00:59 - Получение товара с ID: 93
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:00:59 - Получение товара с ID: 149
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:00:59 - Получение товара с ID: 110
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:00:59 - Получение товара с ID: 93
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:00 - Получение товара с ID: 110
+2025-12-29 16:01:00 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:00 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:00 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:00 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:00 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:00 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:00 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:00 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:00 - Получение товара с ID: 23
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:00 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:00 - Получение товара с ID: 2
+2025-12-29 16:01:00 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:00 - Получение товара с ID: 23
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:00 - Получение товара с ID: 42
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:00 - Получение товара с ID: 18
+2025-12-29 16:01:00 - Получение товара с ID: 2
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:00 - Получение товара с ID: 42
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:00 - Получение товара с ID: 18
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:00 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:00 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:00 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:00 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:11 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:11 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:11 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:11 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:11 - Получение товара с ID: 60
+2025-12-29 16:01:11 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:11 - Получение товара с ID: 55
+2025-12-29 16:01:11 - Получение товара с ID: 55
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:11 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:11 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:11 - Получение товара с ID: 73
+2025-12-29 16:01:11 - Получение товара с ID: 73
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:11 - Получение товара с ID: 149
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:11 - Получение товара с ID: 149
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:11 - Получение товара с ID: 93
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:11 - Получение товара с ID: 93
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:11 - Получение товара с ID: 110
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:11 - Получение товара с ID: 110
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:11 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:11 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:11 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:11 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:11 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:11 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:11 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:11 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:11 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:11 - Получение товара с ID: 23
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:11 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:11 - Получение товара с ID: 2
+2025-12-29 16:01:11 - Получение товара с ID: 23
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:12 - Получение товара с ID: 42
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:12 - Получение товара с ID: 2
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:12 - Получение товара с ID: 42
+2025-12-29 16:01:12 - Получение товара с ID: 18
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:12 - Получение товара с ID: 18
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:12 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:12 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:12 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:01:12 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:10:08 - Получение всех товаров
+2025-12-29 16:10:08 - Получение всех товаров
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0
+2025-12-29 16:10:10 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:10:10 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:10:10 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:10:10 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:10:10 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:10:10 - Получение товара с ID: 55
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:10:10 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:10:10 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:10:10 - Получение товара с ID: 55
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:10:10 - Получение товара с ID: 90
+2025-12-29 16:10:10 - Получение товара с ID: 73
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:10:10 - Получение товара с ID: 149
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:10:10 - Получение товара с ID: 93
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:10:10 - Получение товара с ID: 110
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:10:10 - Получение товара с ID: 73
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:10:10 - Получение товара с ID: 149
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:10:10 - Получение товара с ID: 93
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:10:10 - Получение товара с ID: 110
+2025-12-29 16:10:10 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:10:10 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:10:10 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:10:11 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:10:11 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:10:11 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:10:11 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:10:11 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:10:11 - Получение товара с ID: 23
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:10:11 - Получение товара с ID: 90
+2025-12-29 16:10:11 - Получение товара с ID: 2
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:10:11 - Получение товара с ID: 60
+2025-12-29 16:10:11 - Получение товара с ID: 42
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:10:11 - Получение товара с ID: 18
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:10:11 - Получение товара с ID: 23
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:10:11 - Получение товара с ID: 2
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:10:11 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:10:11 - Получение товара с ID: 42
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:10:11 - Получение товара с ID: 60
+2025-12-29 16:10:11 - Получение товара с ID: 18
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:10:11 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:10:11 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:29:35 - Получение всех товаров
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0
+2025-12-29 16:29:35 - Получение всех товаров
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0
+2025-12-29 16:29:51 - Получение всех товаров
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0
+2025-12-29 16:29:51 - Получение всех товаров
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0
+2025-12-29 16:37:27 - Получение всех товаров
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0
+2025-12-29 16:37:27 - Получение всех товаров
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0
+2025-12-29 16:37:35 - Получение товара с ID: 90
+2025-12-29 16:37:35 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:37:35 - Получение товара с ID: 60
+2025-12-29 16:37:35 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:37:35 - Получение товара с ID: 60
+2025-12-29 16:37:35 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:37:35 - Получение товара с ID: 55
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:37:35 - Получение товара с ID: 55
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:37:35 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:37:35 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:37:35 - Получение товара с ID: 73
+2025-12-29 16:37:35 - Получение товара с ID: 73
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:37:35 - Получение товара с ID: 149
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:37:35 - Получение товара с ID: 149
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:37:35 - Получение товара с ID: 93
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:37:35 - Получение товара с ID: 93
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:37:35 - Получение товара с ID: 110
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:37:35 - Получение товара с ID: 110
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:37:35 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:37:35 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:37:35 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:37:35 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:37:35 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:37:35 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:37:35 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:37:35 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:37:35 - Получение товара с ID: 23
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:37:35 - Получение товара с ID: 2
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:37:35 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:37:35 - Получение товара с ID: 42
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:37:35 - Получение товара с ID: 60
+2025-12-29 16:37:35 - Получение товара с ID: 18
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:37:35 - Получение товара с ID: 23
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:37:35 - Получение товара с ID: 2
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:37:35 - Получение товара с ID: 42
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:37:35 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:37:35 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:37:35 - Получение товара с ID: 18
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:37:35 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:37:35 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:37:37 - Получение всех товаров
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0
+2025-12-29 16:37:37 - Получение всех товаров
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0
+2025-12-29 16:37:39 - Получение всех товаров
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0
+2025-12-29 16:37:39 - Получение всех товаров
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0
+2025-12-29 16:39:29 - Получение всех товаров
+2025-12-29 16:39:29 - Получение всех товаров
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0
+2025-12-29 16:39:35 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:36 - Обновление товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+Hibernate: 
+    update
+        usersklad 
+    set
+        akticul=?,
+        category=?,
+        count=?,
+        created_at=?,
+        description=?,
+        name=?,
+        price=?,
+        supplier=?,
+        updated_at=? 
+    where
+        id=?
+2025-12-29 16:39:36 - Товар обновлен: ID 90
+2025-12-29 16:39:36 - Получение всех товаров
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0
+2025-12-29 16:39:40 - Получение товара с ID: 55
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:40 - Получение товара с ID: 55
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:40 - Получение товара с ID: 55
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:40 - Получение товара с ID: 55
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:40 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:40 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:40 - Получение товара с ID: 42
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:40 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:40 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:40 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:40 - Получение товара с ID: 42
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:40 - Получение товара с ID: 42
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:40 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:40 - Получение товара с ID: 2
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:40 - Получение товара с ID: 23
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:40 - Получение товара с ID: 18
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:40 - Получение товара с ID: 42
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:40 - Получение товара с ID: 51
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:40 - Получение товара с ID: 2
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:40 - Получение товара с ID: 144
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:40 - Получение товара с ID: 23
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 116
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 18
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 51
+2025-12-29 16:39:41 - Получение товара с ID: 112
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 144
+2025-12-29 16:39:41 - Получение товара с ID: 25
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 132
+2025-12-29 16:39:41 - Получение товара с ID: 116
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 82
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 112
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 27
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 25
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 132
+2025-12-29 16:39:41 - Получение товара с ID: 89
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 82
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 19
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 27
+2025-12-29 16:39:41 - Получение товара с ID: 9
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 141
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 89
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 19
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 90
+2025-12-29 16:39:41 - Получение товара с ID: 9
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 141
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 18
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 23
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 18
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 23
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 23
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 90
+2025-12-29 16:39:41 - Получение товара с ID: 18
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 2
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 42
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 23
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 23
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 18
+2025-12-29 16:39:41 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 42
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 2
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 42
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 23
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 42
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:39:41 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:40:34 - Получение всех товаров
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0
+2025-12-29 16:40:34 - Получение всех товаров
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0
+2025-12-29 16:46:14 - Получение всех товаров
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0
+2025-12-29 16:46:14 - Получение всех товаров
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0
+2025-12-29 16:46:17 - Получение всех товаров
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0
+2025-12-29 16:46:17 - Получение всех товаров
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0
+2025-12-29 16:46:33 - Получение всех товаров
+2025-12-29 16:46:33 - Получение всех товаров
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0
+2025-12-29 16:46:39 - Получение товара с ID: 55
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:39 - Получение товара с ID: 55
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:39 - Получение товара с ID: 55
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:39 - Получение товара с ID: 55
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:39 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:39 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:39 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:39 - Получение товара с ID: 42
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:39 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:39 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:39 - Получение товара с ID: 42
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:39 - Получение товара с ID: 42
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:39 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:39 - Получение товара с ID: 2
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:39 - Получение товара с ID: 23
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:39 - Получение товара с ID: 18
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:39 - Получение товара с ID: 42
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:39 - Получение товара с ID: 51
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:39 - Получение товара с ID: 2
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:39 - Получение товара с ID: 144
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:39 - Получение товара с ID: 23
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:39 - Получение товара с ID: 116
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:39 - Получение товара с ID: 18
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:39 - Получение товара с ID: 51
+2025-12-29 16:46:39 - Получение товара с ID: 112
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:39 - Получение товара с ID: 144
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:39 - Получение товара с ID: 25
+2025-12-29 16:46:39 - Получение товара с ID: 116
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:39 - Получение товара с ID: 132
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:39 - Получение товара с ID: 112
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:39 - Получение товара с ID: 82
+2025-12-29 16:46:39 - Получение товара с ID: 25
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:39 - Получение товара с ID: 27
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:39 - Получение товара с ID: 132
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:40 - Получение товара с ID: 89
+2025-12-29 16:46:40 - Получение товара с ID: 82
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:40 - Получение товара с ID: 27
+2025-12-29 16:46:40 - Получение товара с ID: 19
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:40 - Получение товара с ID: 9
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:40 - Получение товара с ID: 89
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:40 - Получение товара с ID: 141
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:40 - Получение товара с ID: 19
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:40 - Получение товара с ID: 9
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:40 - Получение товара с ID: 141
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:40 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:40 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:40 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:40 - Получение товара с ID: 18
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:40 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:40 - Получение товара с ID: 18
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:40 - Получение товара с ID: 23
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:40 - Получение товара с ID: 23
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:40 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:40 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:40 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:40 - Получение товара с ID: 23
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:40 - Получение товара с ID: 60
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:40 - Получение товара с ID: 23
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:40 - Получение товара с ID: 18
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:40 - Получение товара с ID: 2
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:40 - Получение товара с ID: 42
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:40 - Получение товара с ID: 18
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:40 - Получение товара с ID: 2
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:40 - Получение товара с ID: 23
+2025-12-29 16:46:40 - Получение товара с ID: 42
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:40 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:40 - Получение товара с ID: 23
+2025-12-29 16:46:40 - Получение товара с ID: 42
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:40 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:40 - Получение товара с ID: 42
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:40 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:40 - Получение товара с ID: 90
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0 
+    where
+        us1_0.id=?
+2025-12-29 16:46:41 - Получение всех товаров
+2025-12-29 16:46:41 - Получение всех товаров
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0
+2025-12-29 16:46:45 - Получение всех товаров
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0
+2025-12-29 16:46:45 - Получение всех товаров
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0
+2025-12-29 16:47:07 - Получение всех товаров
+Hibernate: 
+    select
+        us1_0.id,
+        us1_0.akticul,
+        us1_0.category,
+        us1_0.count,
+        us1_0.created_at,
+        us1_0.description,
+        us1_0.name,
+        us1_0.price,
+        us1_0.supplier,
+        us1_0.updated_at 
+    from
+        usersklad us1_0
+2025-12-29 16:47:07 - Получение всех товаров
 Hibernate: 
     select
         us1_0.id,

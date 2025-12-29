@@ -9,9 +9,9 @@ import org.springframework.web.client.RestTemplate;
 @SpringBootApplication
 @EnableFeignClients
 public class ApiGateWayApplication {
-	public static void main(String[] args) {
-		SpringApplication.run(ApiGateWayApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(ApiGateWayApplication.class, args);
+    }
 
     @Bean
     public RestTemplate restTemplate() {

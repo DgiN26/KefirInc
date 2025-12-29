@@ -1,11 +1,11 @@
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
 
 console.log('API base URL:', API_URL);
 
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: API_URL,  // Теперь здесь /api
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -63,7 +63,7 @@ api.interceptors.response.use(
 export const authAPI = {
   login: async (credentials) => {
     try {
-      const response = await api.post('/api/auth/login', { 
+      const response = await api.post('/auth/login', { 
         username: credentials.username,
         password: credentials.password
       });
@@ -90,7 +90,7 @@ export const authAPI = {
   
   logout: async () => {
     try {
-      const response = await api.post('/api/auth/logout');
+      const response = await api.post('/auth/logout');
       return response.data;
     } catch (error) {
       console.error('Logout error:', error);
@@ -102,14 +102,14 @@ export const authAPI = {
   },
   
   getProfile: async () => {
-    const response = await api.get('/api/auth/profile');
+    const response = await api.get('/auth/profile');
     return response.data;
   },
   
   // Проверка доступности API
   check: async () => {
     try {
-      const response = await api.get('/api/auth/check');
+      const response = await api.get('/auth/check');
       return response.data;
     } catch (error) {
       console.error('API check failed:', error);
@@ -131,7 +131,7 @@ export const authAPI = {
       };
       
       console.log('Sending registration data:', payload);
-      const response = await api.post('/api/clients/register', payload);
+      const response = await api.post('/clients/register', payload);
       return response.data;
     } catch (error) {
       console.error('Registration API error:', error);
@@ -144,7 +144,7 @@ export const authAPI = {
 export const databaseAPI = {
   testConnection: async () => {
     try {
-      const response = await api.get('/api/database/test-connection');
+      const response = await api.get('/database/test-connection');
       return response.data;
     } catch (error) {
       console.error('Database connection test failed:', error);
@@ -154,7 +154,7 @@ export const databaseAPI = {
   
   getStats: async () => {
     try {
-      const response = await api.get('/api/database/stats');
+      const response = await api.get('/database/stats');
       return response.data;
     } catch (error) {
       console.error('Failed to get database stats:', error);
@@ -164,7 +164,7 @@ export const databaseAPI = {
   
   executeQuery: async (data) => {
     try {
-      const response = await api.post('/api/database/query', data);
+      const response = await api.post('/database/query', data);
       return response.data;
     } catch (error) {
       console.error('Query execution failed:', error);
@@ -174,7 +174,7 @@ export const databaseAPI = {
   
   createBackup: async () => {
     try {
-      const response = await api.post('/api/database/backup');
+      const response = await api.post('/database/backup');
       return response.data;
     } catch (error) {
       console.error('Backup creation failed:', error);
@@ -184,7 +184,7 @@ export const databaseAPI = {
   
   restoreBackup: async (backupData) => {
     try {
-      const response = await api.post('/api/database/restore', backupData);
+      const response = await api.post('/database/restore', backupData);
       return response.data;
     } catch (error) {
       console.error('Backup restoration failed:', error);
@@ -197,7 +197,7 @@ export const databaseAPI = {
 export const suppliersAPI = {
   getAll: async () => {
     try {
-      const response = await api.get('/api/suppliers');
+      const response = await api.get('/suppliers');
       return response.data;
     } catch (error) {
       console.error('Error fetching suppliers:', error);
@@ -206,17 +206,17 @@ export const suppliersAPI = {
   },
   
   create: async (supplier) => {
-    const response = await api.post('/api/suppliers', supplier);
+    const response = await api.post('/suppliers', supplier);
     return response.data;
   },
   
   update: async (id, supplier) => {
-    const response = await api.put(`/api/suppliers/${id}`, supplier);
+    const response = await api.put(`/suppliers/${id}`, supplier);
     return response.data;
   },
   
   delete: async (id) => {
-    const response = await api.delete(`/api/suppliers/${id}`);
+    const response = await api.delete(`/suppliers/${id}`);
     return response.data;
   }
 };
@@ -225,7 +225,7 @@ export const suppliersAPI = {
 export const categoriesAPI = {
   getAll: async () => {
     try {
-      const response = await api.get('/api/categories');
+      const response = await api.get('/categories');
       return response.data;
     } catch (error) {
       console.error('Error fetching categories:', error);
@@ -234,17 +234,17 @@ export const categoriesAPI = {
   },
   
   create: async (category) => {
-    const response = await api.post('/api/categories', category);
+    const response = await api.post('/categories', category);
     return response.data;
   },
   
   update: async (id, category) => {
-    const response = await api.put(`/api/categories/${id}`, category);
+    const response = await api.put(`/categories/${id}`, category);
     return response.data;
   },
   
   delete: async (id) => {
-    const response = await api.delete(`/api/categories/${id}`);
+    const response = await api.delete(`/categories/${id}`);
     return response.data;
   }
 };
@@ -252,17 +252,17 @@ export const categoriesAPI = {
 // Клиенты API
 export const clientsAPI = {
   getAll: async () => {
-    const response = await api.get('/api/clients');
+    const response = await api.get('/clients');
     return response.data;
   },
   
   getById: async (id) => {
-    const response = await api.get(`/api/admin/clients/${id}`);
+    const response = await api.get(`/admin/clients/${id}`);
     return response.data;
   },
   
   create: async (clientData) => {
-    const response = await api.post('/api/admin/clients', clientData);
+    const response = await api.post('/admin/clients', clientData);
     return response.data;
   },
   
@@ -279,7 +279,7 @@ export const clientsAPI = {
     console.log('Payload:', payload);
     
     try {
-      const response = await api.put(`/api/admin/clients/${id}`, payload);
+      const response = await api.put(`/admin/clients/${id}`, payload);
       console.log('Update successful:', response.data);
       return response.data;
     } catch (error) {
@@ -289,7 +289,7 @@ export const clientsAPI = {
   },
   
   delete: async (id) => {
-    const response = await api.delete(`/api/admin/clients/${id}`);
+    const response = await api.delete(`/admin/clients/${id}`);
     return response.data;
   }
 };
@@ -297,27 +297,27 @@ export const clientsAPI = {
 // Продукты API
 export const productsAPI = {
   getAll: async () => {
-    const response = await api.get('/api/products');
+    const response = await api.get('/products');
     return response.data;
   },
   
   create: async (productData) => {
-    const response = await api.post('/api/products', productData);
+    const response = await api.post('/products', productData);
     return response.data;
   },
   
   update: async (id, productData) => {
-    const response = await api.put(`/api/products/${id}`, productData);
+    const response = await api.put(`/products/${id}`, productData);
     return response.data;
   },
   
   delete: async (id) => {
-    const response = await api.delete(`/api/products/${id}`);
+    const response = await api.delete(`/products/${id}`);
     return response.data;
   },
   
   softDelete: async (id) => {
-    const response = await api.delete(`/api/products/${id}/soft`);
+    const response = await api.delete(`/products/${id}/soft`);
     return response.data;
   }
 };
@@ -325,22 +325,22 @@ export const productsAPI = {
 // Курьеры API
 export const couriersAPI = {
   getAll: async () => {
-    const response = await api.get('/api/couriers');
+    const response = await api.get('/couriers');
     return response.data;
   },
   
   create: async (courierData) => {
-    const response = await api.post('/api/couriers', courierData);
+    const response = await api.post('/couriers', courierData);
     return response.data;
   },
   
   update: async (id, courierData) => {
-    const response = await api.put(`/api/couriers/${id}`, courierData);
+    const response = await api.put(`/couriers/${id}`, courierData);
     return response.data;
   },
   
   delete: async (id) => {
-    const response = await api.delete(`/api/couriers/${id}`);
+    const response = await api.delete(`/couriers/${id}`);
     return response.data;
   }
 };
@@ -348,22 +348,22 @@ export const couriersAPI = {
 // Доставки API
 export const deliveriesAPI = {
   getAll: async () => {
-    const response = await api.get('/api/deliveries');
+    const response = await api.get('/deliveries');
     return response.data;
   },
   
   create: async (deliveryData) => {
-    const response = await api.post('/api/deliveries', deliveryData);
+    const response = await api.post('/deliveries', deliveryData);
     return response.data;
   },
   
   update: async (id, deliveryData) => {
-    const response = await api.put(`/api/deliveries/${id}`, deliveryData);
+    const response = await api.put(`/deliveries/${id}`, deliveryData);
     return response.data;
   },
   
   delete: async (id) => {
-    const response = await api.delete(`/api/deliveries/${id}`);
+    const response = await api.delete(`/deliveries/${id}`);
     return response.data;
   }
 };
@@ -371,12 +371,12 @@ export const deliveriesAPI = {
 // Склады API
 export const warehouseAPI = {
   getAll: async () => {
-    const response = await api.get('/api/warehouse');
+    const response = await api.get('/warehouse');
     return response.data;
   },
   
   updateStock: async (id, stockData) => {
-    const response = await api.put(`/api/warehouse/${id}/stock`, stockData);
+    const response = await api.put(`/warehouse/${id}/stock`, stockData);
     return response.data;
   }
 };
@@ -385,7 +385,7 @@ export const warehouseAPI = {
 export const dashboardAPI = {
   getStats: async () => {
     try {
-      const response = await api.get('/api/dashboard/stats');
+      const response = await api.get('/dashboard/stats');
       return response.data;
     } catch (error) {
       console.error('Dashboard stats error:', error);
@@ -400,7 +400,7 @@ export const dashboardAPI = {
   
   getRecentActivities: async () => {
     try {
-      const response = await api.get('/api/dashboard/activities');
+      const response = await api.get('/dashboard/activities');
       return response.data;
     } catch (error) {
       console.error('Dashboard activities error:', error);
@@ -413,7 +413,7 @@ export const dashboardAPI = {
 export const usersAPI = {
   getCurrentUser: async () => {
     try {
-      const response = await api.get('/api/users/current');
+      const response = await api.get('/users/current');
       return response.data;
     } catch (error) {
       console.error('Failed to get current user:', error);
@@ -422,7 +422,7 @@ export const usersAPI = {
   },
   
   updateProfile: async (userData) => {
-    const response = await api.put('/api/users/profile', userData);
+    const response = await api.put('/users/profile', userData);
     return response.data;
   }
 };
@@ -430,7 +430,7 @@ export const usersAPI = {
 // Функция для проверки доступности API
 export const checkAPIHealth = async () => {
   try {
-    const response = await api.get('/api/health');
+    const response = await api.get('/health');
     return response.status === 200;
   } catch (error) {
     console.log('API health check failed:', error.message);
