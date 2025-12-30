@@ -6,7 +6,8 @@ import './styles/global.css';
 
 // Layout Components
 import MainLayout from './components/layout/MainLayout';
-// import OfficeLayout from './components/layout/OfficeLayout';
+import OfficeLayout from './components/layout/OfficeLayout';
+import CollectorLayout from './components/layout/CollectorLayout';
 
 // Auth Pages
 import Login from './pages/auth/Login';
@@ -26,18 +27,18 @@ import AdminWarehouse from './pages/admin/Warehouse';
 import AdminCouriers from './pages/admin/Couriers';
 import AdminDeliveries from './pages/admin/Deliveries';
 
-// Office Pages - ЗАКОММЕНТИРОВАНО
-// import OfficePage from './pages/office/OfficePage';
-// import OfficeDeliveries from './pages/office/OfficeDeliveries';
-// import OfficeOrders from './pages/office/OfficeOrders';
-// import OfficeReports from './pages/office/OfficeReports';
+// Office Pages
+import OfficePage from './pages/office/OfficePage';
+import OfficeDeliveries from './pages/office/OfficeDeliveries';
+import OfficeOrders from './pages/office/OfficeOrders';
+import OfficeReports from './pages/office/OfficeReports';
 
 // Worker Pages
 import CourierApp from './pages/courier/CourierApp';
 import CollectorApp from './pages/collector/CollectorApp';
 
 // Utils
-import apiService from './services/api';
+import api from './services/api';
 
 // Константы ролей
 const ROLES = {
@@ -45,20 +46,23 @@ const ROLES = {
   CLIENT: 'client',
   COURIER: 'courier',
   COLLECTOR: 'collector',
- // OFFICE: 'office',
+  OFFICE: 'office',
 };
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(null); // null для начальной загрузки
+  const [isAuthenticated, setIsAuthenticated] = useState(null);
   const [userRole, setUserRole] = useState('');
   const [userData, setUserData] = useState(null);
-  const [loading, setLoading] = useState(true); // Начинаем с true для проверки
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
-  // Состояние для работы с PostgreSQL (из локального файла)
+  // Состояние для работы с PostgreSQL
   const [dbConnected, setDbConnected] = useState(null);
   const [dbLoading, setDbLoading] = useState(false);
   const [dbError, setDbError] = useState('');
+
+  // Флаг, что приложение проинициализировано
+  const [initialized, setInitialized] = useState(false);
 
   // Функция для нормализации роли
   const normalizeRole = useCallback((role) => {
@@ -66,14 +70,13 @@ function App() {
     return String(role).toLowerCase().trim();
   }, []);
 
-  // Проверка подключения к PostgreSQL (ТОЛЬКО ПРИ ЗАПУСКЕ)
+  // Проверка подключения к PostgreSQL
   const testDatabaseConnection = useCallback(async () => {
     try {
       setDbLoading(true);
       setDbError('');
       
-      // Используем apiService для проверки БД
-      const response = await apiService.databaseAPI.testConnection();
+      const response = await api.databaseAPI?.testConnection?.();
       const connected = response?.connected || false;
       
       setDbConnected(connected);
@@ -85,15 +88,8 @@ function App() {
       return connected;
     } catch (err) {
       console.warn('Database connection test failed:', err);
-      
-      // Проверяем, если это 404 ошибка (эндпоинт не существует)
-      if (err.response && err.response.status === 404) {
-        setDbError('Эндпоинт проверки БД не найден. Убедитесь, что сервер запущен.');
-      } else {
-        setDbError('Ошибка при проверке подключения к БД: ' + err.message);
-      }
-      
       setDbConnected(false);
+      setDbError('Ошибка при проверке подключения к БД');
       return false;
     } finally {
       setDbLoading(false);
@@ -108,78 +104,56 @@ function App() {
     setError(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    sessionStorage.removeItem('token');
-    sessionStorage.removeItem('user');
+    sessionStorage.removeItem('redirectAfterLogin');
   }, []);
 
-  // Проверка авторизации из хранилища и сервера
-  const checkAuthFromStorageAndServer = useCallback(async () => {
-    // Сначала проверяем sessionStorage
-    const sessionToken = sessionStorage.getItem('token');
-    const sessionUser = sessionStorage.getItem('user');
+  // Проверка авторизации по localStorage
+  const checkAuthFromStorage = useCallback(() => {
+    const token = localStorage.getItem('token');
+    const storedUserData = localStorage.getItem('user');
     
-    // Затем localStorage
-    const localToken = localStorage.getItem('token');
-    const localUser = localStorage.getItem('user');
-    
-    // Используем токен из sessionStorage, если есть, иначе из localStorage
-    const token = sessionToken || localToken;
-    const storedUser = sessionUser || localUser;
-    
-    if (!token || !storedUser) {
-      clearAuthData();
-      return false;
-    }
-    
-    try {
-      // Парсим данные пользователя
-      const parsedUserData = JSON.parse(storedUser);
-      const normalizedRole = normalizeRole(parsedUserData.role);
-      
-      // Проверяем токен на сервере (если есть соответствующий эндпоинт)
-      // Если эндпоинта нет, просто используем данные из хранилища
+    if (token && storedUserData) {
       try {
-        // Проверяем, существует ли эндпоинт проверки токена
-        const response = await apiService.authAPI.checkAuth(token);
-        
-        if (response && response.valid) {
-          // Обновляем данные пользователя с сервера, если есть
-          const userDataFromServer = response.user || parsedUserData;
-          
-          // Сохраняем обновленные данные
-          sessionStorage.setItem('user', JSON.stringify(userDataFromServer));
-          if (localToken) {
-            localStorage.setItem('user', JSON.stringify(userDataFromServer));
-          }
-          
-          setIsAuthenticated(true);
-          setUserData(userDataFromServer);
-          setUserRole(normalizeRole(userDataFromServer.role));
-          setError(null);
-          return true;
-        } else {
-          // Токен невалиден, очищаем данные
-          clearAuthData();
-          return false;
-        }
-      } catch (apiError) {
-        // Если эндпоинт проверки не доступен (404 или другая ошибка),
-        // используем данные из localStorage как резервный вариант
-        console.log('Auth check API not available, using stored data:', apiError.message);
+        const parsedUserData = JSON.parse(storedUserData);
+        const normalizedRole = normalizeRole(parsedUserData.role);
         
         setIsAuthenticated(true);
         setUserData(parsedUserData);
         setUserRole(normalizedRole);
         setError(null);
+        
         return true;
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+        clearAuthData();
+        return false;
       }
-      
-    } catch (error) {
-      console.error('Error parsing user data:', error);
-      clearAuthData();
+    } else {
+      setIsAuthenticated(false);
       return false;
     }
   }, [normalizeRole, clearAuthData]);
+
+  // Эффект для принудительного редиректа на логин при старте
+  useEffect(() => {
+    // Сохраняем текущий путь для возможного редиректа после логина
+    const currentPath = window.location.pathname;
+    if (!['/login', '/register'].includes(currentPath)) {
+      sessionStorage.setItem('redirectAfterLogin', currentPath);
+    }
+    
+    // Принудительно устанавливаем isAuthenticated в false при старте
+    // чтобы всегда показывать логин первым
+    if (isAuthenticated === null) {
+      const token = localStorage.getItem('token');
+      if (token) {
+        // Если есть токен, проверяем его, но не редиректим автоматически
+        checkAuthFromStorage();
+      } else {
+        setIsAuthenticated(false);
+      }
+    }
+  }, []);
 
   // Инициализация приложения
   useEffect(() => {
@@ -187,15 +161,13 @@ function App() {
       try {
         setLoading(true);
         
-        // Проверяем авторизацию
-        const hasAuth = await checkAuthFromStorageAndServer();
+        console.log('App initialization started');
         
-        // Проверяем подключение к БД только ОДИН РАЗ при запуске
+        // Проверяем подключение к БД
         await testDatabaseConnection();
         
-        if (hasAuth) {
-          console.log('User authenticated from storage/server');
-        }
+        // Помечаем инициализацию как завершенную
+        setInitialized(true);
         
       } catch (error) {
         console.error('App initialization error:', error);
@@ -204,168 +176,124 @@ function App() {
       }
     };
 
-    initializeApp();
-  }, [checkAuthFromStorageAndServer, testDatabaseConnection]);
+    // Небольшая задержка перед инициализацией для UX
+    const timer = setTimeout(() => {
+      initializeApp();
+    }, 500);
 
-  // Отладка состояния
-  useEffect(() => {
-    console.log('App state updated:', {
-      isAuthenticated,
-      userRole,
-      loading,
-      dbConnected,
-      dbLoading,
-      dbError,
-      hasSessionToken: !!sessionStorage.getItem('token'),
-      hasLocalToken: !!localStorage.getItem('token'),
-      userData: userData
-    });
-  }, [isAuthenticated, userRole, loading, dbConnected, dbLoading, dbError, userData]);
+    return () => clearTimeout(timer);
+  }, [testDatabaseConnection]);
 
-  // Тестирование всех эндпоинтов при загрузке (опционально)
-  useEffect(() => {
-    const testEndpoints = async () => {
-      const endpoints = [
-        '/api/database/test-connection',
-        '/api/auth/check',
-        '/api/health',
-        '/api/products',
-        '/api/clients'
-      ];
-      
-      for (const endpoint of endpoints) {
-        try {
-          const response = await fetch(`http://localhost:8080${endpoint}`);
-          console.log(`${endpoint}: ${response.status}`);
-        } catch (error) {
-          // Не выводим ошибку в консоль для эндпоинтов, которых может не быть
-          if (endpoint !== '/api/auth/check') {
-            console.log(`${endpoint}: ${error.message}`);
-          }
-        }
-      }
-    };
-    
-    // Вызываем только если нужно отладить
-    // testEndpoints();
-  }, []);
-
-  // Обработчик входа - используем apiService
+  // Обработчик входа
   const handleLogin = async (credentials) => {
     try {
       setLoading(true);
       setError(null);
       
-      console.log('Attempting login with:', credentials);
-      
-      // Используем apiService вместо fetch
-      const response = await apiService.authAPI.login(credentials);
-      
-      // apiService.authAPI.login уже возвращает данные
-      const token = response.token || response.accessToken;
-      const user = response.user || response;
-      
-      if (!token || !user) {
-        throw new Error('Неверный ответ от сервера при входе');
+      // Предупреждение если БД не подключена
+      if (dbConnected === false) {
+        console.warn('Database is not connected. Login may fail.');
       }
+
+      const response = await fetch('http://localhost:8080/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(credentials)
+      });
       
-      // Сохраняем данные в sessionStorage (основное) и localStorage (резервное)
-      sessionStorage.setItem('token', token);
-      sessionStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('token', token); // Резервная копия
-      localStorage.setItem('user', JSON.stringify(user)); // Резервная копия
+      const data = await response.json();
       
-      console.log('Login data saved:', { token, user });
-      
-      const role = normalizeRole(user?.role || '');
-      
-      setIsAuthenticated(true);
-      setUserData(user);
-      setUserRole(role);
-      
-      console.log('Login successful, user authenticated:', { role, user });
-      
-      return { success: true, user, role };
+      if (response.ok) {
+        const responseData = data.body || data;
+        const token = responseData.token || responseData.accessToken;
+        const user = responseData.user || responseData;
+        
+        if (token) {
+          localStorage.setItem('token', token);
+        }
+        if (user) {
+          localStorage.setItem('user', JSON.stringify(user));
+        }
+        
+        const role = (user?.role || '').toLowerCase();
+        
+        setIsAuthenticated(true);
+        setUserData(user);
+        setUserRole(role);
+        
+        // Возвращаем успех, перенаправление сделает роутинг
+        return { success: true, user, role };
+        
+      } else if (response.status === 403) {
+        const error = new Error(data.error || 'Доступ запрещен');
+        error.status = 'banned';
+        error.isBanned = true;
+        throw error;
+        
+      } else {
+        throw new Error(data.error || `Ошибка ${response.status}`);
+      }
       
     } catch (error) {
       console.error('Login catch error:', error);
-      
-      // Более информативное сообщение об ошибке
-      let errorMessage = 'Ошибка входа';
-      if (error.response) {
-        if (error.response.status === 401) {
-          errorMessage = 'Неверный email или пароль';
-        } else if (error.response.status === 404) {
-          errorMessage = 'Сервер авторизации не найден. Проверьте подключение к серверу.';
-        } else {
-          errorMessage = `Ошибка сервера: ${error.response.status}`;
-        }
-      } else if (error.request) {
-        errorMessage = 'Не удалось подключиться к серверу. Проверьте сеть.';
-      } else {
-        errorMessage = error.message || 'Ошибка входа';
-      }
-      
-      setError(errorMessage);
-      throw new Error(errorMessage);
+      setError(error.message || 'Ошибка входа');
+      throw error;
     } finally {
       setLoading(false);
     }
   };
 
-  // Обработчик выхода - используем apiService
+  // Обработчик выхода
   const handleLogout = useCallback(async () => {
-    console.log('Logging out...');
-    
-    // Вызываем logout API через apiService, если доступен
     try {
-      await apiService.authAPI.logout();
-    } catch (err) {
-      console.log('Logout API error (ignoring):', err.message);
-      // Продолжаем даже если API недоступно
+      try {
+        await api.authAPI.logout();
+      } catch (logoutError) {
+        console.log('Logout API error (ignoring):', logoutError);
+      }
     } finally {
       clearAuthData();
-      // Перенаправляем на страницу логина
       window.location.href = '/login';
     }
   }, [clearAuthData]);
 
-  // Обработчик регистрации - используем apiService
-  const handleRegister = async (userData) => {
+  // Обработчик регистрации
+  const handleRegister = useCallback(async (userData) => {
     try {
       setLoading(true);
       setError(null);
       
-      console.log('Registering user:', userData);
+      const response = await api.authAPI.register(userData);
       
-      // Используем apiService вместо fetch
-      const response = await apiService.authAPI.register(userData);
-      
-      console.log('Register API response:', response);
-      
-      // Проверяем успешность регистрации
-      if (response.success !== false && !response.error) {
-        // После успешной регистрации предлагаем залогиниться
-        // Не логиним автоматически
-        alert('Регистрация успешна! Теперь вы можете войти в систему.');
-        return { success: true, message: 'Регистрация успешна', data: response };
-      } else {
-        throw new Error(response.error || response.message || 'Ошибка регистрации');
+      if (!response || !response.token) {
+        throw new Error('Регистрация не удалась');
       }
+      
+      localStorage.setItem('token', response.token);
+      
+      if (response.user) {
+        const normalizedRole = normalizeRole(response.user.role);
+        localStorage.setItem('user', JSON.stringify(response.user));
+        
+        setIsAuthenticated(true);
+        setUserData(response.user);
+        setUserRole(normalizedRole);
+      }
+      
+      return response;
       
     } catch (error) {
       console.error('Registration failed:', error);
       
-      // Более информативное сообщение об ошибке
       let errorMessage = 'Ошибка регистрации';
       if (error.response) {
-        if (error.response.status === 400) {
-          errorMessage = 'Некорректные данные регистрации';
-        } else if (error.response.status === 409) {
-          errorMessage = 'Пользователь с таким email уже существует';
-        } else if (error.response.status === 404) {
-          errorMessage = 'Сервер регистрации не найден';
-        }
+        errorMessage = error.response.data?.error || error.response.data?.message || errorMessage;
+      } else if (error.request) {
+        errorMessage = 'Нет ответа от сервера';
+      } else if (error.message) {
+        errorMessage = error.message;
       }
       
       setError(errorMessage);
@@ -373,7 +301,7 @@ function App() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [normalizeRole]);
 
   // Функция для получения редиректа по роли
   const getRoleRedirect = useCallback((role) => {
@@ -388,8 +316,8 @@ function App() {
         return '/courier';
       case ROLES.COLLECTOR:
         return '/collector';
-      //case ROLES.OFFICE:
-        //return '/client'; // Изменено: вместо офиса редирект на клиента
+      case ROLES.OFFICE:
+        return '/office';
       case ROLES.CLIENT:
         return '/client';
       default:
@@ -397,19 +325,10 @@ function App() {
     }
   }, [normalizeRole]);
 
-  // Защищенный роут компонент с проверкой БД
+  // Защищенный роут компонент
   const ProtectedRoute = ({ children, allowedRoles = [], requireDB = false }) => {
-    console.log('ProtectedRoute render:', {
-      isAuthenticated,
-      userRole,
-      loading,
-      allowedRoles,
-      requireDB,
-      dbConnected,
-      dbLoading
-    });
-
-    if (isAuthenticated === null || loading) {
+    // Если еще идет инициализация, показываем лоадер
+    if (!initialized || isAuthenticated === null || loading) {
       return (
         <div className="flex-center" style={{ 
           height: '100vh',
@@ -425,13 +344,13 @@ function App() {
               borderRadius: '50%',
               animation: 'spin 1s linear infinite'
             }} />
-            <div>Загрузка...</div>
-            {dbLoading && <div>Проверка подключения к базе данных...</div>}
+            <div>Загрузка приложения...</div>
           </div>
         </div>
       );
     }
 
+    // Если не авторизован - на логин
     if (!isAuthenticated) {
       console.log('ProtectedRoute: Not authenticated, redirecting to login');
       return <Navigate to="/login" replace />;
@@ -473,19 +392,12 @@ function App() {
       normalizeRole(role)
     );
 
-    console.log('Checking role access:', {
-      normalizedUserRole,
-      normalizedAllowedRoles,
-      hasAccess: normalizedAllowedRoles.length === 0 || normalizedAllowedRoles.includes(normalizedUserRole)
-    });
-
     if (normalizedAllowedRoles.length > 0 && !normalizedAllowedRoles.includes(normalizedUserRole)) {
+      console.log(`ProtectedRoute: Role ${normalizedUserRole} not allowed, redirecting`);
       const redirectPath = getRoleRedirect(normalizedUserRole);
-      console.log(`ProtectedRoute: Role ${normalizedUserRole} not allowed, redirecting to ${redirectPath}`);
       return <Navigate to={redirectPath} replace />;
     }
 
-    console.log('Access granted');
     return (
       <MainLayout 
         userRole={normalizedUserRole}
@@ -499,10 +411,10 @@ function App() {
     );
   };
 
-  // Защищенный роут для Office (с OfficeLayout вместо MainLayout) - ЗАКОММЕНТИРОВАНО
-  /*
+  // Защищенный роут для Office (с OfficeLayout вместо MainLayout)
   const ProtectedOfficeRoute = ({ children, allowedRoles = [ROLES.OFFICE] }) => {
-    if (isAuthenticated === null || loading) {
+    // Если еще идет инициализация, показываем лоадер
+    if (!initialized || isAuthenticated === null || loading) {
       return (
         <div className="flex-center" style={{ 
           height: '100vh',
@@ -518,7 +430,7 @@ function App() {
               borderRadius: '50%',
               animation: 'spin 1s linear infinite'
             }} />
-            <div>Загрузка...</div>
+            <div>Загрузка приложения...</div>
           </div>
         </div>
       );
@@ -536,24 +448,68 @@ function App() {
     );
 
     if (normalizedAllowedRoles.length > 0 && !normalizedAllowedRoles.includes(normalizedUserRole)) {
+      console.log(`ProtectedOfficeRoute: Role ${normalizedUserRole} not allowed, redirecting`);
       const redirectPath = getRoleRedirect(normalizedUserRole);
-      console.log(`ProtectedOfficeRoute: Role ${normalizedUserRole} not allowed, redirecting to ${redirectPath}`);
       return <Navigate to={redirectPath} replace />;
     }
 
     return (
-      <OfficeLayout 
-        userRole={normalizedUserRole}
-        userData={userData}
-        onLogout={handleLogout}
-      >
+      <OfficeLayout onLogout={handleLogout}>
         {children}
       </OfficeLayout>
     );
   };
-  */
 
-  // Показываем лоадер при начальной загрузке
+  // Защищенный роут для Collector (без шапки MainLayout)
+  const ProtectedCollectorRoute = ({ children, allowedRoles = [ROLES.COLLECTOR] }) => {
+    // Если еще идет инициализация, показываем лоадер
+    if (!initialized || isAuthenticated === null || loading) {
+      return (
+        <div className="flex-center" style={{ 
+          height: '100vh',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+        }}>
+          <div className="text-center text-white">
+            <div style={{
+              width: '50px',
+              height: '50px',
+              margin: '0 auto 20px',
+              border: '3px solid rgba(255, 255, 255, 0.3)',
+              borderTop: '3px solid white',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite'
+            }} />
+            <div>Загрузка приложения...</div>
+          </div>
+        </div>
+      );
+    }
+
+    if (!isAuthenticated) {
+      console.log('ProtectedCollectorRoute: Not authenticated, redirecting to login');
+      return <Navigate to="/login" replace />;
+    }
+
+    const currentUserRole = userRole || '';
+    const normalizedUserRole = normalizeRole(currentUserRole);
+    const normalizedAllowedRoles = allowedRoles.map(role => 
+      normalizeRole(role)
+    );
+
+    if (normalizedAllowedRoles.length > 0 && !normalizedAllowedRoles.includes(normalizedUserRole)) {
+      console.log(`ProtectedCollectorRoute: Role ${normalizedUserRole} not allowed, redirecting`);
+      const redirectPath = getRoleRedirect(normalizedUserRole);
+      return <Navigate to={redirectPath} replace />;
+    }
+
+    return (
+      <CollectorLayout onLogout={handleLogout}>
+        {children}
+      </CollectorLayout>
+    );
+  };
+
+  // Лоадер при начальной загрузке
   if (loading && isAuthenticated === null) {
     return (
       <div className="flex-center" style={{ 
@@ -571,7 +527,6 @@ function App() {
             animation: 'spin 1s linear infinite'
           }} />
           <div>Загрузка приложения...</div>
-          <div>Проверка подключения к базе данных...</div>
         </div>
         <style>{`
           @keyframes spin {
@@ -607,66 +562,36 @@ function App() {
     );
   };
 
-  // Компонент для отображения ошибок
-  const ErrorBanner = () => {
-    if (!error) return null;
-    
-    return (
-      <div className="error-banner" style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        backgroundColor: '#f44336',
-        color: 'white',
-        padding: '10px 20px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        zIndex: 1000
-      }}>
-        <span>❌ {error}</span>
-        <button 
-          onClick={() => setError(null)} 
-          style={{
-            background: 'none',
-            border: 'none',
-            color: 'white',
-            fontSize: '20px',
-            cursor: 'pointer'
-          }}
-        >
-          ×
-        </button>
-      </div>
-    );
-  };
-
   return (
-    <Router>
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <div className="App">
         {/* Статус подключения к БД */}
         <DatabaseStatusAlert />
         
-        <ErrorBanner />
+        {error && (
+          <div className="error-banner">
+            <span>❌ {error}</span>
+            <button onClick={() => setError(null)}>×</button>
+          </div>
+        )}
         
         <Routes>
-          {/* Public Routes - доступны без авторизации */}
+          {/* ✅ Public Routes - доступны без авторизации */}
           <Route path="/login" element={
-            isAuthenticated ? (
+            // Показываем логин ВСЕГДА при первом заходе
+            // даже если есть токен в localStorage
+            isAuthenticated && initialized ? (
               <Navigate to={getRoleRedirect(userRole)} replace />
             ) : (
               <Login 
                 onLogin={handleLogin} 
                 loading={loading}
-                dbConnected={dbConnected}
-                dbError={dbError}
               />
             )
           } />
           
           <Route path="/register" element={
-            isAuthenticated ? (
+            isAuthenticated && initialized ? (
               <Navigate to={getRoleRedirect(userRole)} replace />
             ) : (
               <Register 
@@ -739,32 +664,30 @@ function App() {
             </ProtectedRoute>
           } />
           
-          {/* Office Routes - ЗАКОММЕНТИРОВАНО */}
-          {/*
-          <Route path="/office" element={
-            <ProtectedOfficeRoute allowedRoles={[ROLES.OFFICE]}>
-              <OfficePage />
-            </ProtectedOfficeRoute>
-          } />
-          
-          <Route path="/office/deliveries" element={
-            <ProtectedOfficeRoute allowedRoles={[ROLES.OFFICE]}>
-              <OfficeDeliveries />
-            </ProtectedOfficeRoute>
-          } />
-          
-          <Route path="/office/orders" element={
-            <ProtectedOfficeRoute allowedRoles={[ROLES.OFFICE]}>
-              <OfficeOrders />
-            </ProtectedOfficeRoute>
-          } />
-          
-          <Route path="/office/reports" element={
-            <ProtectedOfficeRoute allowedRoles={[ROLES.OFFICE]}>
-              <OfficeReports />
-            </ProtectedOfficeRoute>
-          } />
-          */}
+         {/* Office Routes */}
+<Route path="/office" element={
+  <ProtectedOfficeRoute allowedRoles={[ROLES.OFFICE]}>
+    <OfficePage onLogout={handleLogout} /> {/* Добавь onLogout здесь */}
+  </ProtectedOfficeRoute>
+} />
+
+<Route path="/office/deliveries" element={
+  <ProtectedOfficeRoute allowedRoles={[ROLES.OFFICE]}>
+    <OfficeDeliveries onLogout={handleLogout} />
+  </ProtectedOfficeRoute>
+} />
+
+<Route path="/office/orders" element={
+  <ProtectedOfficeRoute allowedRoles={[ROLES.OFFICE]}>
+    <OfficeOrders onLogout={handleLogout} />
+  </ProtectedOfficeRoute>
+} />
+
+<Route path="/office/reports" element={
+  <ProtectedOfficeRoute allowedRoles={[ROLES.OFFICE]}>
+    <OfficeReports onLogout={handleLogout} />
+  </ProtectedOfficeRoute>
+} />
           
           {/* Worker Routes */}
           <Route path="/courier" element={
@@ -774,17 +697,17 @@ function App() {
           } />
           
           <Route path="/collector" element={
-            <ProtectedRoute allowedRoles={[ROLES.COLLECTOR]}>
+            <ProtectedCollectorRoute allowedRoles={[ROLES.COLLECTOR]}>
               <CollectorApp />
-            </ProtectedRoute>
+            </ProtectedCollectorRoute>
           } />
           
-          {/* Default Route - всегда на логин */}
+          {/* ✅ DEFAULT ROUTE - ВСЕГДА на логин */}
           <Route path="/" element={
             <Navigate to="/login" replace />
           } />
 
-          {/* 404 Route */}
+          {/* ✅ 404 ROUTE - на логин если страница не найдена */}
           <Route path="*" element={
             <Navigate to="/login" replace />
           } />

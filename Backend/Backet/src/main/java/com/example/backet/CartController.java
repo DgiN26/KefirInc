@@ -70,7 +70,7 @@ public class CartController {
                     .sum();
 
             // 5. Обновить статус корзины
-            cart.setStatus("completed");
+            cart.setStatus("processing");
             cartRepository.save(cart);
 
             // 6. СОХРАНИТЬ ЗАКАЗ В БД (НОВОЕ!)

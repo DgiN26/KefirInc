@@ -1,8 +1,9 @@
+// src/pages/office/OfficePage.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import OfficeSidebar from '../../components/office/OfficeSidebar';
 
-const OfficePage = () => {
+const OfficePage = ({ onLogout }) => {
     const [problems, setProblems] = useState([]);
     const [selectedProblem, setSelectedProblem] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -89,34 +90,34 @@ const OfficePage = () => {
     };
 
     // Отправка email клиенту
-  const sendClientEmail = async () => {
-    if (!selectedProblem) return;
-    
-    try {
-        const response = await axios.post('http://localhost:8080/api/office/notify-client', {
-            orderId: selectedProblem.order_id, // Исправлено: должно быть orderId, а не problemId
-            message: emailMessage,
-            clientEmail: selectedProblem.client_email,
-            clientName: selectedProblem.client_name
-        });
+    const sendClientEmail = async () => {
+        if (!selectedProblem) return;
         
-        if (response.data.success) {
-            alert(`📧 Email отправлен клиенту: ${selectedProblem.client_email}`);
+        try {
+            const response = await axios.post('http://localhost:8080/api/office/notify-client', {
+                orderId: selectedProblem.order_id,
+                message: emailMessage,
+                clientEmail: selectedProblem.client_email,
+                clientName: selectedProblem.client_name
+            });
             
-            // Обновляем статус проблемы
-            const updatedProblems = problems.map(p => 
-                p.id === selectedProblem.id 
-                ? { ...p, status: 'NOTIFIED' }
-                : p
-            );
-            setProblems(updatedProblems);
-            setSelectedProblem(prev => ({ ...prev, status: 'NOTIFIED' }));
+            if (response.data.success) {
+                alert(`📧 Email отправлен клиенту: ${selectedProblem.client_email}`);
+                
+                // Обновляем статус проблемы
+                const updatedProblems = problems.map(p => 
+                    p.id === selectedProblem.id 
+                    ? { ...p, status: 'NOTIFIED' }
+                    : p
+                );
+                setProblems(updatedProblems);
+                setSelectedProblem(prev => ({ ...prev, status: 'NOTIFIED' }));
+            }
+        } catch (error) {
+            console.error('Ошибка отправки email:', error);
+            alert('Ошибка отправки email');
         }
-    } catch (error) {
-        console.error('Ошибка отправки email:', error);
-        alert('Ошибка отправки email');
-    }
-};
+    };
 
     // Принятие решения
     const makeDecision = async (decision) => {
@@ -228,7 +229,48 @@ const OfficePage = () => {
                         clip-path: polygon(5% 0%, 100% 0%, 100% 95%, 0% 100%);
                     }
                 }
+                
+                /* Стили для черной кляксы */
+                .exit-blob {
+                    animation: blobPulse 2s infinite alternate ease-in-out;
+                }
+                
+                @keyframes blobPulse {
+                    0% {
+                        border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+                        transform: scale(1);
+                    }
+                    50% {
+                        border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%;
+                        transform: scale(1.05);
+                    }
+                    100% {
+                        border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+                        transform: scale(1);
+                    }
+                }
+                
+                .exit-blob:hover {
+                    animation: blobHover 0.5s forwards;
+                }
+                
+                @keyframes blobHover {
+                    0% {
+                        transform: scale(1);
+                    }
+                    100% {
+                        transform: scale(1.15) rotate(5deg);
+                    }
+                }
             `}</style>
+            
+            {/* ЖИРНАЯ ЧЕРНАЯ КЛЯКСА для выхода */}
+            <button
+                onClick={onLogout}
+                style={styles.exitBlob}
+                className="cursor-felt-pen exit-blob"
+                title="ВЫХОД"
+            />
             
             {/* Левая часть (70%) - Список проблем */}
             <div className="w-[70%] p-6">
@@ -401,7 +443,54 @@ const styles = {
         height: '100vh',
         backgroundColor: '#f9fafb',
         cursor: 'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M8 28l16-16-4-4L4 24z" fill="black"/><path d="M24 4l4 4-16 16-4-4z" fill="%23f59e0b"/></svg>\') 4 28, auto',
-        fontFamily: '\'Comic Neue\', cursive, sans-serif'
+        fontFamily: '\'Comic Neue\', cursive, sans-serif',
+        position: 'relative'
+    },
+    // ЖИРНАЯ ЧЕРНАЯ КЛЯКСА 5x5 см
+    exitBlob: {
+        position: 'fixed',
+        top: '20px',
+        right: '20px',
+        width: '80px', // немного больше для жирности
+        height: '80px',
+        backgroundColor: '#000',
+        border: 'none',
+        borderRadius: '60% 40% 30% 70% / 60% 30% 70% 40%', // Органичная форма кляксы
+        cursor: 'pointer',
+        zIndex: 1000,
+        boxShadow: `
+            0 0 0 6px #000,
+            0 0 0 12px rgba(0,0,0,0.8),
+            8px 8px 0 rgba(0,0,0,0.3),
+            16px 16px 0 rgba(0,0,0,0.1)
+        `,
+        transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+        outline: 'none',
+        
+        // Псевдоэлементы для дополнительной глубины
+        '::before': {
+            content: '""',
+            position: 'absolute',
+            top: '10%',
+            left: '15%',
+            width: '30%',
+            height: '20%',
+            backgroundColor: 'rgba(255,255,255,0.1)',
+            borderRadius: '50%',
+            filter: 'blur(2px)'
+        },
+        
+        '::after': {
+            content: '""',
+            position: 'absolute',
+            bottom: '15%',
+            right: '20%',
+            width: '20%',
+            height: '15%',
+            backgroundColor: 'rgba(255,255,255,0.05)',
+            borderRadius: '50%',
+            filter: 'blur(1px)'
+        }
     },
     problemContainer: {
         height: '100%',

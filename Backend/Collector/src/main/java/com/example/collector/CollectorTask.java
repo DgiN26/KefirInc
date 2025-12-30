@@ -1,7 +1,6 @@
 package com.example.collector;
 
-
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity

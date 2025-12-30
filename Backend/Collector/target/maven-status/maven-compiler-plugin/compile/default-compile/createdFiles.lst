@@ -1,6 +1,8 @@
 com\example\collector\CollectorTaskRepository.class
 com\example\collector\CollectorApplication.class
 com\example\collector\CollectorTask.class
+com\example\collector\Collector.class
+com\example\collector\AppConfig.class
 com\example\collector\CollectorRepository.class
 com\example\collector\CollectorController.class
 com\example\collector\CollectorService.class
