@@ -1749,39 +1749,8 @@ public class UnifiedController {
         );
     }
 
-    // ==================== БЛОК 12: OFFICE (ОФИС) - из первого файла ====================
 
-    @PostMapping("/office/accept-return-from-collector")
-    public Map<String, Object> acceptReturnFromCollector(@RequestBody Map<String, Object> returnRequest) {
-        return officeService.acceptReturnFromCollector(returnRequest);
-    }
-
-    @PostMapping("/office/give-return-to-client")
-    public Map<String, Object> giveReturnToClient(@RequestBody Map<String, Object> returnRequest) {
-        return officeService.giveReturnToClient(returnRequest);
-    }
-
-    @PostMapping("/office/send-return-to-collector")
-    public Map<String, Object> sendReturnToCollector(@RequestBody Map<String, Object> returnRequest) {
-        return officeService.sendReturnToCollector(returnRequest);
-    }
-
-    @GetMapping("/office/returns")
-    public List<Map<String, Object>> getAllReturns() {
-        return officeService.getAllReturns();
-    }
-
-    @GetMapping("/office/returns/{id}")
-    public Map<String, Object> getReturnById(@PathVariable Long id) {
-        return officeService.getReturnById(id);
-    }
-
-    @GetMapping("/office/returns/client/{clientId}")
-    public List<Map<String, Object>> getReturnsByClientId(@PathVariable String clientId) {
-        return officeService.getReturnsByClientId(clientId);
-    }
-
-    // ==================== БЛОК 13: OFFICE - расширенные методы из второго файла ====================
+    // ==================== БЛОК 12: OFFICE - расширенные методы из второго файла ====================
 
     @GetMapping("/office/test")
     public ResponseEntity<?> officeTest() {
@@ -2260,7 +2229,7 @@ public class UnifiedController {
         }
     }
 
-    // ==================== БЛОК 14: КОМПЛЕКСНЫЕ ОПЕРАЦИИ ====================
+    // ==================== БЛОК 13: КОМПЛЕКСНЫЕ ОПЕРАЦИИ ====================
 
     @GetMapping("/clients/{clientId}/with-carts")
     public Map<String, Object> getClientWithCarts(@PathVariable int clientId) {
@@ -2324,7 +2293,7 @@ public class UnifiedController {
         );
     }
 
-    // ==================== БЛОК 15: БАЗА ДАННЫХ И HEALTH CHECKS ====================
+    // ==================== БЛОК 14: БАЗА ДАННЫХ И HEALTH CHECKS ====================
 
     @GetMapping("/database/test-connection")
     public ResponseEntity<Map<String, Object>> testDatabaseConnection() {
