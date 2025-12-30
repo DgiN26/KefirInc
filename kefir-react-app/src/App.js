@@ -6,7 +6,7 @@ import './styles/global.css';
 
 // Layout Components
 import MainLayout from './components/layout/MainLayout';
-import OfficeLayout from './components/layout/OfficeLayout';
+// import OfficeLayout from './components/layout/OfficeLayout';
 
 // Auth Pages
 import Login from './pages/auth/Login';
@@ -26,11 +26,11 @@ import AdminWarehouse from './pages/admin/Warehouse';
 import AdminCouriers from './pages/admin/Couriers';
 import AdminDeliveries from './pages/admin/Deliveries';
 
-// Office Pages
-import OfficePage from './pages/office/OfficePage';
-import OfficeDeliveries from './pages/office/OfficeDeliveries';
-import OfficeOrders from './pages/office/OfficeOrders';
-import OfficeReports from './pages/office/OfficeReports';
+// Office Pages - ЗАКОММЕНТИРОВАНО
+// import OfficePage from './pages/office/OfficePage';
+// import OfficeDeliveries from './pages/office/OfficeDeliveries';
+// import OfficeOrders from './pages/office/OfficeOrders';
+// import OfficeReports from './pages/office/OfficeReports';
 
 // Worker Pages
 import CourierApp from './pages/courier/CourierApp';
@@ -45,7 +45,7 @@ const ROLES = {
   CLIENT: 'client',
   COURIER: 'courier',
   COLLECTOR: 'collector',
-  OFFICE: 'office',
+ // OFFICE: 'office',
 };
 
 function App() {
@@ -388,8 +388,8 @@ function App() {
         return '/courier';
       case ROLES.COLLECTOR:
         return '/collector';
-      case ROLES.OFFICE:
-        return '/office';
+      //case ROLES.OFFICE:
+        //return '/client'; // Изменено: вместо офиса редирект на клиента
       case ROLES.CLIENT:
         return '/client';
       default:
@@ -499,7 +499,8 @@ function App() {
     );
   };
 
-  // Защищенный роут для Office (с OfficeLayout вместо MainLayout)
+  // Защищенный роут для Office (с OfficeLayout вместо MainLayout) - ЗАКОММЕНТИРОВАНО
+  /*
   const ProtectedOfficeRoute = ({ children, allowedRoles = [ROLES.OFFICE] }) => {
     if (isAuthenticated === null || loading) {
       return (
@@ -550,6 +551,7 @@ function App() {
       </OfficeLayout>
     );
   };
+  */
 
   // Показываем лоадер при начальной загрузке
   if (loading && isAuthenticated === null) {
@@ -737,7 +739,8 @@ function App() {
             </ProtectedRoute>
           } />
           
-          {/* Office Routes */}
+          {/* Office Routes - ЗАКОММЕНТИРОВАНО */}
+          {/*
           <Route path="/office" element={
             <ProtectedOfficeRoute allowedRoles={[ROLES.OFFICE]}>
               <OfficePage />
@@ -761,6 +764,7 @@ function App() {
               <OfficeReports />
             </ProtectedOfficeRoute>
           } />
+          */}
           
           {/* Worker Routes */}
           <Route path="/courier" element={
