@@ -12,8 +12,16 @@ public interface AuthServiceClient {
     @PostMapping("/api/auth/login")
     ResponseEntity<Map<String, Object>> login(@RequestBody Map<String, String> request);
 
+    // ✅ ИСПРАВЛЕНО: POST с параметром в query string
     @PostMapping("/api/auth/validate")
-    Map<String, Object> validateToken(@RequestBody Map<String, String> request);
+    Map<String, Object> validateToken(@RequestParam("clientToken") String clientToken);
+
+    // Альтернативный endpoint (тоже работает)
+    @GetMapping("/api/sessions/validate/{clientToken}")
+    Map<String, Object> validateSession(@PathVariable("clientToken") String clientToken);
+
+    @GetMapping("/api/auth/me")
+    Map<String, Object> getCurrentUser(@RequestParam("clientToken") String clientToken);
 
     @GetMapping("/api/auth/check")
     Map<String, Object> check();

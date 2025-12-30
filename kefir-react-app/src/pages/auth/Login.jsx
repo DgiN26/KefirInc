@@ -216,6 +216,23 @@ const Login = ({ onLogin, loading }) => {
             </button>
             <button
               type="button"
+              onClick={() => handleDemoLogin('client2', 'client2')}
+              disabled={loading}
+              className="demo-button"
+              style={{
+                padding: '8px 12px',
+                background: '#60ade4ff',
+                border: '1px solid #1976d2',
+                borderRadius: '4px',
+                fontSize: '12px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.6 : 1
+              }}
+            >
+              Клиент
+            </button>
+            <button
+              type="button"
               onClick={() => handleDemoLogin('admin', 'admin')}
               disabled={loading}
               className="demo-button"

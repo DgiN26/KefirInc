@@ -13,7 +13,7 @@ SERVICES=(
   "Sklad:8082:Sklad Service"
   #"Delivery:8083:Delivery Service"
   #"Collector:8084:Collector Service"
-  #"Backet:8085:Backet Service"
+  "Backet:8085:Backet Service"
   #"Office:8086:Office Service"  
 )
 

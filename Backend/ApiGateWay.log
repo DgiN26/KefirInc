@@ -12,13 +12,17 @@
 [INFO] Copying 0 resource from src/main/resources to target/classes
 [INFO] 
 [INFO] --- compiler:3.11.0:compile (default-compile) @ ApiGateWay ---
-[INFO] Nothing to compile - all classes are up to date
+[INFO] Changes detected - recompiling the module! :source
+[INFO] Compiling 11 source files with javac [debug release 17] to target/classes
+[INFO] /home/vboxuser/Desktop/Kefirchik/KefirInc/Backend/ApiGateWay/src/main/java/com/example/ApiGateWay/UnifiedController.java: /home/vboxuser/Desktop/Kefirchik/KefirInc/Backend/ApiGateWay/src/main/java/com/example/ApiGateWay/UnifiedController.java uses unchecked or unsafe operations.
+[INFO] /home/vboxuser/Desktop/Kefirchik/KefirInc/Backend/ApiGateWay/src/main/java/com/example/ApiGateWay/UnifiedController.java: Recompile with -Xlint:unchecked for details.
 [INFO] 
 [INFO] --- resources:3.3.1:testResources (default-testResources) @ ApiGateWay ---
-[INFO] skip non existing resourceDirectory /home/vboxuser/Desktop/Kefir/Backend/ApiGateWay/src/test/resources
+[INFO] skip non existing resourceDirectory /home/vboxuser/Desktop/Kefirchik/KefirInc/Backend/ApiGateWay/src/test/resources
 [INFO] 
 [INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ ApiGateWay ---
-[INFO] Nothing to compile - all classes are up to date
+[INFO] Changes detected - recompiling the module! :dependency
+[INFO] Compiling 1 source file with javac [debug release 17] to target/test-classes
 [INFO] 
 [INFO] <<< spring-boot:3.2.12:run (default-cli) < test-compile @ ApiGateWay <<<
 [INFO] 
@@ -34,47 +38,489 @@
  =========|_|==============|___/=/_/_/_/
  :: Spring Boot ::               (v3.2.12)
 
-2025-12-22T03:43:26.714Z  INFO 7769 --- [api-gateway] [           main] c.e.ApiGateWay.ApiGateWayApplication     : Starting ApiGateWayApplication using Java 17.0.17 with PID 7769 (/home/vboxuser/Desktop/Kefir/Backend/ApiGateWay/target/classes started by vboxuser in /home/vboxuser/Desktop/Kefir/Backend/ApiGateWay)
-2025-12-22T03:43:26.722Z  INFO 7769 --- [api-gateway] [           main] c.e.ApiGateWay.ApiGateWayApplication     : The following 1 profile is active: "local"
-2025-12-22T03:43:29.568Z  INFO 7769 --- [api-gateway] [           main] o.s.cloud.context.scope.GenericScope     : BeanFactory id=0eff55c7-04dd-304a-889c-b818673d4e7a
-2025-12-22T03:43:31.036Z  INFO 7769 --- [api-gateway] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
-2025-12-22T03:43:31.113Z  INFO 7769 --- [api-gateway] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2025-12-22T03:43:31.115Z  INFO 7769 --- [api-gateway] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.33]
-2025-12-22T03:43:31.255Z  INFO 7769 --- [api-gateway] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-2025-12-22T03:43:31.258Z  INFO 7769 --- [api-gateway] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 4426 ms
-2025-12-22T03:43:31.846Z  WARN 7769 --- [api-gateway] [           main] ConfigServletWebServerApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'unifiedController': Unsatisfied dependency expressed through field 'jdbcTemplate': No qualifying bean of type 'org.springframework.jdbc.core.JdbcTemplate' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {@org.springframework.beans.factory.annotation.Autowired(required=true)}
-2025-12-22T03:43:31.854Z  INFO 7769 --- [api-gateway] [           main] o.apache.catalina.core.StandardService   : Stopping service [Tomcat]
-2025-12-22T03:43:31.947Z  INFO 7769 --- [api-gateway] [           main] .s.b.a.l.ConditionEvaluationReportLogger : 
+2025-12-29T15:55:39.377Z  INFO 383108 --- [api-gateway] [           main] c.e.ApiGateWay.ApiGateWayApplication     : Starting ApiGateWayApplication using Java 17.0.17 with PID 383108 (/home/vboxuser/Desktop/Kefirchik/KefirInc/Backend/ApiGateWay/target/classes started by vboxuser in /home/vboxuser/Desktop/Kefirchik/KefirInc/Backend/ApiGateWay)
+2025-12-29T15:55:39.383Z  INFO 383108 --- [api-gateway] [           main] c.e.ApiGateWay.ApiGateWayApplication     : The following 1 profile is active: "local"
+2025-12-29T15:55:41.975Z  INFO 383108 --- [api-gateway] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-12-29T15:55:42.022Z  INFO 383108 --- [api-gateway] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 29 ms. Found 0 JPA repository interfaces.
+2025-12-29T15:55:42.745Z  INFO 383108 --- [api-gateway] [           main] o.s.cloud.context.scope.GenericScope     : BeanFactory id=59fb9b51-d11e-3101-8641-30a06713f428
+2025-12-29T15:55:44.438Z  INFO 383108 --- [api-gateway] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2025-12-29T15:55:44.475Z  INFO 383108 --- [api-gateway] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-12-29T15:55:44.475Z  INFO 383108 --- [api-gateway] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.33]
+2025-12-29T15:55:44.639Z  INFO 383108 --- [api-gateway] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-12-29T15:55:44.642Z  INFO 383108 --- [api-gateway] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 5141 ms
+2025-12-29T15:55:45.537Z  INFO 383108 --- [api-gateway] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2025-12-29T15:55:46.736Z  INFO 383108 --- [api-gateway] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@1a10c47e
+2025-12-29T15:55:46.743Z  INFO 383108 --- [api-gateway] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-12-29T15:55:46.988Z  INFO 383108 --- [api-gateway] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-12-29T15:55:47.234Z  INFO 383108 --- [api-gateway] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.4.10.Final
+2025-12-29T15:55:47.366Z  INFO 383108 --- [api-gateway] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2025-12-29T15:55:48.205Z  INFO 383108 --- [api-gateway] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-12-29T15:55:49.445Z  INFO 383108 --- [api-gateway] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-12-29T15:55:49.462Z  INFO 383108 --- [api-gateway] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-12-29T15:55:50.472Z  WARN 383108 --- [api-gateway] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-12-29T15:55:56.190Z  INFO 383108 --- [api-gateway] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint(s) beneath base path '/actuator'
+2025-12-29T15:55:56.527Z  INFO 383108 --- [api-gateway] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path ''
+2025-12-29T15:55:56.717Z  INFO 383108 --- [api-gateway] [           main] c.e.ApiGateWay.ApiGateWayApplication     : Started ApiGateWayApplication in 18.458 seconds (process running for 19.277)
+2025-12-29T15:59:37.909Z  INFO 383108 --- [api-gateway] [nio-8080-exec-4] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-12-29T15:59:37.913Z  INFO 383108 --- [api-gateway] [nio-8080-exec-4] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-12-29T15:59:37.924Z  INFO 383108 --- [api-gateway] [nio-8080-exec-4] o.s.web.servlet.DispatcherServlet        : Completed initialization in 10 ms
+2025-12-29T15:59:40.300Z  INFO 383108 --- [api-gateway] [nio-8080-exec-8] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
+2025-12-29T15:59:40.301Z  INFO 383108 --- [api-gateway] [nio-8080-exec-9] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
+2025-12-29T15:59:41.899Z  INFO 383108 --- [api-gateway] [nio-8080-exec-9] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
+2025-12-29T15:59:41.902Z  INFO 383108 --- [api-gateway] [nio-8080-exec-8] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
+=== GATEWAY LOGIN (HYBRID SUPPORT) ===
+✅ Received hybrid UUID token: auth-07f2c26b-45fe-4ab1-a3a3-c08bb17ceed3
+2025-12-29T16:00:55.369Z  INFO 383108 --- [api-gateway] [nio-8080-exec-8] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
+2025-12-29T16:00:55.372Z  INFO 383108 --- [api-gateway] [nio-8080-exec-9] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
+2025-12-29T16:00:55.502Z  INFO 383108 --- [api-gateway] [nio-8080-exec-8] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
+2025-12-29T16:00:55.525Z  INFO 383108 --- [api-gateway] [nio-8080-exec-9] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
+2025-12-29T16:00:58.300Z  INFO 383108 --- [api-gateway] [nio-8080-exec-1] c.example.ApiGateWay.UnifiedController   : 🛍️ Gateway: Получение корзин и заказов клиента 209
+2025-12-29T16:00:58.300Z  INFO 383108 --- [api-gateway] [io-8080-exec-10] c.example.ApiGateWay.UnifiedController   : 🛍️ Gateway: Получение корзин и заказов клиента 209
+2025-12-29T16:00:59.529Z  WARN 383108 --- [api-gateway] [nio-8080-exec-1] c.example.ApiGateWay.UnifiedController   : ⚠️ Эндпоинт заказов недоступен: [404] during [GET] to [http://localhost:8085/api/orders/client/209] [CartServiceClient#getClientOrders(int)]: [{"timestamp":"2025-12-29T16:00:59.480+00:00","status":404,"error":"Not Found","path":"/api/orders/client/209"}]
+2025-12-29T16:00:59.530Z  WARN 383108 --- [api-gateway] [io-8080-exec-10] c.example.ApiGateWay.UnifiedController   : ⚠️ Эндпоинт заказов недоступен: [404] during [GET] to [http://localhost:8085/api/orders/client/209] [CartServiceClient#getClientOrders(int)]: [{"timestamp":"2025-12-29T16:00:59.480+00:00","status":404,"error":"Not Found","path":"/api/orders/client/209"}]
+2025-12-29T16:01:11.237Z  INFO 383108 --- [api-gateway] [nio-8080-exec-7] c.example.ApiGateWay.UnifiedController   : 🛍️ Gateway: Получение корзин и заказов клиента 209
+2025-12-29T16:01:11.245Z  INFO 383108 --- [api-gateway] [nio-8080-exec-6] c.example.ApiGateWay.UnifiedController   : 🛍️ Gateway: Получение корзин и заказов клиента 209
+2025-12-29T16:01:11.342Z  WARN 383108 --- [api-gateway] [nio-8080-exec-6] c.example.ApiGateWay.UnifiedController   : ⚠️ Эндпоинт заказов недоступен: [404] during [GET] to [http://localhost:8085/api/orders/client/209] [CartServiceClient#getClientOrders(int)]: [{"timestamp":"2025-12-29T16:01:11.321+00:00","status":404,"error":"Not Found","path":"/api/orders/client/209"}]
+2025-12-29T16:01:11.368Z  WARN 383108 --- [api-gateway] [nio-8080-exec-7] c.example.ApiGateWay.UnifiedController   : ⚠️ Эндпоинт заказов недоступен: [404] during [GET] to [http://localhost:8085/api/orders/client/209] [CartServiceClient#getClientOrders(int)]: [{"timestamp":"2025-12-29T16:01:11.357+00:00","status":404,"error":"Not Found","path":"/api/orders/client/209"}]
+=== GATEWAY LOGIN (HYBRID SUPPORT) ===
+✅ Received hybrid UUID token: auth-26a49af1-dd86-442b-9117-c090261a8c71
+2025-12-29T16:10:08.168Z  INFO 383108 --- [api-gateway] [nio-8080-exec-4] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
+2025-12-29T16:10:08.168Z  INFO 383108 --- [api-gateway] [nio-8080-exec-3] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
+2025-12-29T16:10:08.319Z  INFO 383108 --- [api-gateway] [nio-8080-exec-3] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
+2025-12-29T16:10:08.321Z  INFO 383108 --- [api-gateway] [nio-8080-exec-4] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
+2025-12-29T16:10:10.312Z  INFO 383108 --- [api-gateway] [nio-8080-exec-5] c.example.ApiGateWay.UnifiedController   : 🛍️ Gateway: Получение корзин и заказов клиента 209
+2025-12-29T16:10:10.386Z  INFO 383108 --- [api-gateway] [nio-8080-exec-7] c.example.ApiGateWay.UnifiedController   : 🛍️ Gateway: Получение корзин и заказов клиента 209
+2025-12-29T16:10:10.392Z  WARN 383108 --- [api-gateway] [nio-8080-exec-5] c.example.ApiGateWay.UnifiedController   : ⚠️ Эндпоинт заказов недоступен: [404] during [GET] to [http://localhost:8085/api/orders/client/209] [CartServiceClient#getClientOrders(int)]: [{"timestamp":"2025-12-29T16:10:10.376+00:00","status":404,"error":"Not Found","path":"/api/orders/client/209"}]
+2025-12-29T16:10:10.528Z  WARN 383108 --- [api-gateway] [nio-8080-exec-7] c.example.ApiGateWay.UnifiedController   : ⚠️ Эндпоинт заказов недоступен: [404] during [GET] to [http://localhost:8085/api/orders/client/209] [CartServiceClient#getClientOrders(int)]: [{"timestamp":"2025-12-29T16:10:10.519+00:00","status":404,"error":"Not Found","path":"/api/orders/client/209"}]
+2025-12-29T16:29:35.586Z  INFO 383108 --- [api-gateway] [io-8080-exec-10] c.example.ApiGateWay.UnifiedController   : Testing PostgreSQL connection...
+2025-12-29T16:29:35.627Z  INFO 383108 --- [api-gateway] [nio-8080-exec-4] c.example.ApiGateWay.UnifiedController   : Testing PostgreSQL connection...
+2025-12-29T16:29:35.636Z  INFO 383108 --- [api-gateway] [io-8080-exec-10] c.example.ApiGateWay.UnifiedController   : Database connected: kefir_db PostgreSQL 16.11 (Ubuntu 16.11-0ubuntu0.24.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0, 64-bit
+2025-12-29T16:29:35.636Z  INFO 383108 --- [api-gateway] [nio-8080-exec-4] c.example.ApiGateWay.UnifiedController   : Database connected: kefir_db PostgreSQL 16.11 (Ubuntu 16.11-0ubuntu0.24.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0, 64-bit
+2025-12-29T16:29:35.801Z ERROR 383108 --- [api-gateway] [nio-8080-exec-5] o.a.c.c.C.[.[.[/].[dispatcherServlet]    : Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed: feign.FeignException$NotFound: [404] during [GET] to [http://localhost:8097/api/auth/check] [AuthServiceClient#check()]: [{"timestamp":"2025-12-29T16:29:35.775+00:00","status":404,"error":"Not Found","path":"/api/auth/check"}]] with root cause
 
-Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
-2025-12-22T03:43:32.017Z ERROR 7769 --- [api-gateway] [           main] o.s.b.d.LoggingFailureAnalysisReporter   : 
+feign.FeignException$NotFound: [404] during [GET] to [http://localhost:8097/api/auth/check] [AuthServiceClient#check()]: [{"timestamp":"2025-12-29T16:29:35.775+00:00","status":404,"error":"Not Found","path":"/api/auth/check"}]
+	at feign.FeignException.clientErrorStatus(FeignException.java:228) ~[feign-core-13.1.jar:na]
+	at feign.FeignException.errorStatus(FeignException.java:203) ~[feign-core-13.1.jar:na]
+	at feign.FeignException.errorStatus(FeignException.java:194) ~[feign-core-13.1.jar:na]
+	at feign.codec.ErrorDecoder$Default.decode(ErrorDecoder.java:103) ~[feign-core-13.1.jar:na]
+	at feign.InvocationContext.decodeError(InvocationContext.java:126) ~[feign-core-13.1.jar:na]
+	at feign.InvocationContext.proceed(InvocationContext.java:72) ~[feign-core-13.1.jar:na]
+	at feign.ResponseHandler.handleResponse(ResponseHandler.java:63) ~[feign-core-13.1.jar:na]
+	at feign.SynchronousMethodHandler.executeAndDecode(SynchronousMethodHandler.java:114) ~[feign-core-13.1.jar:na]
+	at feign.SynchronousMethodHandler.invoke(SynchronousMethodHandler.java:70) ~[feign-core-13.1.jar:na]
+	at feign.ReflectiveFeign$FeignInvocationHandler.invoke(ReflectiveFeign.java:99) ~[feign-core-13.1.jar:na]
+	at jdk.proxy2/jdk.proxy2.$Proxy129.check(Unknown Source) ~[na:na]
+	at com.example.ApiGateWay.UnifiedController.checkAuth(UnifiedController.java:140) ~[classes/:na]
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:na]
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77) ~[na:na]
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569) ~[na:na]
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:255) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:188) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:118) ~[spring-webmvc-6.1.15.jar:6.1.15]
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:926) ~[spring-webmvc-6.1.15.jar:6.1.15]
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:831) ~[spring-webmvc-6.1.15.jar:6.1.15]
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87) ~[spring-webmvc-6.1.15.jar:6.1.15]
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089) ~[spring-webmvc-6.1.15.jar:6.1.15]
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979) ~[spring-webmvc-6.1.15.jar:6.1.15]
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014) ~[spring-webmvc-6.1.15.jar:6.1.15]
+	at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:903) ~[spring-webmvc-6.1.15.jar:6.1.15]
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:564) ~[tomcat-embed-core-10.1.33.jar:6.0]
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885) ~[spring-webmvc-6.1.15.jar:6.1.15]
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658) ~[tomcat-embed-core-10.1.33.jar:6.0]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:195) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51) ~[tomcat-embed-websocket-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.springframework.web.filter.CorsFilter.doFilterInternal(CorsFilter.java:91) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.springframework.web.filter.ServerHttpObservationFilter.doFilterInternal(ServerHttpObservationFilter.java:113) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:483) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:115) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:397) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:905) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1741) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1190) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at java.base/java.lang.Thread.run(Thread.java:840) ~[na:na]
 
-***************************
-APPLICATION FAILED TO START
-***************************
+2025-12-29T16:29:35.799Z ERROR 383108 --- [api-gateway] [nio-8080-exec-3] o.a.c.c.C.[.[.[/].[dispatcherServlet]    : Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed: feign.FeignException$NotFound: [404] during [GET] to [http://localhost:8097/api/auth/check] [AuthServiceClient#check()]: [{"timestamp":"2025-12-29T16:29:35.775+00:00","status":404,"error":"Not Found","path":"/api/auth/check"}]] with root cause
 
-Description:
+feign.FeignException$NotFound: [404] during [GET] to [http://localhost:8097/api/auth/check] [AuthServiceClient#check()]: [{"timestamp":"2025-12-29T16:29:35.775+00:00","status":404,"error":"Not Found","path":"/api/auth/check"}]
+	at feign.FeignException.clientErrorStatus(FeignException.java:228) ~[feign-core-13.1.jar:na]
+	at feign.FeignException.errorStatus(FeignException.java:203) ~[feign-core-13.1.jar:na]
+	at feign.FeignException.errorStatus(FeignException.java:194) ~[feign-core-13.1.jar:na]
+	at feign.codec.ErrorDecoder$Default.decode(ErrorDecoder.java:103) ~[feign-core-13.1.jar:na]
+	at feign.InvocationContext.decodeError(InvocationContext.java:126) ~[feign-core-13.1.jar:na]
+	at feign.InvocationContext.proceed(InvocationContext.java:72) ~[feign-core-13.1.jar:na]
+	at feign.ResponseHandler.handleResponse(ResponseHandler.java:63) ~[feign-core-13.1.jar:na]
+	at feign.SynchronousMethodHandler.executeAndDecode(SynchronousMethodHandler.java:114) ~[feign-core-13.1.jar:na]
+	at feign.SynchronousMethodHandler.invoke(SynchronousMethodHandler.java:70) ~[feign-core-13.1.jar:na]
+	at feign.ReflectiveFeign$FeignInvocationHandler.invoke(ReflectiveFeign.java:99) ~[feign-core-13.1.jar:na]
+	at jdk.proxy2/jdk.proxy2.$Proxy129.check(Unknown Source) ~[na:na]
+	at com.example.ApiGateWay.UnifiedController.checkAuth(UnifiedController.java:140) ~[classes/:na]
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:na]
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77) ~[na:na]
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569) ~[na:na]
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:255) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:188) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:118) ~[spring-webmvc-6.1.15.jar:6.1.15]
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:926) ~[spring-webmvc-6.1.15.jar:6.1.15]
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:831) ~[spring-webmvc-6.1.15.jar:6.1.15]
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87) ~[spring-webmvc-6.1.15.jar:6.1.15]
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089) ~[spring-webmvc-6.1.15.jar:6.1.15]
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979) ~[spring-webmvc-6.1.15.jar:6.1.15]
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014) ~[spring-webmvc-6.1.15.jar:6.1.15]
+	at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:903) ~[spring-webmvc-6.1.15.jar:6.1.15]
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:564) ~[tomcat-embed-core-10.1.33.jar:6.0]
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885) ~[spring-webmvc-6.1.15.jar:6.1.15]
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658) ~[tomcat-embed-core-10.1.33.jar:6.0]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:195) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51) ~[tomcat-embed-websocket-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.springframework.web.filter.CorsFilter.doFilterInternal(CorsFilter.java:91) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.springframework.web.filter.ServerHttpObservationFilter.doFilterInternal(ServerHttpObservationFilter.java:113) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:483) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:115) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:397) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:905) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1741) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1190) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at java.base/java.lang.Thread.run(Thread.java:840) ~[na:na]
 
-Field jdbcTemplate in com.example.ApiGateWay.UnifiedController required a bean of type 'org.springframework.jdbc.core.JdbcTemplate' that could not be found.
+2025-12-29T16:29:35.856Z  INFO 383108 --- [api-gateway] [nio-8080-exec-9] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
+2025-12-29T16:29:35.893Z  INFO 383108 --- [api-gateway] [nio-8080-exec-8] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
+2025-12-29T16:29:35.905Z  INFO 383108 --- [api-gateway] [nio-8080-exec-9] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
+2025-12-29T16:29:35.962Z  INFO 383108 --- [api-gateway] [nio-8080-exec-8] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
+2025-12-29T16:29:51.255Z  INFO 383108 --- [api-gateway] [nio-8080-exec-4] c.example.ApiGateWay.UnifiedController   : Testing PostgreSQL connection...
+2025-12-29T16:29:51.261Z  INFO 383108 --- [api-gateway] [nio-8080-exec-4] c.example.ApiGateWay.UnifiedController   : Database connected: kefir_db PostgreSQL 16.11 (Ubuntu 16.11-0ubuntu0.24.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0, 64-bit
+2025-12-29T16:29:51.267Z  INFO 383108 --- [api-gateway] [nio-8080-exec-3] c.example.ApiGateWay.UnifiedController   : Testing PostgreSQL connection...
+2025-12-29T16:29:51.275Z  INFO 383108 --- [api-gateway] [nio-8080-exec-3] c.example.ApiGateWay.UnifiedController   : Database connected: kefir_db PostgreSQL 16.11 (Ubuntu 16.11-0ubuntu0.24.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0, 64-bit
+2025-12-29T16:29:51.432Z ERROR 383108 --- [api-gateway] [nio-8080-exec-7] o.a.c.c.C.[.[.[/].[dispatcherServlet]    : Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed: feign.FeignException$NotFound: [404] during [GET] to [http://localhost:8097/api/auth/check] [AuthServiceClient#check()]: [{"timestamp":"2025-12-29T16:29:51.416+00:00","status":404,"error":"Not Found","path":"/api/auth/check"}]] with root cause
 
-The injection point has the following annotations:
-	- @org.springframework.beans.factory.annotation.Autowired(required=true)
+feign.FeignException$NotFound: [404] during [GET] to [http://localhost:8097/api/auth/check] [AuthServiceClient#check()]: [{"timestamp":"2025-12-29T16:29:51.416+00:00","status":404,"error":"Not Found","path":"/api/auth/check"}]
+	at feign.FeignException.clientErrorStatus(FeignException.java:228) ~[feign-core-13.1.jar:na]
+	at feign.FeignException.errorStatus(FeignException.java:203) ~[feign-core-13.1.jar:na]
+	at feign.FeignException.errorStatus(FeignException.java:194) ~[feign-core-13.1.jar:na]
+	at feign.codec.ErrorDecoder$Default.decode(ErrorDecoder.java:103) ~[feign-core-13.1.jar:na]
+	at feign.InvocationContext.decodeError(InvocationContext.java:126) ~[feign-core-13.1.jar:na]
+	at feign.InvocationContext.proceed(InvocationContext.java:72) ~[feign-core-13.1.jar:na]
+	at feign.ResponseHandler.handleResponse(ResponseHandler.java:63) ~[feign-core-13.1.jar:na]
+	at feign.SynchronousMethodHandler.executeAndDecode(SynchronousMethodHandler.java:114) ~[feign-core-13.1.jar:na]
+	at feign.SynchronousMethodHandler.invoke(SynchronousMethodHandler.java:70) ~[feign-core-13.1.jar:na]
+	at feign.ReflectiveFeign$FeignInvocationHandler.invoke(ReflectiveFeign.java:99) ~[feign-core-13.1.jar:na]
+	at jdk.proxy2/jdk.proxy2.$Proxy129.check(Unknown Source) ~[na:na]
+	at com.example.ApiGateWay.UnifiedController.checkAuth(UnifiedController.java:140) ~[classes/:na]
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:na]
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77) ~[na:na]
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569) ~[na:na]
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:255) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:188) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:118) ~[spring-webmvc-6.1.15.jar:6.1.15]
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:926) ~[spring-webmvc-6.1.15.jar:6.1.15]
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:831) ~[spring-webmvc-6.1.15.jar:6.1.15]
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87) ~[spring-webmvc-6.1.15.jar:6.1.15]
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089) ~[spring-webmvc-6.1.15.jar:6.1.15]
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979) ~[spring-webmvc-6.1.15.jar:6.1.15]
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014) ~[spring-webmvc-6.1.15.jar:6.1.15]
+	at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:903) ~[spring-webmvc-6.1.15.jar:6.1.15]
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:564) ~[tomcat-embed-core-10.1.33.jar:6.0]
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885) ~[spring-webmvc-6.1.15.jar:6.1.15]
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658) ~[tomcat-embed-core-10.1.33.jar:6.0]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:195) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51) ~[tomcat-embed-websocket-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.springframework.web.filter.CorsFilter.doFilterInternal(CorsFilter.java:91) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.springframework.web.filter.ServerHttpObservationFilter.doFilterInternal(ServerHttpObservationFilter.java:113) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:483) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:115) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:397) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:905) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1741) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1190) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at java.base/java.lang.Thread.run(Thread.java:840) ~[na:na]
 
+2025-12-29T16:29:51.450Z ERROR 383108 --- [api-gateway] [nio-8080-exec-6] o.a.c.c.C.[.[.[/].[dispatcherServlet]    : Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed: feign.FeignException$NotFound: [404] during [GET] to [http://localhost:8097/api/auth/check] [AuthServiceClient#check()]: [{"timestamp":"2025-12-29T16:29:51.422+00:00","status":404,"error":"Not Found","path":"/api/auth/check"}]] with root cause
 
-Action:
+feign.FeignException$NotFound: [404] during [GET] to [http://localhost:8097/api/auth/check] [AuthServiceClient#check()]: [{"timestamp":"2025-12-29T16:29:51.422+00:00","status":404,"error":"Not Found","path":"/api/auth/check"}]
+	at feign.FeignException.clientErrorStatus(FeignException.java:228) ~[feign-core-13.1.jar:na]
+	at feign.FeignException.errorStatus(FeignException.java:203) ~[feign-core-13.1.jar:na]
+	at feign.FeignException.errorStatus(FeignException.java:194) ~[feign-core-13.1.jar:na]
+	at feign.codec.ErrorDecoder$Default.decode(ErrorDecoder.java:103) ~[feign-core-13.1.jar:na]
+	at feign.InvocationContext.decodeError(InvocationContext.java:126) ~[feign-core-13.1.jar:na]
+	at feign.InvocationContext.proceed(InvocationContext.java:72) ~[feign-core-13.1.jar:na]
+	at feign.ResponseHandler.handleResponse(ResponseHandler.java:63) ~[feign-core-13.1.jar:na]
+	at feign.SynchronousMethodHandler.executeAndDecode(SynchronousMethodHandler.java:114) ~[feign-core-13.1.jar:na]
+	at feign.SynchronousMethodHandler.invoke(SynchronousMethodHandler.java:70) ~[feign-core-13.1.jar:na]
+	at feign.ReflectiveFeign$FeignInvocationHandler.invoke(ReflectiveFeign.java:99) ~[feign-core-13.1.jar:na]
+	at jdk.proxy2/jdk.proxy2.$Proxy129.check(Unknown Source) ~[na:na]
+	at com.example.ApiGateWay.UnifiedController.checkAuth(UnifiedController.java:140) ~[classes/:na]
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:na]
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77) ~[na:na]
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569) ~[na:na]
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:255) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:188) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:118) ~[spring-webmvc-6.1.15.jar:6.1.15]
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:926) ~[spring-webmvc-6.1.15.jar:6.1.15]
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:831) ~[spring-webmvc-6.1.15.jar:6.1.15]
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87) ~[spring-webmvc-6.1.15.jar:6.1.15]
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089) ~[spring-webmvc-6.1.15.jar:6.1.15]
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979) ~[spring-webmvc-6.1.15.jar:6.1.15]
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014) ~[spring-webmvc-6.1.15.jar:6.1.15]
+	at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:903) ~[spring-webmvc-6.1.15.jar:6.1.15]
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:564) ~[tomcat-embed-core-10.1.33.jar:6.0]
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885) ~[spring-webmvc-6.1.15.jar:6.1.15]
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658) ~[tomcat-embed-core-10.1.33.jar:6.0]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:195) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51) ~[tomcat-embed-websocket-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.springframework.web.filter.CorsFilter.doFilterInternal(CorsFilter.java:91) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.springframework.web.filter.ServerHttpObservationFilter.doFilterInternal(ServerHttpObservationFilter.java:113) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.15.jar:6.1.15]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:483) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:115) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:397) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:905) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1741) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1190) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63) ~[tomcat-embed-core-10.1.33.jar:10.1.33]
+	at java.base/java.lang.Thread.run(Thread.java:840) ~[na:na]
 
-Consider defining a bean of type 'org.springframework.jdbc.core.JdbcTemplate' in your configuration.
-
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD FAILURE
-[INFO] ------------------------------------------------------------------------
-[INFO] Total time:  11.338 s
-[INFO] Finished at: 2025-12-22T03:43:32Z
-[INFO] ------------------------------------------------------------------------
-[ERROR] Failed to execute goal org.springframework.boot:spring-boot-maven-plugin:3.2.12:run (default-cli) on project ApiGateWay: Process terminated with exit code: 1 -> [Help 1]
-[ERROR] 
-[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
-[ERROR] Re-run Maven using the -X switch to enable full debug logging.
-[ERROR] 
-[ERROR] For more information about the errors and possible solutions, please read the following articles:
-[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException
+2025-12-29T16:29:51.765Z  INFO 383108 --- [api-gateway] [nio-8080-exec-2] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
+2025-12-29T16:29:51.809Z  INFO 383108 --- [api-gateway] [nio-8080-exec-1] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
+2025-12-29T16:29:51.821Z  INFO 383108 --- [api-gateway] [nio-8080-exec-2] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
+2025-12-29T16:29:51.885Z  INFO 383108 --- [api-gateway] [nio-8080-exec-1] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
+=== GATEWAY LOGIN (HYBRID SUPPORT) ===
+✅ Received hybrid UUID token: auth-77fab885-1714-4266-a39b-d316de036220
+2025-12-29T16:37:27.684Z  INFO 383108 --- [api-gateway] [nio-8080-exec-3] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
+2025-12-29T16:37:27.697Z  INFO 383108 --- [api-gateway] [nio-8080-exec-4] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
+2025-12-29T16:37:27.801Z  INFO 383108 --- [api-gateway] [nio-8080-exec-3] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
+2025-12-29T16:37:27.819Z  INFO 383108 --- [api-gateway] [nio-8080-exec-4] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
+2025-12-29T16:37:34.928Z  INFO 383108 --- [api-gateway] [io-8080-exec-10] c.example.ApiGateWay.UnifiedController   : 🛍️ Gateway: Получение корзин и заказов клиента 209
+2025-12-29T16:37:34.935Z  INFO 383108 --- [api-gateway] [nio-8080-exec-5] c.example.ApiGateWay.UnifiedController   : 🛍️ Gateway: Получение корзин и заказов клиента 209
+2025-12-29T16:37:34.988Z  WARN 383108 --- [api-gateway] [io-8080-exec-10] c.example.ApiGateWay.UnifiedController   : ⚠️ Эндпоинт заказов недоступен: [404] during [GET] to [http://localhost:8085/api/orders/client/209] [CartServiceClient#getClientOrders(int)]: [{"timestamp":"2025-12-29T16:37:34.977+00:00","status":404,"error":"Not Found","path":"/api/orders/client/209"}]
+2025-12-29T16:37:34.993Z  WARN 383108 --- [api-gateway] [nio-8080-exec-5] c.example.ApiGateWay.UnifiedController   : ⚠️ Эндпоинт заказов недоступен: [404] during [GET] to [http://localhost:8085/api/orders/client/209] [CartServiceClient#getClientOrders(int)]: [{"timestamp":"2025-12-29T16:37:34.991+00:00","status":404,"error":"Not Found","path":"/api/orders/client/209"}]
+2025-12-29T16:37:37.537Z  INFO 383108 --- [api-gateway] [nio-8080-exec-7] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
+2025-12-29T16:37:37.609Z  INFO 383108 --- [api-gateway] [nio-8080-exec-7] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
+2025-12-29T16:37:37.671Z  INFO 383108 --- [api-gateway] [nio-8080-exec-9] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
+2025-12-29T16:37:37.736Z  INFO 383108 --- [api-gateway] [nio-8080-exec-9] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
+2025-12-29T16:37:39.151Z  INFO 383108 --- [api-gateway] [nio-8080-exec-3] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
+2025-12-29T16:37:39.159Z  INFO 383108 --- [api-gateway] [nio-8080-exec-4] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
+2025-12-29T16:37:39.196Z  INFO 383108 --- [api-gateway] [nio-8080-exec-3] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
+2025-12-29T16:37:39.222Z  INFO 383108 --- [api-gateway] [nio-8080-exec-4] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
+2025-12-29T16:38:57.945Z  INFO 383108 --- [api-gateway] [nio-8080-exec-7] c.example.ApiGateWay.UnifiedController   : Testing PostgreSQL connection...
+2025-12-29T16:38:57.953Z  INFO 383108 --- [api-gateway] [nio-8080-exec-7] c.example.ApiGateWay.UnifiedController   : Database connected: kefir_db PostgreSQL 16.11 (Ubuntu 16.11-0ubuntu0.24.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0, 64-bit
+2025-12-29T16:39:22.729Z  INFO 383108 --- [api-gateway] [nio-8080-exec-9] c.example.ApiGateWay.UnifiedController   : Testing PostgreSQL connection...
+2025-12-29T16:39:22.731Z  INFO 383108 --- [api-gateway] [nio-8080-exec-1] c.example.ApiGateWay.UnifiedController   : Testing PostgreSQL connection...
+2025-12-29T16:39:22.740Z  INFO 383108 --- [api-gateway] [nio-8080-exec-1] c.example.ApiGateWay.UnifiedController   : Database connected: kefir_db PostgreSQL 16.11 (Ubuntu 16.11-0ubuntu0.24.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0, 64-bit
+2025-12-29T16:39:22.740Z  INFO 383108 --- [api-gateway] [nio-8080-exec-9] c.example.ApiGateWay.UnifiedController   : Database connected: kefir_db PostgreSQL 16.11 (Ubuntu 16.11-0ubuntu0.24.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0, 64-bit
+=== GATEWAY LOGIN (HYBRID SUPPORT) ===
+✅ Received hybrid UUID token: auth-6ee56482-99b3-4916-bdcd-2696fcfca022
+2025-12-29T16:39:29.766Z  INFO 383108 --- [api-gateway] [io-8080-exec-10] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
+2025-12-29T16:39:29.770Z  INFO 383108 --- [api-gateway] [nio-8080-exec-6] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
+2025-12-29T16:39:29.841Z  INFO 383108 --- [api-gateway] [io-8080-exec-10] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
+2025-12-29T16:39:29.854Z  INFO 383108 --- [api-gateway] [nio-8080-exec-6] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
+2025-12-29T16:39:35.374Z  INFO 383108 --- [api-gateway] [nio-8080-exec-7] c.example.ApiGateWay.UnifiedController   : === СОЗДАНИЕ ЗАКАЗА ===
+2025-12-29T16:39:35.374Z  INFO 383108 --- [api-gateway] [nio-8080-exec-7] c.example.ApiGateWay.UnifiedController   : Получен заказ: {items=[{productId=90, quantity=2}], totalAmount=360}
+2025-12-29T16:39:35.374Z  INFO 383108 --- [api-gateway] [nio-8080-exec-7] c.example.ApiGateWay.UnifiedController   : Authorization header: Bearer auth-6ee56482-99b3-4916-bdcd-2696fcfca022
+2025-12-29T16:39:35.375Z  INFO 383108 --- [api-gateway] [nio-8080-exec-7] c.example.ApiGateWay.UnifiedController   : === ИЗВЛЕЧЕНИЕ USER ID ИЗ UUID ТОКЕНА ===
+2025-12-29T16:39:35.375Z  INFO 383108 --- [api-gateway] [nio-8080-exec-7] c.example.ApiGateWay.UnifiedController   : Токен: auth-6ee56482-99b3-4916-bdcd-2696fcfca022
+2025-12-29T16:39:35.375Z  INFO 383108 --- [api-gateway] [nio-8080-exec-7] c.example.ApiGateWay.UnifiedController   : URL запроса: http://localhost:8097/api/auth/validate?clientToken=auth-6ee56482-99b3-4916-bdcd-2696fcfca022
+2025-12-29T16:39:35.375Z  INFO 383108 --- [api-gateway] [nio-8080-exec-7] c.example.ApiGateWay.UnifiedController   : Отправка POST запроса с пустым телом и параметром в query string...
+2025-12-29T16:39:35.469Z  INFO 383108 --- [api-gateway] [nio-8080-exec-7] c.example.ApiGateWay.UnifiedController   : Статус ответа: 200 OK
+2025-12-29T16:39:35.471Z  INFO 383108 --- [api-gateway] [nio-8080-exec-7] c.example.ApiGateWay.UnifiedController   : Тело ответа: {valid=true, sessionId=6ee56482-99b3-4916-bdcd-2696fcfca022, tokenType=uuid, message=UUID session is valid, userId=59, user={magaz=, createdAt=2025-12-15T20:50:07.356289, firstname=client, role=CLIENT, city=, id=59, age=0, email=client@mail.ru, username=client, status=inactive, updatedAt=2025-12-15T21:01:07.318692}}
+2025-12-29T16:39:35.471Z  INFO 383108 --- [api-gateway] [nio-8080-exec-7] c.example.ApiGateWay.UnifiedController   : ✅ Токен валиден
+2025-12-29T16:39:35.472Z  INFO 383108 --- [api-gateway] [nio-8080-exec-7] c.example.ApiGateWay.UnifiedController   : ✅ Найден userId: 59
+2025-12-29T16:39:35.472Z  INFO 383108 --- [api-gateway] [nio-8080-exec-7] c.example.ApiGateWay.UnifiedController   : ✅ Извлечен userId: 59
+2025-12-29T16:39:35.744Z  INFO 383108 --- [api-gateway] [nio-8080-exec-7] c.example.ApiGateWay.UnifiedController   : Создана корзина для пользователя 59: {id=22, clientId=59, createdDate=2025-12-29T16:39:35.490593013, status=active}
+2025-12-29T16:39:35.812Z  INFO 383108 --- [api-gateway] [nio-8080-exec-7] c.example.ApiGateWay.UnifiedController   : Добавлен товар в корзину: {id=71, cartId=22, productId=90, quantity=2, price=180.0}
+2025-12-29T16:39:35.813Z  INFO 383108 --- [api-gateway] [nio-8080-exec-7] c.example.ApiGateWay.UnifiedController   : Оформление заказа из корзины: 22
+2025-12-29T16:39:35.957Z  INFO 383108 --- [api-gateway] [nio-8080-exec-7] c.example.ApiGateWay.UnifiedController   : Оформлен заказ: {totalAmount=360.0, orderId=ORD-1767026375924, cartId=22, message=Заказ успешно оформлен, items=[{quantity=2, productId=90, price=180.0}], itemsCount=1, status=CREATED, timestamp=2025-12-29T16:39:35.945+00:00, dbOrderId=20}
+2025-12-29T16:39:35.958Z  INFO 383108 --- [api-gateway] [nio-8080-exec-7] c.example.ApiGateWay.UnifiedController   : === ОБНОВЛЕНИЕ КОЛИЧЕСТВА ТОВАРОВ ===
+2025-12-29T16:39:35.958Z  INFO 383108 --- [api-gateway] [nio-8080-exec-7] c.example.ApiGateWay.UnifiedController   : Обновление товара ID 90: уменьшаем на 2 шт. (было 50 шт.)
+2025-12-29T16:39:36.158Z  INFO 383108 --- [api-gateway] [nio-8080-exec-7] c.example.ApiGateWay.UnifiedController   : ✅ Товар ID 90 обновлен: было 50 шт., стало 48 шт. (уменьшено на 2 шт.)
+2025-12-29T16:39:36.159Z  INFO 383108 --- [api-gateway] [nio-8080-exec-7] c.example.ApiGateWay.UnifiedController   : Обновление количества товаров завершено: ✅ ВСЕ ТОВАРЫ ОБНОВЛЕНЫ
+2025-12-29T16:39:36.161Z  INFO 383108 --- [api-gateway] [nio-8080-exec-7] c.example.ApiGateWay.UnifiedController   : ✅ Заказ создан: ORD-1767026376159 для пользователя 59
+2025-12-29T16:39:36.162Z  INFO 383108 --- [api-gateway] [nio-8080-exec-7] c.example.ApiGateWay.UnifiedController   : 📦 Обновлено товаров: 1/1
+2025-12-29T16:39:36.221Z  INFO 383108 --- [api-gateway] [nio-8080-exec-9] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
+2025-12-29T16:39:36.270Z  INFO 383108 --- [api-gateway] [nio-8080-exec-9] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
+2025-12-29T16:39:40.472Z  INFO 383108 --- [api-gateway] [nio-8080-exec-2] c.example.ApiGateWay.UnifiedController   : 🛍️ Gateway: Получение корзин и заказов клиента 59
+2025-12-29T16:39:40.479Z  INFO 383108 --- [api-gateway] [nio-8080-exec-3] c.example.ApiGateWay.UnifiedController   : 🛍️ Gateway: Получение корзин и заказов клиента 59
+2025-12-29T16:39:40.547Z  WARN 383108 --- [api-gateway] [nio-8080-exec-3] c.example.ApiGateWay.UnifiedController   : ⚠️ Эндпоинт заказов недоступен: [404] during [GET] to [http://localhost:8085/api/orders/client/59] [CartServiceClient#getClientOrders(int)]: [{"timestamp":"2025-12-29T16:39:40.535+00:00","status":404,"error":"Not Found","path":"/api/orders/client/59"}]
+2025-12-29T16:39:40.549Z  WARN 383108 --- [api-gateway] [nio-8080-exec-2] c.example.ApiGateWay.UnifiedController   : ⚠️ Эндпоинт заказов недоступен: [404] during [GET] to [http://localhost:8085/api/orders/client/59] [CartServiceClient#getClientOrders(int)]: [{"timestamp":"2025-12-29T16:39:40.541+00:00","status":404,"error":"Not Found","path":"/api/orders/client/59"}]
+2025-12-29T16:40:34.966Z  INFO 383108 --- [api-gateway] [nio-8080-exec-8] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
+2025-12-29T16:40:34.971Z  INFO 383108 --- [api-gateway] [nio-8080-exec-7] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
+2025-12-29T16:40:35.060Z  INFO 383108 --- [api-gateway] [nio-8080-exec-8] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
+2025-12-29T16:40:35.060Z  INFO 383108 --- [api-gateway] [nio-8080-exec-7] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
+2025-12-29T16:40:37.068Z  INFO 383108 --- [api-gateway] [nio-8080-exec-9] c.example.ApiGateWay.UnifiedController   : Testing PostgreSQL connection...
+2025-12-29T16:40:37.070Z  INFO 383108 --- [api-gateway] [nio-8080-exec-1] c.example.ApiGateWay.UnifiedController   : Testing PostgreSQL connection...
+2025-12-29T16:40:37.072Z  INFO 383108 --- [api-gateway] [nio-8080-exec-9] c.example.ApiGateWay.UnifiedController   : Database connected: kefir_db PostgreSQL 16.11 (Ubuntu 16.11-0ubuntu0.24.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0, 64-bit
+2025-12-29T16:40:37.088Z  INFO 383108 --- [api-gateway] [nio-8080-exec-1] c.example.ApiGateWay.UnifiedController   : Database connected: kefir_db PostgreSQL 16.11 (Ubuntu 16.11-0ubuntu0.24.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0, 64-bit
+=== GATEWAY LOGIN (HYBRID SUPPORT) ===
+✅ Received hybrid UUID token: auth-5df7fd14-8c6b-4515-92dd-cc4b3b87c356
+2025-12-29T16:45:36.101Z  INFO 383108 --- [api-gateway] [nio-8080-exec-6] c.example.ApiGateWay.UnifiedController   : Testing PostgreSQL connection...
+2025-12-29T16:45:36.108Z  INFO 383108 --- [api-gateway] [nio-8080-exec-6] c.example.ApiGateWay.UnifiedController   : Database connected: kefir_db PostgreSQL 16.11 (Ubuntu 16.11-0ubuntu0.24.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0, 64-bit
+2025-12-29T16:46:09.365Z  INFO 383108 --- [api-gateway] [nio-8080-exec-1] c.example.ApiGateWay.UnifiedController   : Testing PostgreSQL connection...
+2025-12-29T16:46:09.369Z  INFO 383108 --- [api-gateway] [nio-8080-exec-1] c.example.ApiGateWay.UnifiedController   : Database connected: kefir_db PostgreSQL 16.11 (Ubuntu 16.11-0ubuntu0.24.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0, 64-bit
+2025-12-29T16:46:09.388Z  INFO 383108 --- [api-gateway] [nio-8080-exec-2] c.example.ApiGateWay.UnifiedController   : Testing PostgreSQL connection...
+2025-12-29T16:46:09.396Z  INFO 383108 --- [api-gateway] [nio-8080-exec-2] c.example.ApiGateWay.UnifiedController   : Database connected: kefir_db PostgreSQL 16.11 (Ubuntu 16.11-0ubuntu0.24.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0, 64-bit
+=== GATEWAY LOGIN (HYBRID SUPPORT) ===
+✅ Received hybrid UUID token: auth-edfae2d8-51ca-420a-b02e-269c49687f03
+2025-12-29T16:46:14.578Z  INFO 383108 --- [api-gateway] [nio-8080-exec-4] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
+2025-12-29T16:46:14.575Z  INFO 383108 --- [api-gateway] [nio-8080-exec-7] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
+2025-12-29T16:46:14.674Z  INFO 383108 --- [api-gateway] [nio-8080-exec-7] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
+2025-12-29T16:46:14.708Z  INFO 383108 --- [api-gateway] [nio-8080-exec-4] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
+2025-12-29T16:46:17.887Z  INFO 383108 --- [api-gateway] [nio-8080-exec-1] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
+2025-12-29T16:46:17.899Z  INFO 383108 --- [api-gateway] [nio-8080-exec-2] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
+2025-12-29T16:46:17.944Z  INFO 383108 --- [api-gateway] [nio-8080-exec-2] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
+2025-12-29T16:46:17.955Z  INFO 383108 --- [api-gateway] [nio-8080-exec-1] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
+2025-12-29T16:46:20.013Z  INFO 383108 --- [api-gateway] [nio-8080-exec-5] c.example.ApiGateWay.UnifiedController   : Testing PostgreSQL connection...
+2025-12-29T16:46:20.027Z  INFO 383108 --- [api-gateway] [nio-8080-exec-6] c.example.ApiGateWay.UnifiedController   : Testing PostgreSQL connection...
+2025-12-29T16:46:20.029Z  INFO 383108 --- [api-gateway] [nio-8080-exec-5] c.example.ApiGateWay.UnifiedController   : Database connected: kefir_db PostgreSQL 16.11 (Ubuntu 16.11-0ubuntu0.24.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0, 64-bit
+2025-12-29T16:46:20.031Z  INFO 383108 --- [api-gateway] [nio-8080-exec-6] c.example.ApiGateWay.UnifiedController   : Database connected: kefir_db PostgreSQL 16.11 (Ubuntu 16.11-0ubuntu0.24.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0, 64-bit
+=== GATEWAY LOGIN (HYBRID SUPPORT) ===
+✅ Received hybrid UUID token: auth-daaa6a21-06da-414f-82c0-3fbf93296c4c
+2025-12-29T16:46:33.869Z  INFO 383108 --- [api-gateway] [nio-8080-exec-9] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
+2025-12-29T16:46:33.877Z  INFO 383108 --- [api-gateway] [nio-8080-exec-8] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
+2025-12-29T16:46:33.932Z  INFO 383108 --- [api-gateway] [nio-8080-exec-8] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
+2025-12-29T16:46:33.953Z  INFO 383108 --- [api-gateway] [nio-8080-exec-9] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
+2025-12-29T16:46:39.332Z  INFO 383108 --- [api-gateway] [nio-8080-exec-2] c.example.ApiGateWay.UnifiedController   : 🛍️ Gateway: Получение корзин и заказов клиента 59
+2025-12-29T16:46:39.333Z  INFO 383108 --- [api-gateway] [nio-8080-exec-1] c.example.ApiGateWay.UnifiedController   : 🛍️ Gateway: Получение корзин и заказов клиента 59
+2025-12-29T16:46:39.446Z  WARN 383108 --- [api-gateway] [nio-8080-exec-2] c.example.ApiGateWay.UnifiedController   : ⚠️ Эндпоинт заказов недоступен: [404] during [GET] to [http://localhost:8085/api/orders/client/59] [CartServiceClient#getClientOrders(int)]: [{"timestamp":"2025-12-29T16:46:39.432+00:00","status":404,"error":"Not Found","path":"/api/orders/client/59"}]
+2025-12-29T16:46:39.459Z  WARN 383108 --- [api-gateway] [nio-8080-exec-1] c.example.ApiGateWay.UnifiedController   : ⚠️ Эндпоинт заказов недоступен: [404] during [GET] to [http://localhost:8085/api/orders/client/59] [CartServiceClient#getClientOrders(int)]: [{"timestamp":"2025-12-29T16:46:39.457+00:00","status":404,"error":"Not Found","path":"/api/orders/client/59"}]
+2025-12-29T16:46:41.803Z  INFO 383108 --- [api-gateway] [io-8080-exec-10] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
+2025-12-29T16:46:41.808Z  INFO 383108 --- [api-gateway] [nio-8080-exec-3] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
+2025-12-29T16:46:41.846Z  INFO 383108 --- [api-gateway] [io-8080-exec-10] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
+2025-12-29T16:46:41.867Z  INFO 383108 --- [api-gateway] [nio-8080-exec-3] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
+2025-12-29T16:46:45.031Z  INFO 383108 --- [api-gateway] [nio-8080-exec-7] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
+2025-12-29T16:46:45.035Z  INFO 383108 --- [api-gateway] [nio-8080-exec-8] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
+2025-12-29T16:46:45.074Z  INFO 383108 --- [api-gateway] [nio-8080-exec-7] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
+2025-12-29T16:46:45.098Z  INFO 383108 --- [api-gateway] [nio-8080-exec-8] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
+2025-12-29T16:46:48.219Z  INFO 383108 --- [api-gateway] [nio-8080-exec-2] c.example.ApiGateWay.UnifiedController   : Testing PostgreSQL connection...
+2025-12-29T16:46:48.222Z  INFO 383108 --- [api-gateway] [nio-8080-exec-1] c.example.ApiGateWay.UnifiedController   : Testing PostgreSQL connection...
+2025-12-29T16:46:48.233Z  INFO 383108 --- [api-gateway] [nio-8080-exec-1] c.example.ApiGateWay.UnifiedController   : Database connected: kefir_db PostgreSQL 16.11 (Ubuntu 16.11-0ubuntu0.24.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0, 64-bit
+2025-12-29T16:46:48.233Z  INFO 383108 --- [api-gateway] [nio-8080-exec-2] c.example.ApiGateWay.UnifiedController   : Database connected: kefir_db PostgreSQL 16.11 (Ubuntu 16.11-0ubuntu0.24.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0, 64-bit
+=== GATEWAY LOGIN (HYBRID SUPPORT) ===
+✅ Received hybrid UUID token: auth-41b209b4-d778-4a6b-8abd-3213fb5c826f
+2025-12-29T16:47:07.681Z  INFO 383108 --- [api-gateway] [nio-8080-exec-9] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
+2025-12-29T16:47:07.723Z  INFO 383108 --- [api-gateway] [nio-8080-exec-9] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
+2025-12-29T16:47:07.855Z  INFO 383108 --- [api-gateway] [nio-8080-exec-1] c.example.ApiGateWay.UnifiedController   : 🛒 Получение всех товаров через Gateway
+2025-12-29T16:47:07.917Z  INFO 383108 --- [api-gateway] [nio-8080-exec-1] c.example.ApiGateWay.UnifiedController   : ✅ Получено 151 товаров
+2025-12-29T16:47:23.859Z  INFO 383108 --- [api-gateway] [io-8080-exec-10] c.example.ApiGateWay.UnifiedController   : Testing PostgreSQL connection...
+2025-12-29T16:47:23.865Z  INFO 383108 --- [api-gateway] [io-8080-exec-10] c.example.ApiGateWay.UnifiedController   : Database connected: kefir_db PostgreSQL 16.11 (Ubuntu 16.11-0ubuntu0.24.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0, 64-bit
+2025-12-29T16:47:23.889Z  INFO 383108 --- [api-gateway] [nio-8080-exec-3] c.example.ApiGateWay.UnifiedController   : Testing PostgreSQL connection...
+2025-12-29T16:47:23.902Z  INFO 383108 --- [api-gateway] [nio-8080-exec-3] c.example.ApiGateWay.UnifiedController   : Database connected: kefir_db PostgreSQL 16.11 (Ubuntu 16.11-0ubuntu0.24.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0, 64-bit

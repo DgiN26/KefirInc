@@ -22,6 +22,9 @@ public interface ClientServiceClient {
     @PostMapping("/api/clients/check-email")
     Map<String, Object> checkEmail(@RequestBody Map<String, String> request);
 
+    @GetMapping("/api/cart/{cartId}/items")
+    List<Map<String, Object>> getCartItems(@PathVariable int cartId);
+
     // Проверка username на уникальность
     @PostMapping("/api/clients/check-username")
     Map<String, Object> checkUsername(@RequestBody Map<String, String> request);
