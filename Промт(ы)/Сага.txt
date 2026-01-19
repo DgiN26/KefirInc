@@ -1,0 +1,1863 @@
+Нам необходимо реализовать патерн Сага в нашей логистической системе - поэтому скидываю тебе микросервис Сага. Миссия приложения
+Для нейросети  добавление внешних проверок (fact-checking), temperature > 0, цепочки верификации (Chain-of-Verification), регулярная перекалибровка. 
+ЕЩЕ ВАЖНЕЕ _ЦЕЛОСТНОСТЬ НАШЕГО ПРИЛОЖЕНИЯ И НАШ НАД НИМ КОНТРОЛЬ, ЕСЛИ В КОДЕ ЧТО ТО ЕСТЬ И МЫ ТЕБЯ ОБ ЭТОМ НЕ СПРАШИВАЕМ ЗНАЧИТ ЭТО ПОЯВИЛОСЬ В КОДЕ ПО НАшей ВОЛЕ
+Когда описываешь метод - ВСЕГДА СВЕРХУ  ПИШИ ЕГО КЛАСС 
+Данную логистическую систему мы создаем из двух соображений. Создать хорошее логистическое приложение и решить проблему с ошибкой.
+Мы собираемся через него разыгрывать ситуацию когда сборщик собирает заказ, заказа нет и он вынужден обращатся в офисс, что бы офис связался с покупателем и уточнил продолжать ли собирать заказ. При этом у офиса должно быть возможность просматривать заказ. По сути клиент должен начинать транзакцию. Мы разыгрываем сдесь ошибку которая реальна произходит в другом приложении и предлогаем изящное решение: Транзакция открыта, сборщик посылает запрос в офис. И если офис принимает от клиента подтверждение на продолжение - транзакция закрывается и клиенту приходят только те товары, которые сборщик пробил до этого. При этом деньги возвращаются только за один товар о котором сборщик сообщил в офис, а все остальные товары которые он не успел пробить до возникновения ошибки - остаются на складе, хоть за них и заплатили деньги.  Клиент требует привезти ему весь товар. Поскольку транзакция закрылась раньше, нельзя гарантировать что оставшийся кроме отмененного товар, который ещё не прокликали, есть на складе. Соответсвенно офису нужно последовательно обзванивать несколько складов. И курьер или идёт по склада и собирает заказ или необходимо что бы курьеры оставляли 6а один склад все товары. Такой заказ везут час вместо обычных 15 минут. 
+Пункт 1.1. Разыграть в нашем приложении эту реально существующую ситуацию с возникновением ошибки. То есть намеренно вызвать ошибку транзакции. 
+Пункт1.2. Когда клиенту привозят нгеполный заказ, и не хватает оплаченных товаров - клиент связывается с офисом, офисс проверяет что эти товары не были пробиты. Далее если клиент настаивает на том что бы ему привезли екго недостоющии товары, а этих товаров нет на складе - офисс вынужден собирать товары по всем складам. То есть нам необходимо семулировать ситуацию, насколько не выгодно допускать эту ошибку. И потом уже давать решение.
+Пункт 2.  Решение следующуе. ЗАкрывать транзакцию если одного товара нет и открывать другую транзакцию, сборщик после звонка должен опять прокликать все товары.Тут проблема как раз в том, что мы точно не знаем в чем ошибка. Если применялись разные подходы, а ошибка остается. Мне кажется лучше всего отменять старую транзакцию. И создавать новую с начальными данными старой транзакции. Сборщик просто должен все перепикать. При неизвестных системных ошибках проще и безопаснее "перезагрузить процесс", чем пытаться его починить. Это как перезапустить зависший компьютер вместо поиска конкретного б
+То есть если цепочка. User зашел, Создал корзину отправил. Юсер вышел. Коллектор зашел отправил запрос в офис, вышел. ОФис зашел позвонил клиенту(симуляция) запрос колектору вышел. Колектор зашел отдал заказ вышел. Клиент зашел отправил вышел. (Симуляция клиент звонит в офис. Офис зашел и общается со сборщиком. Дальше решение миссии в приложение - заходы выходы офиса и сборщика.ага в коде.
+Ниже классы Сага кроме пакета репазиторий
+package com.example.TransactionSaga.client;
+
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+
+@FeignClient(name = "collector-service", url = "${services.collector.url}")
+public interface CollectorServiceClient {
+
+    @PostMapping("/api/collector/tasks")
+    Map<String, Object> createTask(@RequestBody Map<String, Object> task);
+
+    @PutMapping("/api/collector/tasks/{taskId}/status")
+    Map<String, Object> updateTaskStatus(@PathVariable String taskId,
+                                         @RequestParam String status);
+
+    @PostMapping("/api/collector/notify")
+    Map<String, Object> notifyCollector(@RequestBody Map<String, Object> notification);
+
+    @PostMapping("/api/collector/cancel-task")
+    Map<String, Object> cancelTask(@RequestBody Map<String, Object> request);
+}package com.example.TransactionSaga.client;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.Map;
+
+@Component
+public class ExternalServiceClient {
+
+    private static final Logger log = LoggerFactory.getLogger(ExternalServiceClient.class);
+
+    public void validateOrder(String transactionId) {
+        log.info("Validating order for transaction: {}", transactionId);
+    }
+
+    public void checkStock(String transactionId) {
+        log.info("Checking stock for transaction: {}", transactionId);
+    }
+
+    public void notifyOffice(String transactionId) {
+        log.info("Notifying office about transaction: {}", transactionId);
+    }
+
+    public void notifyCollector(String transactionId) {
+        log.info("Notifying collector about transaction: {}", transactionId);
+    }
+
+    public void reserveItems(String transactionId) {
+        log.info("Reserving items for transaction: {}", transactionId);
+    }
+
+    public void updateTransactionStatus(String transactionId, String status) {
+        log.info("Updating transaction {} status to: {}", transactionId, status);
+    }
+
+    public void logAuditEvent(String transactionId, String eventType, String details) {
+        log.info("Audit event: transaction={}, event={}, details={}",
+                transactionId, eventType, details);
+    }
+
+    // Новые методы для компенсации
+    public void cancelReservations(String transactionId) {
+        log.info("Cancelling reservations for transaction: {}", transactionId);
+    }
+
+    public void notifyCollectorAboutCancellation(String transactionId) {
+        log.info("Notifying collector about cancellation for transaction: {}", transactionId);
+    }
+
+    public void processRefund(String transactionId) {
+        log.info("Processing refund for transaction: {}", transactionId);
+    }
+}package com.example.TransactionSaga.client;
+
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+
+@FeignClient(name = "office-service", url = "${services.office.url}")
+public interface OfficeServiceClient {
+
+    @PostMapping("/api/office/notify-problem")
+    Map<String, Object> notifyOfficeAboutProblem(@RequestBody Map<String, Object> request);
+
+    @PostMapping("/api/office/client-notification")
+    Map<String, Object> notifyClient(@RequestBody Map<String, Object> notification);
+
+    @GetMapping("/api/office/check-availability/{productId}")
+    Map<String, Object> checkProductAvailability(@PathVariable String productId);
+}package com.example.TransactionSaga.client;
+
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+
+@FeignClient(name = "product-service", url = "${services.product.url}")
+public interface ProductServiceClient {
+
+    @PostMapping("/api/products/check-stock")
+    Map<String, Object> checkStock(@RequestBody Map<String, Object> request);
+
+    @PostMapping("/api/products/reserve")
+    Map<String, Object> reserveProducts(@RequestBody Map<String, Object> request);
+
+    @PostMapping("/api/products/release")
+    Map<String, Object> releaseReservation(@RequestBody Map<String, Object> request);
+
+    @GetMapping("/api/products/{productId}/availability")
+    Map<String, Object> getProductAvailability(@PathVariable String productId);
+}package com.example.TransactionSaga.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestTemplate;
+
+@Configuration
+public class AppConfig {
+
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
+}package com.example.TransactionSaga.config;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+@ConfigurationProperties(prefix = "saga")
+public class SagaProperties {
+
+    private Retry retry = new Retry();
+    private Timeout timeout = new Timeout();
+    private Cleanup cleanup = new Cleanup();
+    private Batch batch = new Batch();
+
+    public static class Retry {
+        private int maxAttempts = 3;
+        private int delayMinutes = 5;
+        private int maxDelayMinutes = 60;
+
+        // Геттеры и сеттеры
+        public int getMaxAttempts() { return maxAttempts; }
+        public void setMaxAttempts(int maxAttempts) { this.maxAttempts = maxAttempts; }
+
+        public int getDelayMinutes() { return delayMinutes; }
+        public void setDelayMinutes(int delayMinutes) { this.delayMinutes = delayMinutes; }
+
+        public int getMaxDelayMinutes() { return maxDelayMinutes; }
+        public void setMaxDelayMinutes(int maxDelayMinutes) { this.maxDelayMinutes = maxDelayMinutes; }
+    }
+
+    public static class Timeout {
+        private int defaultMinutes = 1440; // 24 часа
+        private int clientResponseMinutes = 120; // 2 часа
+
+        // Геттеры и сеттеры
+        public int getDefaultMinutes() { return defaultMinutes; }
+        public void setDefaultMinutes(int defaultMinutes) { this.defaultMinutes = defaultMinutes; }
+
+        public int getClientResponseMinutes() { return clientResponseMinutes; }
+        public void setClientResponseMinutes(int clientResponseMinutes) { this.clientResponseMinutes = clientResponseMinutes; }
+    }
+
+    public static class Cleanup {
+        private int completedTransactionsHours = 24;
+        private int failedTransactionsHours = 72;
+
+        // Геттеры и сеттеры
+        public int getCompletedTransactionsHours() { return completedTransactionsHours; }
+        public void setCompletedTransactionsHours(int completedTransactionsHours) { this.completedTransactionsHours = completedTransactionsHours; }
+
+        public int getFailedTransactionsHours() { return failedTransactionsHours; }
+        public void setFailedTransactionsHours(int failedTransactionsHours) { this.failedTransactionsHours = failedTransactionsHours; }
+    }
+
+    public static class Batch {
+        private int size = 50;
+        private long delayMs = 1000;
+
+        // Геттеры и сеттеры
+        public int getSize() { return size; }
+        public void setSize(int size) { this.size = size; }
+
+        public long getDelayMs() { return delayMs; }
+        public void setDelayMs(long delayMs) { this.delayMs = delayMs; }
+    }
+
+    // Геттеры и сеттеры для главного класса
+    public Retry getRetry() { return retry; }
+    public void setRetry(Retry retry) { this.retry = retry; }
+
+    public Timeout getTimeout() { return timeout; }
+    public void setTimeout(Timeout timeout) { this.timeout = timeout; }
+
+    public Cleanup getCleanup() { return cleanup; }
+    public void setCleanup(Cleanup cleanup) { this.cleanup = cleanup; }
+
+    public Batch getBatch() { return batch; }
+    public void setBatch(Batch batch) { this.batch = batch; }
+}package com.example.TransactionSaga.controller;
+
+import com.example.TransactionSaga.model.entity.CompensationLogEntity;
+import com.example.TransactionSaga.service.CompensationService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/compensation")
+public class CompensationController {
+
+    private final CompensationService compensationService;
+
+    @Autowired
+    public CompensationController(CompensationService compensationService) {
+        this.compensationService = compensationService;
+    }
+
+    @PostMapping("/{transactionId}/initiate")
+    public ResponseEntity<String> initiateCompensation(
+            @PathVariable String transactionId,
+            @RequestParam String reason,
+            @RequestParam(required = false) String details) {
+
+        compensationService.initiateCompensation(transactionId, reason, details);
+        return ResponseEntity.ok("Compensation initiated");
+    }
+
+    @GetMapping("/history/{transactionId}")
+    public ResponseEntity<List<CompensationLogEntity>> getCompensationHistory(
+            @PathVariable String transactionId) {
+        List<CompensationLogEntity> history =
+                compensationService.getCompensationHistory(transactionId);
+        return ResponseEntity.ok(history);
+    }
+}package com.example.TransactionSaga.controller;
+
+import com.example.TransactionSaga.model.entity.SagaStepEntity;
+import com.example.TransactionSaga.repository.SagaStepRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/saga")
+public class SagaController {
+
+    private final SagaStepRepository sagaStepRepository;
+
+    @Autowired
+    public SagaController(SagaStepRepository sagaStepRepository) {
+        this.sagaStepRepository = sagaStepRepository;
+    }
+
+    @GetMapping("/steps/{transactionId}")
+    public ResponseEntity<List<SagaStepEntity>> getTransactionSteps(
+            @PathVariable String transactionId) {
+        List<SagaStepEntity> steps = sagaStepRepository.findByTransactionId(transactionId);
+        return ResponseEntity.ok(steps);
+    }
+
+    @PostMapping("/steps/{stepId}/retry")
+    public ResponseEntity<String> retryStep(@PathVariable Long stepId) {
+        SagaStepEntity step = sagaStepRepository.findById(stepId)
+                .orElseThrow(() -> new RuntimeException("Step not found"));
+
+        if (step.canRetry()) {
+            step.setStatus("PENDING");
+            step.incrementRetryCount();
+            sagaStepRepository.save(step);
+            return ResponseEntity.ok("Step queued for retry");
+        }
+
+        return ResponseEntity.badRequest().body("Step cannot be retried");
+    }
+
+    @GetMapping("/health")
+    public ResponseEntity<String> healthCheck() {
+        return ResponseEntity.ok("Saga orchestrator is running");
+    }
+}package com.example.TransactionSaga.controller;
+
+import com.example.TransactionSaga.model.dto.*;
+import com.example.TransactionSaga.model.entity.TransactionEntity;
+import com.example.TransactionSaga.service.TransactionService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/api/transactions")
+public class TransactionController {
+
+    private final TransactionService transactionService;
+
+    @Autowired
+    public TransactionController(TransactionService transactionService) {
+        this.transactionService = transactionService;
+    }
+
+    @PostMapping
+    public ResponseEntity<TransactionEntity> createTransaction(
+            @RequestBody TransactionRequest request) {
+        TransactionEntity transaction = transactionService.createTransaction(request);
+        return ResponseEntity.ok(transaction);
+    }
+
+    @PostMapping("/{transactionId}/scan")
+    public ResponseEntity<TransactionEntity> scanItem(
+            @PathVariable String transactionId,
+            @RequestBody ScanItemRequest request) {
+        TransactionEntity transaction = transactionService.scanItem(transactionId, request);
+        return ResponseEntity.ok(transaction);
+    }
+
+    @PostMapping("/{transactionId}/report-problem")
+    public ResponseEntity<TransactionEntity> reportProblem(
+            @PathVariable String transactionId,
+            @RequestBody ProblemReportRequest request) {
+        TransactionEntity transaction = transactionService.reportProblem(transactionId, request);
+        return ResponseEntity.ok(transaction);
+    }
+
+    @PostMapping("/{transactionId}/client-decision")
+    public ResponseEntity<TransactionEntity> clientDecision(
+            @PathVariable String transactionId,
+            @RequestBody ClientDecisionRequest request) {
+        TransactionEntity transaction = transactionService.processClientDecision(transactionId, request);
+        return ResponseEntity.ok(transaction);
+    }
+
+    @GetMapping("/{transactionId}")
+    public ResponseEntity<TransactionEntity> getTransaction(@PathVariable String transactionId) {
+        Optional<TransactionEntity> transaction = transactionService.getTransaction(transactionId);
+        return transaction.map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/collector/{collectorId}")
+    public ResponseEntity<List<TransactionEntity>> getCollectorTransactions(
+            @PathVariable String collectorId) {
+        List<TransactionEntity> transactions =
+                transactionService.getTransactionsByCollector(collectorId);
+        return ResponseEntity.ok(transactions);
+    }
+
+    @GetMapping("/active")
+    public ResponseEntity<List<TransactionEntity>> getActiveTransactions() {
+        List<TransactionEntity> transactions = transactionService.getActiveTransactions();
+        return ResponseEntity.ok(transactions);
+    }
+
+    @GetMapping("/paused")
+    public ResponseEntity<List<TransactionEntity>> getPausedTransactions() {
+        List<TransactionEntity> transactions = transactionService.getPausedTransactions();
+        return ResponseEntity.ok(transactions);
+    }
+}package com.example.TransactionSaga.model.converter;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.AttributeConverter;
+import jakarta.persistence.Converter;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+@Converter
+public class MapToStringConverter implements AttributeConverter<Map<String, Integer>, String> {
+
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
+    @Override
+    public String convertToDatabaseColumn(Map<String, Integer> attribute) {
+        try {
+            return attribute == null || attribute.isEmpty() ? "{}" :
+                    objectMapper.writeValueAsString(attribute);
+        } catch (JsonProcessingException e) {
+            return "{}";
+        }
+    }
+
+    @Override
+    public Map<String, Integer> convertToEntityAttribute(String dbData) {
+        try {
+            return dbData == null || dbData.isEmpty() || "{}".equals(dbData) ?
+                    new HashMap<>() :
+                    objectMapper.readValue(dbData, new TypeReference<Map<String, Integer>>() {});
+        } catch (IOException e) {
+            return new HashMap<>();
+        }
+    }
+}package com.example.TransactionSaga.model.converter;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.AttributeConverter;
+import jakarta.persistence.Converter;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import com.fasterxml.jackson.core.type.TypeReference;
+
+@Converter
+public class ObjectToStringConverter implements AttributeConverter<Map<String, Object>, String> {
+
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
+    @Override
+    public String convertToDatabaseColumn(Map<String, Object> attribute) {
+        try {
+            return attribute == null || attribute.isEmpty() ? "{}" :
+                    objectMapper.writeValueAsString(attribute);
+        } catch (JsonProcessingException e) {
+            return "{}";
+        }
+    }
+
+    @Override
+    public Map<String, Object> convertToEntityAttribute(String dbData) {
+        try {
+            return dbData == null || dbData.isEmpty() || "{}".equals(dbData) ?
+                    new HashMap<>() :
+                    objectMapper.readValue(dbData, new TypeReference<Map<String, Object>>() {});
+        } catch (IOException e) {
+            return new HashMap<>();
+        }
+    }
+}package com.example.TransactionSaga.model.converter;
+
+import jakarta.persistence.AttributeConverter;
+import jakarta.persistence.Converter;
+
+@Converter
+public class StringToStringConverter implements AttributeConverter<String, String> {
+
+    @Override
+    public String convertToDatabaseColumn(String attribute) {
+        return attribute == null ? "" : attribute;
+    }
+
+    @Override
+    public String convertToEntityAttribute(String dbData) {
+        return dbData == null ? "" : dbData;
+    }
+}package com.example.TransactionSaga.model.dto;
+
+import java.util.List;
+
+public class ClientDecisionRequest {
+    private String decision;
+    private String notes;
+    private String clientId;
+    private List<String> substituteProducts;
+    private Boolean requestRefund;
+    private String refundReason;
+
+    public String getDecision() { return decision; }
+    public void setDecision(String decision) { this.decision = decision; }
+
+    public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
+
+    public String getClientId() { return clientId; }
+    public void setClientId(String clientId) { this.clientId = clientId; }
+
+    public List<String> getSubstituteProducts() { return substituteProducts; }
+    public void setSubstituteProducts(List<String> substituteProducts) { this.substituteProducts = substituteProducts; }
+
+    public Boolean getRequestRefund() { return requestRefund; }
+    public void setRequestRefund(Boolean requestRefund) { this.requestRefund = requestRefund; }
+
+    public String getRefundReason() { return refundReason; }
+    public void setRefundReason(String refundReason) { this.refundReason = refundReason; }
+}package com.example.TransactionSaga.model.dto;
+
+public class ProblemReportRequest {
+    private String problemType;
+    private String productId;
+    private Integer quantity;
+    private String description;
+    private String location;
+    private String collectorNotes;
+    private String imageUrl;
+
+    public String getProblemType() { return problemType; }
+    public void setProblemType(String problemType) { this.problemType = problemType; }
+
+    public String getProductId() { return productId; }
+    public void setProductId(String productId) { this.productId = productId; }
+
+    public Integer getQuantity() { return quantity; }
+    public void setQuantity(Integer quantity) { this.quantity = quantity; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
+
+    public String getCollectorNotes() { return collectorNotes; }
+    public void setCollectorNotes(String collectorNotes) { this.collectorNotes = collectorNotes; }
+
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+}package com.example.TransactionSaga.model.dto;
+
+public class ScanItemRequest {
+    private String productId;
+    private String barcode;
+    private Integer quantity;
+    private String location;
+    private Boolean forceScan;
+
+    public String getProductId() { return productId; }
+    public void setProductId(String productId) { this.productId = productId; }
+
+    public String getBarcode() { return barcode; }
+    public void setBarcode(String barcode) { this.barcode = barcode; }
+
+    public Integer getQuantity() { return quantity; }
+    public void setQuantity(Integer quantity) { this.quantity = quantity; }
+
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
+
+    public Boolean getForceScan() { return forceScan; }
+    public void setForceScan(Boolean forceScan) { this.forceScan = forceScan; }
+}package com.example.TransactionSaga.model.dto;
+
+import java.util.List;
+
+public class TransactionRequest {
+    private String orderId;
+    private String collectorId;
+    private String clientId;
+    private List<OrderItemRequest> items;
+    private Integer timeoutMinutes;
+    private String priority;
+    private String notes;
+
+    // Геттеры и сеттеры
+    public String getOrderId() { return orderId; }
+    public void setOrderId(String orderId) { this.orderId = orderId; }
+
+    public String getCollectorId() { return collectorId; }
+    public void setCollectorId(String collectorId) { this.collectorId = collectorId; }
+
+    public String getClientId() { return clientId; }
+    public void setClientId(String clientId) { this.clientId = clientId; }
+
+    public List<OrderItemRequest> getItems() { return items; }
+    public void setItems(List<OrderItemRequest> items) { this.items = items; }
+
+    public Integer getTimeoutMinutes() { return timeoutMinutes; }
+    public void setTimeoutMinutes(Integer timeoutMinutes) { this.timeoutMinutes = timeoutMinutes; }
+
+    public String getPriority() { return priority; }
+    public void setPriority(String priority) { this.priority = priority; }
+
+    public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
+
+    public static class OrderItemRequest {
+        private String productId;
+        private String productName;
+        private Integer quantity;
+        private Double price;
+        private String location;
+        private String barcode;
+
+        public String getProductId() { return productId; }
+        public void setProductId(String productId) { this.productId = productId; }
+
+        public String getProductName() { return productName; }
+        public void setProductName(String productName) { this.productName = productName; }
+
+        public Integer getQuantity() { return quantity; }
+        public void setQuantity(Integer quantity) { this.quantity = quantity; }
+
+        public Double getPrice() { return price; }
+        public void setPrice(Double price) { this.price = price; }
+
+        public String getLocation() { return location; }
+        public void setLocation(String location) { this.location = location; }
+
+        public String getBarcode() { return barcode; }
+        public void setBarcode(String barcode) { this.barcode = barcode; }
+    }
+}package com.example.TransactionSaga.model.dto;
+
+import com.example.TransactionSaga.model.enums.TransactionStatus;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+import java.time.LocalDateTime;
+import java.util.Map;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class TransactionResponse {
+    private String transactionId;
+    private String orderId;
+    private String collectorId;
+    private String clientId;
+    private TransactionStatus status;
+    private String statusDescription;
+    private Map<String, Integer> scannedItems;
+    private Map<String, Integer> missingItems;
+    private Map<String, Object> metadata;
+    private String pauseReason;
+}package com.example.TransactionSaga.model.entity;
+
+import com.example.TransactionSaga.model.converter.StringToStringConverter;
+import org.hibernate.annotations.CreationTimestamp;
+
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "compensation_logs")
+public class CompensationLogEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Long id;
+
+    @Column(name = "transaction_id", nullable = false)
+    private String transactionId;
+
+    @Column(name = "saga_step_id")
+    private Long sagaStepId;
+
+    @Column(name = "compensation_type", nullable = false)
+    private String compensationType; // FULL, PARTIAL, ITEM_SPECIFIC
+
+    @Column(name = "reason", nullable = false, length = 1000)
+    private String reason;
+
+    @Convert(converter = StringToStringConverter.class)
+    @Column(name = "compensated_items", columnDefinition = "text")
+    private String compensatedItems; // JSON список товаров для компенсации
+
+    @Column(name = "status", nullable = false)
+    private String status; // PENDING, IN_PROGRESS, COMPLETED, FAILED
+
+    @Column(name = "retry_count")
+    private Integer retryCount = 0;
+
+    @Column(name = "error_message", length = 2000)
+    private String errorMessage;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "started_at")
+    private LocalDateTime startedAt;
+
+    @Column(name = "completed_at")
+    private LocalDateTime completedAt;
+
+    @Column(name = "duration_ms")
+    private Long durationMs;
+
+    @Convert(converter = StringToStringConverter.class)
+    @Column(name = "compensation_data", columnDefinition = "text")
+    private String compensationData; // JSON дополнительные данные
+
+    // Геттеры и сеттеры
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getTransactionId() { return transactionId; }
+    public void setTransactionId(String transactionId) { this.transactionId = transactionId; }
+
+    public Long getSagaStepId() { return sagaStepId; }
+    public void setSagaStepId(Long sagaStepId) { this.sagaStepId = sagaStepId; }
+
+    public String getCompensationType() { return compensationType; }
+    public void setCompensationType(String compensationType) { this.compensationType = compensationType; }
+
+    public String getReason() { return reason; }
+    public void setReason(String reason) { this.reason = reason; }
+
+    public String getCompensatedItems() { return compensatedItems; }
+    public void setCompensatedItems(String compensatedItems) { this.compensatedItems = compensatedItems; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) {
+        this.status = status;
+        if ("IN_PROGRESS".equals(status) && this.startedAt == null) {
+            this.startedAt = LocalDateTime.now();
+        } else if ("COMPLETED".equals(status) || "FAILED".equals(status)) {
+            this.completedAt = LocalDateTime.now();
+            if (this.startedAt != null) {
+                this.durationMs = java.time.Duration.between(this.startedAt, this.completedAt).toMillis();
+            }
+        }
+    }
+
+    public Integer getRetryCount() { return retryCount; }
+    public void setRetryCount(Integer retryCount) { this.retryCount = retryCount; }
+
+    public String getErrorMessage() { return errorMessage; }
+    public void setErrorMessage(String errorMessage) { this.errorMessage = errorMessage; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public LocalDateTime getStartedAt() { return startedAt; }
+    public void setStartedAt(LocalDateTime startedAt) { this.startedAt = startedAt; }
+
+    public LocalDateTime getCompletedAt() { return completedAt; }
+    public void setCompletedAt(LocalDateTime completedAt) { this.completedAt = completedAt; }
+
+    public Long getDurationMs() { return durationMs; }
+    public void setDurationMs(Long durationMs) { this.durationMs = durationMs; }
+
+    public String getCompensationData() { return compensationData; }
+    public void setCompensationData(String compensationData) { this.compensationData = compensationData; }
+
+    // Вспомогательные методы
+    public boolean isPending() { return "PENDING".equals(this.status); }
+    public boolean isInProgress() { return "IN_PROGRESS".equals(this.status); }
+    public boolean isCompleted() { return "COMPLETED".equals(this.status); }
+    public boolean isFailed() { return "FAILED".equals(this.status); }
+
+    public void incrementRetryCount() { this.retryCount++; }
+}package com.example.TransactionSaga.model.entity;
+
+import com.example.TransactionSaga.model.converter.StringToStringConverter;
+import com.example.TransactionSaga.model.enums.SagaStepType;
+import org.hibernate.annotations.CreationTimestamp;
+
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "saga_steps")
+public class SagaStepEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Long id;
+
+    @Column(name = "transaction_id", nullable = false)
+    private String transactionId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "step_type", nullable = false)
+    private SagaStepType stepType;
+
+    @Column(name = "step_order", nullable = false)
+    private Integer stepOrder;
+
+    @Column(name = "status", nullable = false)
+    private String status; // PENDING, IN_PROGRESS, COMPLETED, FAILED, COMPENSATED, SKIPPED
+
+    @Convert(converter = StringToStringConverter.class)
+    @Column(name = "step_data", columnDefinition = "text")
+    private String stepData;
+
+    @Convert(converter = StringToStringConverter.class)
+    @Column(name = "compensation_data", columnDefinition = "text")
+    private String compensationData;
+
+    @Column(name = "error_message", length = 2000)
+    private String errorMessage;
+
+    @Column(name = "retry_count")
+    private Integer retryCount = 0;
+
+    @Column(name = "max_retries")
+    private Integer maxRetries = 3;
+
+    @Column(name = "retry_delay_minutes")
+    private Integer retryDelayMinutes = 5;
+
+    @Column(name = "next_retry_time")
+    private LocalDateTime nextRetryTime;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "started_at")
+    private LocalDateTime startedAt;
+
+    @Column(name = "completed_at")
+    private LocalDateTime completedAt;
+
+    @Column(name = "compensated_at")
+    private LocalDateTime compensatedAt;
+
+    @Column(name = "duration_ms")
+    private Long durationMs;
+
+    @Column(name = "is_compensatable")
+    private Boolean isCompensatable = true;
+
+    @Column(name = "depends_on_step_id")
+    private Long dependsOnStepId;
+
+    // === Конструкторы ===
+    public SagaStepEntity() {}
+
+    public SagaStepEntity(String transactionId, SagaStepType stepType, String status) {
+        this.transactionId = transactionId;
+        this.stepType = stepType;
+        this.status = status;
+        this.createdAt = LocalDateTime.now();
+    }
+
+    // === Геттеры и сеттеры ===
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getTransactionId() { return transactionId; }
+    public void setTransactionId(String transactionId) { this.transactionId = transactionId; }
+
+    // Возвращает строковое представление enum
+    public String getStepType() {
+        return stepType != null ? stepType.name() : "";
+    }
+
+    // Возвращает enum
+    public SagaStepType getStepTypeEnum() {
+        return stepType;
+    }
+
+    public void setStepType(SagaStepType stepType) {
+        this.stepType = stepType;
+    }
+
+    // Установка из строки
+    public void setStepTypeFromString(String stepTypeStr) {
+        try {
+            this.stepType = SagaStepType.valueOf(stepTypeStr);
+        } catch (IllegalArgumentException e) {
+            this.stepType = null;
+        }
+    }
+
+    public Integer getStepOrder() { return stepOrder; }
+    public void setStepOrder(Integer stepOrder) { this.stepOrder = stepOrder; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) {
+        this.status = status;
+        if ("IN_PROGRESS".equals(status) && this.startedAt == null) {
+            this.startedAt = LocalDateTime.now();
+        } else if ("COMPLETED".equals(status) || "FAILED".equals(status) || "COMPENSATED".equals(status)) {
+            this.completedAt = LocalDateTime.now();
+            if (this.startedAt != null) {
+                this.durationMs = java.time.Duration.between(this.startedAt, this.completedAt).toMillis();
+            }
+        }
+    }
+
+    public String getStepData() { return stepData; }
+    public void setStepData(String stepData) { this.stepData = stepData; }
+
+    public String getCompensationData() { return compensationData; }
+    public void setCompensationData(String compensationData) { this.compensationData = compensationData; }
+
+    public String getErrorMessage() { return errorMessage; }
+    public void setErrorMessage(String errorMessage) { this.errorMessage = errorMessage; }
+
+    public Integer getRetryCount() { return retryCount; }
+    public void setRetryCount(Integer retryCount) { this.retryCount = retryCount; }
+
+    public Integer getMaxRetries() { return maxRetries; }
+    public void setMaxRetries(Integer maxRetries) { this.maxRetries = maxRetries; }
+
+    public Integer getRetryDelayMinutes() { return retryDelayMinutes; }
+    public void setRetryDelayMinutes(Integer retryDelayMinutes) { this.retryDelayMinutes = retryDelayMinutes; }
+
+    public LocalDateTime getNextRetryTime() { return nextRetryTime; }
+    public void setNextRetryTime(LocalDateTime nextRetryTime) { this.nextRetryTime = nextRetryTime; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public LocalDateTime getStartedAt() { return startedAt; }
+    public void setStartedAt(LocalDateTime startedAt) { this.startedAt = startedAt; }
+
+    public LocalDateTime getCompletedAt() { return completedAt; }
+    public void setCompletedAt(LocalDateTime completedAt) { this.completedAt = completedAt; }
+
+    public LocalDateTime getCompensatedAt() { return compensatedAt; }
+    public void setCompensatedAt(LocalDateTime compensatedAt) { this.compensatedAt = compensatedAt; }
+
+    public Long getDurationMs() { return durationMs; }
+    public void setDurationMs(Long durationMs) { this.durationMs = durationMs; }
+
+    public Boolean getIsCompensatable() { return isCompensatable; }
+    public void setIsCompensatable(Boolean isCompensatable) { this.isCompensatable = isCompensatable; }
+
+    public Long getDependsOnStepId() { return dependsOnStepId; }
+    public void setDependsOnStepId(Long dependsOnStepId) { this.dependsOnStepId = dependsOnStepId; }
+
+    // === Вспомогательные методы ===
+    public void incrementRetryCount() {
+        if (this.retryCount == null) {
+            this.retryCount = 0;
+        }
+        this.retryCount++;
+        this.nextRetryTime = LocalDateTime.now().plusMinutes(
+                this.retryDelayMinutes != null ? this.retryDelayMinutes : 5
+        );
+    }
+
+    public boolean canRetry() {
+        if (this.retryCount == null) this.retryCount = 0;
+        if (this.maxRetries == null) this.maxRetries = 3;
+        if (this.status == null) this.status = "PENDING";
+
+        return this.retryCount < this.maxRetries &&
+                ("FAILED".equals(this.status) || "PENDING".equals(this.status));
+    }
+
+    public boolean shouldRetryNow() {
+        if (!canRetry()) return false;
+        if (this.nextRetryTime == null) return true;
+        return LocalDateTime.now().isAfter(this.nextRetryTime);
+    }
+
+    public boolean isPending() { return "PENDING".equals(this.status); }
+    public boolean isInProgress() { return "IN_PROGRESS".equals(this.status); }
+    public boolean isCompleted() { return "COMPLETED".equals(this.status); }
+    public boolean isFailed() { return "FAILED".equals(this.status); }
+    public boolean isCompensated() { return "COMPENSATED".equals(this.status); }
+    public boolean isSkipped() { return "SKIPPED".equals(this.status); }
+
+    public void markAsCompensated() {
+        this.status = "COMPENSATED";
+        this.compensatedAt = LocalDateTime.now();
+    }
+
+    public void markAsSkipped() {
+        this.status = "SKIPPED";
+        this.completedAt = LocalDateTime.now();
+    }
+}package com.example.TransactionSaga.model.entity;
+
+import com.example.TransactionSaga.model.converter.MapToStringConverter;
+import com.example.TransactionSaga.model.converter.ObjectToStringConverter;
+import com.example.TransactionSaga.model.enums.TransactionStatus;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import com.example.TransactionSaga.model.enums.TransactionStatus;
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+@Entity
+@Table(name = "transactions")
+public class TransactionEntity {
+
+    @Id
+    @Column(name = "id", nullable = false, updatable = false)
+    private String id = UUID.randomUUID().toString();
+
+    @Column(name = "order_id", nullable = false, unique = true)
+    private String orderId;
+
+    @Column(name = "collector_id", nullable = false)
+    private String collectorId;
+
+    @Column(name = "client_id", nullable = false)
+    private String clientId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private TransactionStatus status = TransactionStatus.CREATED;
+
+    @Convert(converter = MapToStringConverter.class)
+    @Column(name = "scanned_items", columnDefinition = "jsonb")
+    private Map<String, Integer> scannedItems = new HashMap<>();
+
+    @Convert(converter = MapToStringConverter.class)
+    @Column(name = "missing_items", columnDefinition = "jsonb")
+    private Map<String, Integer> missingItems = new HashMap<>();
+
+    @Convert(converter = ObjectToStringConverter.class)
+    @Column(name = "metadata", columnDefinition = "jsonb")
+    private Map<String, Object> metadata = new HashMap<>();
+
+    @Column(name = "pause_reason", length = 1000)
+    private String pauseReason;
+
+    @Column(name = "client_decision", length = 50)
+    private String clientDecision;
+
+    @Column(name = "office_notes", length = 2000)
+    private String officeNotes;
+
+    @Column(name = "office_problem_id")
+    private Long officeProblemId;
+
+    @Column(name = "timeout_minutes")
+    private Integer timeoutMinutes = 1440;
+
+    @Column(name = "estimated_completion_time")
+    private LocalDateTime estimatedCompletionTime;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @Column(name = "started_at")
+    private LocalDateTime startedAt;
+
+    @Column(name = "paused_at")
+    private LocalDateTime pausedAt;
+
+    @Column(name = "client_notified_at")
+    private LocalDateTime clientNotifiedAt;
+
+    @Column(name = "client_responded_at")
+    private LocalDateTime clientRespondedAt;
+
+    @Column(name = "resumed_at")
+    private LocalDateTime resumedAt;
+
+    @Column(name = "completed_at")
+    private LocalDateTime completedAt;
+
+    @Column(name = "cancelled_at")
+    private LocalDateTime cancelledAt;
+
+    @Version
+    @Column(name = "version")
+    private Long version;
+
+    // Конструкторы
+    public TransactionEntity() {}
+
+    public TransactionEntity(String orderId, String collectorId, String clientId) {
+        this.orderId = orderId;
+        this.collectorId = collectorId;
+        this.clientId = clientId;
+        this.startedAt = LocalDateTime.now();
+        this.estimatedCompletionTime = LocalDateTime.now().plusMinutes(30);
+    }
+
+    // Геттеры и сеттеры
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+
+    public String getOrderId() { return orderId; }
+    public void setOrderId(String orderId) { this.orderId = orderId; }
+
+    public String getCollectorId() { return collectorId; }
+    public void setCollectorId(String collectorId) { this.collectorId = collectorId; }
+
+    public String getClientId() { return clientId; }
+    public void setClientId(String clientId) { this.clientId = clientId; }
+
+    public TransactionStatus getStatus() { return status; }
+    public void setStatus(TransactionStatus status) {
+        this.status = status;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public Map<String, Integer> getScannedItems() { return scannedItems; }
+    public void setScannedItems(Map<String, Integer> scannedItems) {
+        this.scannedItems = scannedItems != null ? scannedItems : new HashMap<>();
+    }
+
+    public Map<String, Integer> getMissingItems() { return missingItems; }
+    public void setMissingItems(Map<String, Integer> missingItems) {
+        this.missingItems = missingItems != null ? missingItems : new HashMap<>();
+    }
+
+    public Map<String, Object> getMetadata() { return metadata; }
+    public void setMetadata(Map<String, Object> metadata) {
+        this.metadata = metadata != null ? metadata : new HashMap<>();
+    }
+
+    public String getPauseReason() { return pauseReason; }
+    public void setPauseReason(String pauseReason) { this.pauseReason = pauseReason; }
+
+    public String getClientDecision() { return clientDecision; }
+    public void setClientDecision(String clientDecision) { this.clientDecision = clientDecision; }
+
+    public String getOfficeNotes() { return officeNotes; }
+    public void setOfficeNotes(String officeNotes) { this.officeNotes = officeNotes; }
+
+    public Long getOfficeProblemId() { return officeProblemId; }
+    public void setOfficeProblemId(Long officeProblemId) { this.officeProblemId = officeProblemId; }
+
+    public Integer getTimeoutMinutes() { return timeoutMinutes; }
+    public void setTimeoutMinutes(Integer timeoutMinutes) { this.timeoutMinutes = timeoutMinutes; }
+
+    public LocalDateTime getEstimatedCompletionTime() { return estimatedCompletionTime; }
+    public void setEstimatedCompletionTime(LocalDateTime estimatedCompletionTime) {
+        this.estimatedCompletionTime = estimatedCompletionTime;
+    }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public LocalDateTime getStartedAt() { return startedAt; }
+    public void setStartedAt(LocalDateTime startedAt) { this.startedAt = startedAt; }
+
+    public LocalDateTime getPausedAt() { return pausedAt; }
+    public void setPausedAt(LocalDateTime pausedAt) { this.pausedAt = pausedAt; }
+
+    public LocalDateTime getClientNotifiedAt() { return clientNotifiedAt; }
+    public void setClientNotifiedAt(LocalDateTime clientNotifiedAt) { this.clientNotifiedAt = clientNotifiedAt; }
+
+    public LocalDateTime getClientRespondedAt() { return clientRespondedAt; }
+    public void setClientRespondedAt(LocalDateTime clientRespondedAt) { this.clientRespondedAt = clientRespondedAt; }
+
+    public LocalDateTime getResumedAt() { return resumedAt; }
+    public void setResumedAt(LocalDateTime resumedAt) { this.resumedAt = resumedAt; }
+
+    public LocalDateTime getCompletedAt() { return completedAt; }
+    public void setCompletedAt(LocalDateTime completedAt) { this.completedAt = completedAt; }
+
+    public LocalDateTime getCancelledAt() { return cancelledAt; }
+    public void setCancelledAt(LocalDateTime cancelledAt) { this.cancelledAt = cancelledAt; }
+
+    public Long getVersion() { return version; }
+    public void setVersion(Long version) { this.version = version; }
+
+    // Вспомогательные методы
+    public boolean isActive() { return status == TransactionStatus.ACTIVE; }
+    public boolean isPaused() { return status == TransactionStatus.PAUSED; }
+    public boolean isWaitingForClient() { return status == TransactionStatus.WAITING_CLIENT; }
+    public boolean isWaitingForOffice() { return status == TransactionStatus.WAITING_OFFICE; }
+    public boolean isCompensating() { return status == TransactionStatus.COMPENSATING; }
+    public boolean isCompleted() { return status == TransactionStatus.COMPLETED; }
+    public boolean isCancelled() { return status == TransactionStatus.CANCELLED; }
+    public boolean isTimeout() { return status == TransactionStatus.TIMEOUT; }
+
+    public void addScannedItem(String productId, int quantity) {
+        this.scannedItems.merge(productId, quantity, Integer::sum);
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void addMissingItem(String productId, int quantity) {
+        this.missingItems.put(productId, quantity);
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void removeMissingItem(String productId) {
+        this.missingItems.remove(productId);
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public boolean hasMissingItems() {
+        return !this.missingItems.isEmpty();
+    }
+
+    public int getTotalScannedQuantity() {
+        return this.scannedItems.values().stream().mapToInt(Integer::intValue).sum();
+    }
+
+    public int getTotalMissingQuantity() {
+        return this.missingItems.values().stream().mapToInt(Integer::intValue).sum();
+    }
+
+    public void addMetadata(String key, Object value) {
+        this.metadata.put(key, value);
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public Object getMetadata(String key) {
+        return this.metadata.get(key);
+    }
+
+    public boolean isTimedOut() {
+        if (this.clientNotifiedAt == null) return false;
+        LocalDateTime timeoutThreshold = this.clientNotifiedAt.plusMinutes(this.timeoutMinutes);
+        return LocalDateTime.now().isAfter(timeoutThreshold);
+    }
+
+    public long getRemainingTimeoutMinutes() {
+        if (this.clientNotifiedAt == null) return this.timeoutMinutes;
+        LocalDateTime timeoutTime = this.clientNotifiedAt.plusMinutes(this.timeoutMinutes);
+        return java.time.Duration.between(LocalDateTime.now(), timeoutTime).toMinutes();
+    }
+}package com.example.TransactionSaga.model.entity;
+
+public enum TransactionStatus {
+    CREATED,        // Транзакция создана
+    ACTIVE,         // В процессе сборки
+    PAUSED,         // Приостановлена (товара нет)
+    WAITING_CLIENT, // Ожидание решения клиента
+    WAITING_OFFICE, // Ожидание обработки офисом
+    COMPENSATING,   // В процессе отката
+    COMPLETED,      // Успешно завершена
+    CANCELLED,      // Отменена
+    TIMEOUT         // Просрочена по таймауту
+}package com.example.TransactionSaga.model.enums;
+
+public enum ClientDecision {
+    CONTINUE("Продолжить без отсутствующего товара", "continue"),
+    CANCEL("Отменить весь заказ", "cancel"),
+    WAIT("Подождать появления товара", "wait"),
+    PARTIAL("Частичная отмена", "partial"),
+    SUBSTITUTE("Заменить товар", "substitute");
+
+    private final String description;
+    private final String code;
+
+    ClientDecision(String description, String code) {
+        this.description = description;
+        this.code = code;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public boolean requiresCompensation() {
+        return this == CANCEL || this == PARTIAL;
+    }
+
+    public boolean allowsContinuation() {
+        return this == CONTINUE || this == SUBSTITUTE;
+    }
+}package com.example.TransactionSaga.model.enums;
+
+public enum ProblemType {
+    ITEM_NOT_FOUND("Товар не найден на складе"),
+    ITEM_DAMAGED("Товар поврежден"),
+    WRONG_ITEM("Неверный товар"),
+    QUANTITY_MISMATCH("Несоответствие количества"),
+    LOCATION_ERROR("Ошибка расположения"),
+    SYSTEM_ERROR("Системная ошибка"),
+    QUALITY_ISSUE("Проблема с качеством"),
+    EXPIRED_ITEM("Просроченный товар");
+
+    private final String description;
+
+    ProblemType(String description) {
+        this.description = description;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public boolean isCritical() {
+        return this == ITEM_NOT_FOUND || this == SYSTEM_ERROR;
+    }
+
+    public boolean requiresClientDecision() {
+        return this == ITEM_NOT_FOUND || this == ITEM_DAMAGED || this == WRONG_ITEM;
+    }
+}package com.example.TransactionSaga.model.enums;
+
+public enum SagaStepType {
+    // Инициализация
+    VALIDATE_ORDER("Проверка заказа"),
+    RESERVE_INVENTORY("Резервирование товаров"),
+    CREATE_PICKING_TASK("Создание задачи сборки"),
+
+    // Основной процесс
+    START_PICKING("Начало сборки"),
+    SCAN_ITEM("Сканирование товара"),
+    VERIFY_ITEM("Проверка товара"),
+
+    // Обработка проблем
+    REPORT_PROBLEM("Сообщение о проблеме"),
+    NOTIFY_OFFICE("Уведомление офиса"),
+    NOTIFY_CLIENT("Уведомление клиента"),
+    AWAIT_CLIENT_DECISION("Ожидание решения клиента"),
+    PROCESS_CLIENT_DECISION("Обработка решения клиента"),
+
+    // Завершение
+    UPDATE_INVENTORY("Обновление остатков"),
+    CREATE_DELIVERY("Создание доставки"),
+    FINALIZE_TRANSACTION("Завершение транзакции"),
+
+    // Компенсация
+    RELEASE_INVENTORY("Освобождение товаров"),
+    CANCEL_PICKING_TASK("Отмена задачи сборки"),
+    CANCEL_DELIVERY("Отмена доставки"),
+    REFUND_PAYMENT("Возврат оплаты");
+
+    private final String description;
+
+    SagaStepType(String description) {
+        this.description = description;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public boolean isCompensationStep() {
+        return this == RELEASE_INVENTORY ||
+                this == CANCEL_PICKING_TASK ||
+                this == CANCEL_DELIVERY ||
+                this == REFUND_PAYMENT;
+    }
+
+    public boolean isCriticalStep() {
+        return this == RESERVE_INVENTORY ||
+                this == CREATE_PICKING_TASK ||
+                this == FINALIZE_TRANSACTION;
+    }
+}package com.example.TransactionSaga.model.enums;
+
+public enum TransactionEventType {
+    // События инициализации
+    TRANSACTION_CREATED("Транзакция создана"),
+    TRANSACTION_STARTED("Транзакция начата"),
+
+    // События процесса
+    ITEM_SCANNED("Товар отсканирован"),
+    ITEM_VERIFIED("Товар проверен"),
+
+    // События проблем
+    PROBLEM_DETECTED("Обнаружена проблема"),
+    TRANSACTION_PAUSED("Транзакция приостановлена"),
+    CLIENT_NOTIFIED("Клиент уведомлен"),
+    CLIENT_RESPONDED("Клиент ответил"),
+
+    // События решений
+    CLIENT_DECISION_RECEIVED("Получено решение клиента"),
+    OFFICE_DECISION_RECEIVED("Получено решение офиса"),
+
+    // События возобновления
+    TRANSACTION_RESUMED("Транзакция возобновлена"),
+
+    // События компенсации
+    COMPENSATION_STARTED("Начата компенсация"),
+    COMPENSATION_STEP_COMPLETED("Шаг компенсации завершен"),
+    COMPENSATION_COMPLETED("Компенсация завершена"),
+
+    // События завершения
+    TRANSACTION_COMPLETED("Транзакция завершена"),
+    TRANSACTION_CANCELLED("Транзакция отменена"),
+    TRANSACTION_TIMEOUT("Транзакция просрочена"),
+
+    // Системные события
+    RETRY_ATTEMPT("Попытка повтора"),
+    STATUS_CHANGED("Статус изменен"),
+    ERROR_OCCURRED("Произошла ошибка");
+
+    private final String description;
+
+    TransactionEventType(String description) {
+        this.description = description;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public boolean isErrorEvent() {
+        return this == ERROR_OCCURRED || this == PROBLEM_DETECTED;
+    }
+
+    public boolean isCompletionEvent() {
+        return this == TRANSACTION_COMPLETED ||
+                this == TRANSACTION_CANCELLED ||
+                this == TRANSACTION_TIMEOUT;
+    }
+}package com.example.TransactionSaga.model.enums;
+
+public enum TransactionStatus {
+    CREATED,        // Транзакция создана
+    ACTIVE,         // В процессе сборки
+    PAUSED,         // Приостановлена (товара нет)
+    WAITING_CLIENT, // Ожидание решения клиента
+    WAITING_OFFICE, // Ожидание обработки офисом
+    COMPENSATING,   // В процессе отката
+    COMPLETED,      // Успешно завершена
+    CANCELLED,      // Отменена
+    TIMEOUT         // Просрочена по таймауту
+}package com.example.TransactionSaga.repository;
+
+package com.example.TransactionSaga.service;
+
+import com.example.TransactionSaga.client.ExternalServiceClient;
+import com.example.TransactionSaga.model.entity.CompensationLogEntity;
+import com.example.TransactionSaga.model.entity.TransactionEntity;
+import com.example.TransactionSaga.model.enums.TransactionStatus;
+import com.example.TransactionSaga.repository.CompensationLogRepository;
+import com.example.TransactionSaga.repository.TransactionRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Service
+public class CompensationService {
+
+    private static final Logger log = LoggerFactory.getLogger(CompensationService.class);
+
+    private final CompensationLogRepository compensationLogRepository;
+    private final TransactionRepository transactionRepository;
+    private final ExternalServiceClient externalServiceClient;
+
+    @Autowired
+    public CompensationService(
+            CompensationLogRepository compensationLogRepository,
+            TransactionRepository transactionRepository,
+            ExternalServiceClient externalServiceClient) {
+        this.compensationLogRepository = compensationLogRepository;
+        this.transactionRepository = transactionRepository;
+        this.externalServiceClient = externalServiceClient;
+    }
+
+    @Transactional
+    public void initiateCompensation(String transactionId, String reason, String details) {
+        TransactionEntity transaction = transactionRepository.findById(transactionId)
+                .orElseThrow(() -> new RuntimeException("Transaction not found"));
+
+        CompensationLogEntity compensation = new CompensationLogEntity();
+        compensation.setTransactionId(transactionId);
+        compensation.setCompensationType("FULL");
+        compensation.setReason(reason);
+        compensation.setStatus("PENDING");
+        compensation.setCompensationData("{\"details\": \"" + details + "\"}");
+
+        compensationLogRepository.save(compensation);
+
+        transaction.setStatus(TransactionStatus.COMPENSATING);
+        transactionRepository.save(transaction);
+    }
+
+    @Scheduled(fixedDelay = 60000)
+    @Transactional
+    public void processPendingCompensations() {
+        List<CompensationLogEntity> pendingCompensations =
+                compensationLogRepository.findByStatus("PENDING");
+
+        for (CompensationLogEntity compensation : pendingCompensations) {
+            try {
+                executeCompensation(compensation);
+            } catch (Exception e) {
+                log.error("Compensation failed for {}: {}",
+                        compensation.getId(), e.getMessage());
+                compensation.setStatus("FAILED");
+                compensation.setErrorMessage(e.getMessage());
+                compensationLogRepository.save(compensation);
+            }
+        }
+    }
+
+    private void executeCompensation(CompensationLogEntity compensation) {
+        compensation.setStatus("IN_PROGRESS");
+        compensation.setStartedAt(LocalDateTime.now());
+        compensationLogRepository.save(compensation);
+
+        externalServiceClient.cancelReservations(compensation.getTransactionId());
+        externalServiceClient.notifyCollectorAboutCancellation(compensation.getTransactionId());
+        externalServiceClient.processRefund(compensation.getTransactionId());
+
+        compensation.setStatus("COMPLETED");
+        compensation.setCompletedAt(LocalDateTime.now());
+        compensationLogRepository.save(compensation);
+
+        TransactionEntity transaction = transactionRepository
+                .findById(compensation.getTransactionId()).orElse(null);
+        if (transaction != null) {
+            transaction.setStatus(TransactionStatus.CANCELLED);
+            transactionRepository.save(transaction);
+        }
+    }
+
+    public List<CompensationLogEntity> getCompensationHistory(String transactionId) {
+        return compensationLogRepository.findByTransactionId(transactionId);
+    }
+} // Закрывающая скобка была пропущенаpackage com.example.TransactionSaga.service;
+
+import com.example.TransactionSaga.client.ExternalServiceClient;
+import com.example.TransactionSaga.model.entity.SagaStepEntity;
+import com.example.TransactionSaga.model.entity.TransactionEntity;
+import com.example.TransactionSaga.model.enums.TransactionStatus;
+import com.example.TransactionSaga.repository.SagaStepRepository;
+import com.example.TransactionSaga.repository.TransactionRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+@Service
+public class SagaOrchestratorService {
+
+    private static final Logger log = LoggerFactory.getLogger(SagaOrchestratorService.class);
+
+    private final SagaStepRepository sagaStepRepository;
+    private final TransactionRepository transactionRepository;
+    private final ExternalServiceClient externalServiceClient;
+    private final CompensationService compensationService;
+
+    @Autowired
+    public SagaOrchestratorService(
+            SagaStepRepository sagaStepRepository,
+            TransactionRepository transactionRepository,
+            ExternalServiceClient externalServiceClient,
+            CompensationService compensationService) {
+        this.sagaStepRepository = sagaStepRepository;
+        this.transactionRepository = transactionRepository;
+        this.externalServiceClient = externalServiceClient;
+        this.compensationService = compensationService;
+    }
+
+    @Scheduled(fixedDelay = 30000)
+    @Transactional
+    public void processPendingSteps() {
+        List<SagaStepEntity> pendingSteps = sagaStepRepository.findByStatus("PENDING");
+
+        if (pendingSteps.isEmpty()) {
+            log.debug("No pending steps to process");
+            return;
+        }
+
+        log.info("Processing {} pending saga steps", pendingSteps.size());
+
+        for (SagaStepEntity step : pendingSteps) {
+            try {
+                if (checkDependencies(step)) {
+                    executeStep(step);
+                } else {
+                    log.debug("Step {} waiting for dependencies", step.getId());
+                }
+            } catch (Exception e) {
+                log.error("Failed to execute step {}: {}", step.getId(), e.getMessage());
+                handleStepFailure(step, e.getMessage());
+            }
+        }
+    }
+
+    private void executeStep(SagaStepEntity step) {
+        log.info("Executing step {} for transaction {}",
+                step.getId(), step.getTransactionId());
+
+        step.setStatus("IN_PROGRESS");
+        step.setStartedAt(LocalDateTime.now());
+        sagaStepRepository.save(step);
+
+        try {
+            String stepType = step.getStepType();
+
+            if (stepType == null) {
+                log.error("Step type is null for step {}", step.getId());
+                step.setStatus("FAILED");
+                step.setErrorMessage("Step type is null");
+                sagaStepRepository.save(step);
+                return;
+            }
+
+            switch (stepType.toUpperCase()) {
+                case "VALIDATE_ORDER":
+                    externalServiceClient.validateOrder(step.getTransactionId());
+                    break;
+                case "CHECK_STOCK":
+                    externalServiceClient.checkStock(step.getTransactionId());
+                    break;
+                case "NOTIFY_OFFICE":
+                    externalServiceClient.notifyOffice(step.getTransactionId());
+                    break;
+                case "NOTIFY_COLLECTOR":
+                    externalServiceClient.notifyCollector(step.getTransactionId());
+                    break;
+                case "RESERVE_ITEMS":
+                    externalServiceClient.reserveItems(step.getTransactionId());
+                    break;
+                case "CREATE_DELIVERY":
+                    createDelivery(step);
+                    break;
+                case "PROCESS_PAYMENT":
+                    processPayment(step);
+                    break;
+                case "SEND_CONFIRMATION":
+                    sendConfirmation(step);
+                    break;
+                default:
+                    log.warn("Unknown step type: {}", stepType);
+                    step.markAsSkipped();
+                    sagaStepRepository.save(step);
+                    return;
+            }
+
+            step.setStatus("COMPLETED");
+            step.setCompletedAt(LocalDateTime.now());
+            sagaStepRepository.save(step);
+
+            log.info("Step {} completed successfully", step.getId());
+
+            checkTransactionCompletion(step.getTransactionId());
+
+        } catch (Exception e) {
+            log.error("Step execution failed: {}", e.getMessage(), e);
+            step.setStatus("FAILED");
+            step.setErrorMessage(e.getMessage());
+            sagaStepRepository.save(step);
+            throw new RuntimeException("Step execution failed: " + e.getMessage(), e);
+        }
+    }
+
+    private void createDelivery(SagaStepEntity step) {
+        log.info("Creating delivery for transaction: {}", step.getTransactionId());
+        externalServiceClient.updateTransactionStatus(step.getTransactionId(), "DELIVERY_CREATED");
+    }
+
+    private void processPayment(SagaStepEntity step) {
+        log.info("Processing payment for transaction: {}", step.getTransactionId());
+        externalServiceClient.updateTransactionStatus(step.getTransactionId(), "PAYMENT_PROCESSED");
+    }
+
+    private void sendConfirmation(SagaStepEntity step) {
+        log.info("Sending confirmation for transaction: {}", step.getTransactionId());
+        externalServiceClient.updateTransactionStatus(step.getTransactionId(), "CONFIRMATION_SENT");
+    }
+
+    private boolean checkDependencies(SagaStepEntity step) {
+        Long dependsOnStepId = step.getDependsOnStepId();
+        if (dependsOnStepId == null) {
+            return true;
+        }
+
+        Optional<SagaStepEntity> dependency = sagaStepRepository.findById(dependsOnStepId);
+        if (dependency.isPresent()) {
+            SagaStepEntity depStep = dependency.get();
+            String status = depStep.getStatus();
+            return "COMPLETED".equals(status) || "SKIPPED".equals(status);
+        }
+
+        return true;
+    }
+
+    private void checkTransactionCompletion(String transactionId) {
+        List<SagaStepEntity> allSteps = sagaStepRepository.findByTransactionId(transactionId);
+
+        boolean allCompleted = allSteps.stream()
+                .allMatch(step -> {
+                    String status = step.getStatus();
+                    return "COMPLETED".equals(status) || "SKIPPED".equals(status);
+                });
+
+        if (allCompleted) {
+            Optional<TransactionEntity> transactionOpt = transactionRepository.findById(transactionId);
+            if (transactionOpt.isPresent()) {
+                TransactionEntity transaction = transactionOpt.get();
+                transaction.setStatus(TransactionStatus.COMPLETED);
+                transaction.setCompletedAt(LocalDateTime.now());
+                transactionRepository.save(transaction);
+
+                log.info("Transaction {} completed successfully", transactionId);
+                externalServiceClient.logAuditEvent(transactionId, "TRANSACTION_COMPLETED",
+                        "All saga steps completed successfully");
+            }
+        }
+    }
+
+    private void handleStepFailure(SagaStepEntity step, String error) {
+        log.error("Handling failure for step {}: {}", step.getId(), error);
+
+        step.setStatus("FAILED");
+        step.setErrorMessage(error);
+        sagaStepRepository.save(step);
+
+        if (step.canRetry()) {
+            step.incrementRetryCount();
+            log.info("Step {} scheduled for retry (attempt {}/{})",
+                    step.getId(), step.getRetryCount(), step.getMaxRetries());
+        } else {
+            compensationService.initiateCompensation(
+                    step.getTransactionId(),
+                    "STEP_FAILED: " + step.getStepType(),
+                    error
+            );
+
+            Optional<TransactionEntity> transactionOpt = transactionRepository.findById(step.getTransactionId());
+            transactionOpt.ifPresent(transaction -> {
+                transaction.setStatus(TransactionStatus.COMPENSATING);
+                transactionRepository.save(transaction);
+            });
+
+            log.error("Step {} failed permanently. Compensation initiated.", step.getId());
+            externalServiceClient.logAuditEvent(step.getTransactionId(), "STEP_FAILED",
+                    "Step " + step.getId() + " failed: " + error);
+        }
+    }
+
+    @Scheduled(fixedDelay = 60000)
+    @Transactional
+    public void retryFailedSteps() {
+        List<SagaStepEntity> failedSteps = sagaStepRepository.findByStatus("FAILED");
+
+        for (SagaStepEntity step : failedSteps) {
+            if (step.shouldRetryNow()) {
+                log.info("Retrying failed step {} for transaction {}",
+                        step.getId(), step.getTransactionId());
+                step.setStatus("PENDING");
+                step.incrementRetryCount();
+                sagaStepRepository.save(step);
+            }
+        }
+    }
+
+    @Scheduled(fixedDelay = 120000)
+    @Transactional
+    public void cleanupCompletedTransactions() {
+        List<TransactionEntity> completedTransactions =
+                transactionRepository.findByStatus(TransactionStatus.COMPLETED);
+
+        for (TransactionEntity transaction : completedTransactions) {
+            LocalDateTime completedAt = transaction.getCompletedAt();
+            if (completedAt != null &&
+                    completedAt.plusHours(24).isBefore(LocalDateTime.now())) {
+                log.info("Archiving old completed transaction: {}", transaction.getId());
+            }
+        }
+    }
+
+    public void triggerCompensation(String transactionId, String reason, String details) {
+        log.warn("Manual compensation triggered for {}: {} - {}", transactionId, reason, details);
+        compensationService.initiateCompensation(transactionId, reason, details);
+    }
+
+    public List<SagaStepEntity> getTransactionSteps(String transactionId) {
+        return sagaStepRepository.findByTransactionId(transactionId).stream()
+                .sorted(Comparator.comparingInt(SagaStepEntity::getStepOrder))
+                .collect(Collectors.toList());
+    }
+
+    public SagaStepEntity getStepStatus(Long stepId) {
+        return sagaStepRepository.findById(stepId)
+                .orElseThrow(() -> new RuntimeException("Step not found: " + stepId));
+    }
+
+    public void manuallySkipStep(Long stepId) {
+        SagaStepEntity step = sagaStepRepository.findById(stepId)
+                .orElseThrow(() -> new RuntimeException("Step not found: " + stepId));
+
+        String status = step.getStatus();
+        if ("PENDING".equals(status) || "FAILED".equals(status)) {
+            step.markAsSkipped();
+            sagaStepRepository.save(step);
+            log.info("Step {} manually skipped", stepId);
+        } else {
+            throw new RuntimeException("Cannot skip step in status: " + status);
+        }
+    }
+
+    public void resetStep(Long stepId) {
+        SagaStepEntity step = sagaStepRepository.findById(stepId)
+                .orElseThrow(() -> new RuntimeException("Step not found: " + stepId));
+
+        step.setStatus("PENDING");
+        step.setRetryCount(0);
+        step.setNextRetryTime(null);
+        step.setErrorMessage(null);
+        sagaStepRepository.save(step);
+
+        log.info("Step {} reset to PENDING", stepId);
+    }
+}package com.example.TransactionSaga.service;
+
+import com.example.TransactionSaga.config.SagaProperties;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+@Service
+public class TransactionService {
+
+    @Value("${saga.retry.max-attempts}")
+    private int maxRetryAttempts;
+
+    @Value("${saga.timeout.default-minutes}")
+    private int defaultTimeoutMinutes;
+
+    @Value("${services.office.url}")
+    private String officeServiceUrl;
+
+    @Value("${services.collector.url}")
+    private String collectorServiceUrl;
+
+    private final SagaProperties sagaProperties;
+
+    @Autowired
+    public TransactionService(SagaProperties sagaProperties) {
+        this.sagaProperties = sagaProperties;
+    }
+
+    public void someMethod() {
+        // Использование значений из пропертис
+        System.out.println("Max retry attempts: " + sagaProperties.getRetry().getMaxAttempts());
+        System.out.println("Default timeout: " + sagaProperties.getTimeout().getDefaultMinutes());
+        System.out.println("Office service URL: " + officeServiceUrl);
+
+        // Использование @Value напрямую
+        System.out.println("Max retry (via @Value): " + maxRetryAttempts);
+    }
+}package com.example.TransactionSaga;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class TransactionSagaApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(TransactionSagaApplication.class, args);
+	}
+
+}
