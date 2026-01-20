@@ -1,0 +1,35 @@
+﻿# Java/Maven build artifacts
+**/target/
+**/*.class
+*.jar
+*.war
+
+# Log files
+*.log
+*.pid
+logs/
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+
+# Node.js (React)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Archives
+*.zip
+*.7z
+*.rar
+*.tar.gz
+
+# Configuration files with sensitive data
+application-*.properties
+*.env
