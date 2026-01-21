@@ -181,9 +181,9 @@ const ClientPortal = () => {
     ));
   }, [cart, products, removeFromCart]);
 
-  const calculateTotal = useMemo(() => {
-    return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
-  }, [cart]);
+ const calculateTotal = useMemo(() => {
+  return Number(cart.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(2));
+}, [cart]);
 
   const handleCheckout = useCallback(async () => {
     if (cart.length === 0) {
@@ -490,7 +490,7 @@ const ClientPortal = () => {
                           </button>
                         </div>
                         <small className="text-muted">
-                          {item.price * item.quantity} ₽
+                          {(item.price * item.quantity).toFixed(2)} ₽
                         </small>
                       </div>
                     </div>
