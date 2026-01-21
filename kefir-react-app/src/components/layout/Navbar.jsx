@@ -40,6 +40,7 @@ const Navbar = ({ userRole, onLogout }) => {
       { path: '/client', label: 'Магазин', icon: '🛍️', color: '#2196F3', exact: true },
       { path: '/client/cart', label: 'Корзина', icon: '🛒', color: '#FF9800' },
       { path: '/client/profile', label: 'Профиль', icon: '👤', color: '#4CAF50' },
+      { path: '/client/notification', label: 'Уведомление', icon: '🔔', color: '#4CAF50'}
     ],
     [ROLES.COURIER]: [
       { path: '/courier', label: 'Панель', icon: '🚴', color: '#00BCD4', exact: true },
