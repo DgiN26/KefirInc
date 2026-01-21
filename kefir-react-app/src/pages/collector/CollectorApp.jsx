@@ -17,9 +17,17 @@ const CollectorApp = () => {
     accuracy: '100%'
   });
 
+  // Функция нормализации статуса (убирает квадратные скобки)
+ // const normalizeStatus = (status) => {
+ //   if (!status) return '';
+    // Удаляем все квадратные скобки, кавычки и лишние пробелы
+  //  return status.replace(/[\[\]"]/g, '').trim().toLowerCase();
+ // };
+
   // Функция загрузки заказов
   const fetchOrders = async () => {
     try {
+      setLoading(true);
       const response = await axios.get('http://localhost:8080/api/collector/processing-orders');
       
       if (response.data.success) {
@@ -45,54 +53,14 @@ const CollectorApp = () => {
           setCheckResult(null);
           setShowCompleteButton(false);
         }
-      } else {
-        setMockData();
       }
     } catch (error) {
       console.error('Ошибка загрузки заказов:', error);
-      setMockData();
+      // В случае ошибки показываем пустой список
+      setOrders([]);
+      setSelectedOrder(null);
     } finally {
       setLoading(false);
-    }
-  };
-
-  // Моковые данные для демонстрации
-  const setMockData = () => {
-    const mockOrders = [
-      { 
-        cart_id: 7, 
-        client_id: 4, 
-        client_name: 'Иван Иванов',
-        client_email: 'ivan@example.com',
-        status: 'processing',
-        created_date: '2025-12-28 11:38:44',
-        item_count: 3,
-        total_items: 4,
-        items: [
-          { product_id: 1, product_name: 'Ноутбук ASUS ROG', quantity: 1, price: 85000.00 },
-          { product_id: 2, product_name: 'Мышь беспроводная', quantity: 2, price: 2500.00 },
-          { product_id: 3, product_name: 'Клавиатура механическая', quantity: 1, price: 7500.00 }
-        ]
-      },
-      { 
-        cart_id: 14, 
-        client_id: 11, 
-        client_name: 'Петр Петров',
-        client_email: 'petr@example.com',
-        status: 'processing',
-        created_date: '2025-01-20 11:45:00',
-        item_count: 2,
-        total_items: 4,
-        items: [
-          { product_id: 4, product_name: 'Футболка Nike', quantity: 3, price: 2500.00 },
-          { product_id: 5, product_name: 'Джинсы Levis', quantity: 1, price: 7500.00 }
-        ]
-      }
-    ];
-    
-    setOrders(mockOrders);
-    if (!selectedOrder && mockOrders.length > 0) {
-      setSelectedOrder(mockOrders[0]);
     }
   };
 
@@ -167,74 +135,74 @@ const CollectorApp = () => {
     }
   };
 
- // В CollectorApp.jsx обновите метод reportProductMissing:
-const reportProductMissing = async () => {
-  if (!selectedOrder || !selectedOrder.items || selectedOrder.items.length === 0) return;
-  
-  try {
-    // Берем первый товар для примера
-    const problemProduct = selectedOrder.items[0];
-    const problemDetails = prompt('Опишите проблему с товаром:', 'отсутствует на складе');
+  // Сообщение об отсутствии товара
+  const reportProductMissing = async () => {
+    if (!selectedOrder || !selectedOrder.items || selectedOrder.items.length === 0) return;
     
-    if (!problemDetails) return;
-    
-    console.log('Отправляем данные:', {
-      cartId: selectedOrder.cart_id,
-      productId: problemProduct.product_id,
-      productName: problemProduct.product_name || 'Неизвестный товар',
-      problemDetails: problemDetails
-    });
-    
-    const response = await axios.post('http://localhost:8080/api/collector/report-product-missing', {
-      cartId: selectedOrder.cart_id,
-      productId: problemProduct.product_id,
-      productName: problemProduct.product_name || 'Неизвестный товар', // ОБЯЗАТЕЛЬНО!
-      problemDetails: problemDetails,
-      collectorId: 'COLLECTOR_1'
-    });
-    
-    console.log('Ответ сервера:', response.data);
-    
-    if (response.data.success) {
-      let message = `⚠️ Проблема зарегистрирована\n`;
-      message += `ID проблемы: ${response.data.problemId || 'не присвоен'}\n`;
-      message += `Товар: ${response.data.productName}\n`;
-      message += `Причина: ${problemDetails}\n`;
-      message += `Статус заказа: ${response.data.cartUpdated ? 'изменен на "problem"' : 'не изменился'}`;
+    try {
+      // Берем первый товар для примера
+      const problemProduct = selectedOrder.items[0];
+      const problemDetails = prompt('Опишите проблему с товаром:', 'отсутствует на складе');
       
-      alert(message);
+      if (!problemDetails) return;
       
-      // Если статус изменился, обновляем список
-      if (response.data.cartUpdated) {
-        // Обновляем список заказов
-        const updatedOrders = orders.map(order => 
-          order.cart_id === selectedOrder.cart_id 
-          ? { ...order, status: 'problem' }
-          : order
-        );
-        setOrders(updatedOrders);
+      console.log('Отправляем данные:', {
+        cartId: selectedOrder.cart_id,
+        productId: problemProduct.product_id,
+        productName: problemProduct.product_name || 'Неизвестный товар',
+        problemDetails: problemDetails
+      });
+      
+      const response = await axios.post('http://localhost:8080/api/collector/report-product-missing', {
+        cartId: selectedOrder.cart_id,
+        productId: problemProduct.product_id,
+        productName: problemProduct.product_name || 'Неизвестный товар',
+        problemDetails: problemDetails,
+        collectorId: 'COLLECTOR_1'
+      });
+      
+      console.log('Ответ сервера:', response.data);
+      
+      if (response.data.success) {
+        let message = `⚠️ Проблема зарегистрирована\n`;
+        message += `ID проблемы: ${response.data.problemId || 'не присвоен'}\n`;
+        message += `Товар: ${response.data.productName}\n`;
+        message += `Причина: ${problemDetails}\n`;
+        message += `Статус заказа: ${response.data.cartUpdated ? 'изменен на "problem"' : 'не изменился'}`;
         
-        // Удаляем из списка через 2 секунды
-        setTimeout(() => {
-          const filteredOrders = orders.filter(order => order.cart_id !== selectedOrder.cart_id);
-          setOrders(filteredOrders);
-          if (filteredOrders.length > 0) {
-            setSelectedOrder(filteredOrders[0]);
-          } else {
-            setSelectedOrder(null);
-          }
-          setCheckResult(null);
-          setShowCompleteButton(false);
-        }, 2000);
+        alert(message);
+        
+        // Если статус изменился, обновляем список
+        if (response.data.cartUpdated) {
+          // Обновляем список заказов
+          const updatedOrders = orders.map(order => 
+            order.cart_id === selectedOrder.cart_id 
+            ? { ...order, status: 'problem' }
+            : order
+          );
+          setOrders(updatedOrders);
+          
+          // Удаляем из списка через 2 секунды
+          setTimeout(() => {
+            const filteredOrders = orders.filter(order => order.cart_id !== selectedOrder.cart_id);
+            setOrders(filteredOrders);
+            if (filteredOrders.length > 0) {
+              setSelectedOrder(filteredOrders[0]);
+            } else {
+              setSelectedOrder(null);
+            }
+            setCheckResult(null);
+            setShowCompleteButton(false);
+          }, 2000);
+        }
+      } else {
+        alert(`Ошибка: ${response.data.error || 'Неизвестная ошибка'}`);
       }
-    } else {
-      alert(`Ошибка: ${response.data.error || 'Неизвестная ошибка'}`);
+    } catch (error) {
+      console.error('Ошибка регистрации проблемы:', error);
+      alert('Ошибка при регистрации проблемы: ' + (error.response?.data?.error || error.message));
     }
-  } catch (error) {
-    console.error('Ошибка регистрации проблемы:', error);
-    alert('Ошибка при регистрации проблемы: ' + (error.response?.data?.error || error.message));
-  }
-};
+  };
 
   // Кнопка "Завершить сборку"
   const completeOrderCollection = async () => {
@@ -326,45 +294,20 @@ const reportProductMissing = async () => {
                           <div>
                             <h5 className="fw-bold" style={styles.orderNumber}>
                               Заказ #{order.cart_id}
-                            </h5>
-                            <p className="mb-1">
-                              <span style={styles.clientIcon}>👤</span>
-                              <strong>{order.client_name}</strong>
-                            </p>
-                            <p className="mb-1">
-                              <span style={styles.emailIcon}>📧</span>
-                              {order.client_email}
-                            </p>
-                            <p className="mb-1">
-                              <span style={styles.itemIcon}>📋</span>
-                              Товаров: {order.item_count} ({order.total_items} шт.)
-                            </p>
+                            </h5>                      
                             <p className="mb-0 text-muted">
                               <small>Создан: {new Date(order.created_date).toLocaleString('ru-RU')}</small>
                             </p>
                           </div>
-                          <div style={order.status === 'problem' ? 
+                          <div style={(order.status) === 'problem' ? 
                             styles.statusBadgeProblem : 
                             styles.statusBadgeProcessing}>
-                            {order.status === 'problem' ? '⚠️ Проблема' : '🔄 В обработке'}
+                            {(order.status) === 'problem' ? '⚠️ Проблема' : '🔄 В обработке'}
                           </div>
                         </div>
                         
                         {selectedOrder?.cart_id === order.cart_id && order.items && order.items.length > 0 && (
-                          <div className="mt-3" style={styles.itemsSection}>
-                            <h6 className="fw-bold mb-2">Товары в заказе:</h6>
-                            <ul className="list-unstyled mb-0">
-                              {order.items.map((item, index) => (
-                                <li key={index} className="mb-1 ps-2 border-start border-3 border-dark">
-                                  <strong>{item.product_name}</strong>
-                                  <span className="ms-2">× {item.quantity}</span>
-                                  <span className="ms-2 text-muted">
-                                    (ID: {item.product_id})
-                                  </span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
+                          <div className="mt-3" style={styles.itemsSection}></div>
                         )}
                       </div>
                     ))}
@@ -415,14 +358,7 @@ const reportProductMissing = async () => {
                 <>
                   {/* Информация о выбранном заказе */}
                   <div className="mb-4" style={styles.selectedOrderInfo}>
-                    <h5 className="fw-bold">Заказ #{selectedOrder.cart_id}</h5>
-                    <p className="mb-1">
-                      <strong>Клиент:</strong> {selectedOrder.client_name}
-                    </p>
-                    <p className="mb-3">
-                      <strong>Email:</strong> {selectedOrder.client_email}
-                    </p>
-                    
+                    <h5 className="fw-bold">Заказ #{selectedOrder.cart_id}</h5>                   
                     {selectedOrder.items && selectedOrder.items.length > 0 && (
                       <div className="mb-3">
                         <h6 className="fw-bold mb-2">Товары для сборки:</h6>
@@ -439,7 +375,7 @@ const reportProductMissing = async () => {
                     )}
                     
                     <div className="mt-2 text-muted">
-                      <small>Статус: <strong>{selectedOrder.status}</strong></small>
+                      <small>Статус: <strong>{(selectedOrder.status)}</strong></small>
                     </div>
                   </div>
                   
@@ -525,7 +461,7 @@ const reportProductMissing = async () => {
   );
 };
 
-// Встроенные стили
+// Встроенные стили (без изменений)
 const styles = {
   leftPanel: {
     backgroundColor: '#ffffff',
@@ -562,15 +498,6 @@ const styles = {
   orderNumber: {
     color: '#000',
     marginBottom: '8px'
-  },
-  clientIcon: {
-    marginRight: '6px'
-  },
-  emailIcon: {
-    marginRight: '6px'
-  },
-  itemIcon: {
-    marginRight: '6px'
   },
   statusBadgeProcessing: {
     padding: '5px 10px',
