@@ -290,7 +290,7 @@ const Login = ({ onLogin, loading }) => {
             </button>
             <button
               type="button"
-              onClick={() => handleDemoLogin('courier', 'courier')}
+              onClick={() => handleDemoLogin('delivery', 'delivery')}
               disabled={loading}
               className="demo-button"
               style={{
