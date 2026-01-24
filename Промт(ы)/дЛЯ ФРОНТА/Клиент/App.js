@@ -18,7 +18,6 @@ import ClientPortal from './pages/client/ClientPortal';
 import ClientCart from './pages/client/ClientCart';
 import ClientProfile from './pages/client/ClientProfile';
 import ClientNotification from './pages/client/Notification';
-import SupportPage from './pages/client/SupportPage'; // ДОБАВЛЕН ИМПОРТ
 
 // Admin Pages
 import AdminDashboard from './pages/admin/Dashboard';
@@ -626,13 +625,6 @@ function App() {
           <Route path="/client/notification" element={
             <ProtectedRoute allowedRoles={[ROLES.CLIENT]}>
               <ClientNotification />
-            </ProtectedRoute>
-          } />
-
-          {/* ✅ ДОБАВЛЕН НОВЫЙ РОУТ ДЛЯ ПОДДЕРЖКИ */}
-          <Route path="/client/support" element={
-            <ProtectedRoute allowedRoles={[ROLES.CLIENT]}>
-              <SupportPage />
             </ProtectedRoute>
           } />
           

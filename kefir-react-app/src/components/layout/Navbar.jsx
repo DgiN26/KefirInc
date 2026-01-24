@@ -1,7 +1,7 @@
 // src/components/layout/Navbar.jsx
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import './Navbar.css'; // Создадим отдельный CSS файл для кастомизации
+import './Navbar.css';
 
 const Navbar = ({ userRole, onLogout }) => {
   const location = useLocation();
@@ -17,9 +17,9 @@ const Navbar = ({ userRole, onLogout }) => {
     COLLECTOR: 'collector'
   };
   
+  // НОРМАЛИЗАЦИЯ РОЛИ (БЫЛО ПРОПУЩЕНО)
   const normalizedRole = userRole ? userRole.toLowerCase() : '';
-
-  // Конфигурация навигации по ролям с цветами и иконками
+  
   const navConfig = {
     [ROLES.ADMIN]: [
       { path: '/admin', label: 'Главная', icon: '🏠', color: '#4CAF50', exact: true },
@@ -39,6 +39,8 @@ const Navbar = ({ userRole, onLogout }) => {
     [ROLES.CLIENT]: [
       { path: '/client', label: 'Магазин', icon: '🛍️', color: '#2196F3', exact: true },
       { path: '/client/cart', label: 'Корзина', icon: '🛒', color: '#FF9800' },
+      // ✅ ДОБАВЛЕНА ПОДДЕРЖКА:
+      { path: '/client/support', label: 'Поддержка', icon: '📞', color: '#9C27B0' },
       { path: '/client/profile', label: 'Профиль', icon: '👤', color: '#4CAF50' },
       { path: '/client/notification', label: 'Уведомление', icon: '🔔', color: '#4CAF50'}
     ],

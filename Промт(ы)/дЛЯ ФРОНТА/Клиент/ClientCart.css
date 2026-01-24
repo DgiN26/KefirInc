@@ -1,0 +1,125 @@
+/* src/pages/client/ClientCart.css */
+
+.orders-list {
+  animation: fadeIn 0.3s ease-in;
+}
+
+.order-card {
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid #e9ecef !important;
+}
+
+.order-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+}
+
+.empty-state-icon {
+  opacity: 0.5;
+}
+
+/* ClientCart.css */
+.cart-item:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+  border-color: #1976d2 !important;
+  transform: translateY(-2px) !important;
+}
+
+/* ClientCart.css */
+.complete-order-btn {
+  padding: 12px 30px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.complete-order-btn:hover:not(:disabled) {
+  background: #45a049;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.complete-order-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.close-button:hover {
+  color: #333 !important;
+}
+
+.debug-panel {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 12px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Индикатор загрузки */
+.loading-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  min-height: 300px;
+}
+
+/* Кнопка остановки */
+.btn-stop {
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .card-header .d-flex {
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
+  
+  .card-header .text-end {
+    margin-top: 10px;
+    align-self: flex-end;
+  }
+  
+  .table-responsive {
+    font-size: 0.85rem;
+  }
+}
