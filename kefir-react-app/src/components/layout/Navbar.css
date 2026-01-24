@@ -120,7 +120,6 @@
   transform: translateX(-50%);
   width: 4px;
   height: 4px;
-  background: white;
   border-radius: 50%;
   animation: pulse 2s infinite;
 }
