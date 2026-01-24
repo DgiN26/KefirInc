@@ -50,6 +50,41 @@
   text-shadow: 0 1px 0 rgba(0,0,0,0.1);
   letter-spacing: 0.3px;
 }
+/* src/pages/collector/CollectorApp.css */
+
+/* ГЛОБАЛЬНЫЙ КУРСОР ДЛЯ ВСЕХ КЛИКАБЕЛЬНЫХ ЭЛЕМЕНТОВ */
+.collector-app button,
+.collector-app input[type="button"],
+.collector-app input[type="submit"],
+.collector-app .cursor-felt-pen,
+.collector-app [role="button"] {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M8 28l16-16-4-4L4 24z" fill="black"/><path d="M24 4l4 4-16 16-4-4z" fill="%23000000"/></svg>') 4 28, auto !important;
+}
+
+/* Для отключенных кнопок */
+.collector-app button:disabled,
+.collector-app input[type="button"]:disabled,
+.collector-app input[type="submit"]:disabled {
+  cursor: not-allowed !important;
+}
+
+/* Для всех интерактивных элементов в коллекторе */
+.collector-app * {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M8 28l16-16-4-4L4 24z" fill="black"/><path d="M24 4l4 4-16 16-4-4z" fill="%23000000"/></svg>') 4 28, auto !important;
+}
+
+/* Исключения для текстовых полей */
+.collector-app input[type="text"],
+.collector-app input[type="email"],
+.collector-app input[type="password"],
+.collector-app textarea {
+  cursor: text !important;
+}
+
+/* Оверрайд для стандартного курсора браузера */
+button, input, .btn, [onclick] {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M8 28l16-16-4-4L4 24z" fill="black"/><path d="M24 4l4 4-16 16-4-4z" fill="%23000000"/></svg>') 4 28, auto !important;
+}
 
 .cursor-felt-pen:hover {
   border: 2px solid #dee2e6 !important;

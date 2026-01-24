@@ -1,0 +1,52 @@
+/* src/pages/collector/CollectorApp.css */
+.collector-app {
+  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+}
+
+/* Анимации */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Стили для курсора фломастера */
+.cursor-felt-pen {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M8 28l16-16-4-4L4 24z" fill="black"/><path d="M24 4l4 4-16 16-4-4z" fill="%23000000"/></svg>') 4 28, auto;
+}
+
+/* Эффекты наведения для элементов */
+.order-card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 2px 2px 0 #000;
+  transition: all 0.2s ease;
+}
+
+/* Стили для статусов */
+.status-badge {
+  font-family: 'Comic Sans MS', sans-serif;
+  letter-spacing: 0.5px;
+}
+
+/* Адаптивность */
+@media (max-height: 768px) {
+  .collector-app {
+    font-size: 0.9rem;
+  }
+}
+
+/* Печатный эффект для текста */
+.print-effect {
+  text-shadow: 0 1px 0 rgba(0,0,0,0.1);
+  letter-spacing: 0.3px;
+}

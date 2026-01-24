@@ -7,6 +7,7 @@ import './styles/global.css';
 // Layout Components
 import MainLayout from './components/layout/MainLayout';
 import OfficeLayout from './components/layout/OfficeLayout';
+import CollectorLayout from './components/layout/CollectorLayout';
 
 // Auth Pages
 import Login from './pages/auth/Login';
@@ -60,6 +61,9 @@ function App() {
   const [dbLoading, setDbLoading] = useState(false);
   const [dbError, setDbError] = useState('');
 
+  // Флаг, что приложение проинициализировано
+  const [initialized, setInitialized] = useState(false);
+
   // Функция для нормализации роли
   const normalizeRole = useCallback((role) => {
     if (!role) return '';
@@ -100,6 +104,7 @@ function App() {
     setError(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    sessionStorage.removeItem('redirectAfterLogin');
   }, []);
 
   // Проверка авторизации по localStorage
@@ -129,23 +134,40 @@ function App() {
     }
   }, [normalizeRole, clearAuthData]);
 
+  // Эффект для принудительного редиректа на логин при старте
+  useEffect(() => {
+    // Сохраняем текущий путь для возможного редиректа после логина
+    const currentPath = window.location.pathname;
+    if (!['/login', '/register'].includes(currentPath)) {
+      sessionStorage.setItem('redirectAfterLogin', currentPath);
+    }
+    
+    // Принудительно устанавливаем isAuthenticated в false при старте
+    // чтобы всегда показывать логин первым
+    if (isAuthenticated === null) {
+      const token = localStorage.getItem('token');
+      if (token) {
+        // Если есть токен, проверяем его, но не редиректим автоматически
+        checkAuthFromStorage();
+      } else {
+        setIsAuthenticated(false);
+      }
+    }
+  }, []);
+
   // Инициализация приложения
   useEffect(() => {
     const initializeApp = async () => {
       try {
         setLoading(true);
         
-        // Проверяем авторизацию из localStorage
-        const hasLocalAuth = checkAuthFromStorage();
-        
-        console.log('App initialization:', {
-          hasLocalAuth,
-          token: localStorage.getItem('token'),
-          user: localStorage.getItem('user')
-        });
+        console.log('App initialization started');
         
         // Проверяем подключение к БД
         await testDatabaseConnection();
+        
+        // Помечаем инициализацию как завершенную
+        setInitialized(true);
         
       } catch (error) {
         console.error('App initialization error:', error);
@@ -154,8 +176,13 @@ function App() {
       }
     };
 
-    initializeApp();
-  }, [checkAuthFromStorage, testDatabaseConnection]);
+    // Небольшая задержка перед инициализацией для UX
+    const timer = setTimeout(() => {
+      initializeApp();
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [testDatabaseConnection]);
 
   // Обработчик входа
   const handleLogin = async (credentials) => {
@@ -228,7 +255,7 @@ function App() {
       }
     } finally {
       clearAuthData();
-      window.location.href = '/login'; // Перенаправляем на страницу логина
+      window.location.href = '/login';
     }
   }, [clearAuthData]);
 
@@ -300,7 +327,8 @@ function App() {
 
   // Защищенный роут компонент
   const ProtectedRoute = ({ children, allowedRoles = [], requireDB = false }) => {
-    if (isAuthenticated === null || loading) {
+    // Если еще идет инициализация, показываем лоадер
+    if (!initialized || isAuthenticated === null || loading) {
       return (
         <div className="flex-center" style={{ 
           height: '100vh',
@@ -316,13 +344,13 @@ function App() {
               borderRadius: '50%',
               animation: 'spin 1s linear infinite'
             }} />
-            <div>Загрузка...</div>
-            {dbLoading && <div>Проверка подключения к базе данных...</div>}
+            <div>Загрузка приложения...</div>
           </div>
         </div>
       );
     }
 
+    // Если не авторизован - на логин
     if (!isAuthenticated) {
       console.log('ProtectedRoute: Not authenticated, redirecting to login');
       return <Navigate to="/login" replace />;
@@ -385,7 +413,8 @@ function App() {
 
   // Защищенный роут для Office (с OfficeLayout вместо MainLayout)
   const ProtectedOfficeRoute = ({ children, allowedRoles = [ROLES.OFFICE] }) => {
-    if (isAuthenticated === null || loading) {
+    // Если еще идет инициализация, показываем лоадер
+    if (!initialized || isAuthenticated === null || loading) {
       return (
         <div className="flex-center" style={{ 
           height: '100vh',
@@ -401,8 +430,7 @@ function App() {
               borderRadius: '50%',
               animation: 'spin 1s linear infinite'
             }} />
-            <div>Загрузка...</div>
-            {dbLoading && <div>Проверка подключения к базе данных...</div>}
+            <div>Загрузка приложения...</div>
           </div>
         </div>
       );
@@ -426,15 +454,58 @@ function App() {
     }
 
     return (
-      <OfficeLayout 
-        userRole={normalizedUserRole}
-        userData={userData}
-        onLogout={handleLogout}
-        dbConnected={dbConnected}
-        dbError={dbError}
-      >
+      <OfficeLayout onLogout={handleLogout}>
         {children}
       </OfficeLayout>
+    );
+  };
+
+  // Защищенный роут для Collector (без шапки MainLayout)
+  const ProtectedCollectorRoute = ({ children, allowedRoles = [ROLES.COLLECTOR] }) => {
+    // Если еще идет инициализация, показываем лоадер
+    if (!initialized || isAuthenticated === null || loading) {
+      return (
+        <div className="flex-center" style={{ 
+          height: '100vh',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+        }}>
+          <div className="text-center text-white">
+            <div style={{
+              width: '50px',
+              height: '50px',
+              margin: '0 auto 20px',
+              border: '3px solid rgba(255, 255, 255, 0.3)',
+              borderTop: '3px solid white',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite'
+            }} />
+            <div>Загрузка приложения...</div>
+          </div>
+        </div>
+      );
+    }
+
+    if (!isAuthenticated) {
+      console.log('ProtectedCollectorRoute: Not authenticated, redirecting to login');
+      return <Navigate to="/login" replace />;
+    }
+
+    const currentUserRole = userRole || '';
+    const normalizedUserRole = normalizeRole(currentUserRole);
+    const normalizedAllowedRoles = allowedRoles.map(role => 
+      normalizeRole(role)
+    );
+
+    if (normalizedAllowedRoles.length > 0 && !normalizedAllowedRoles.includes(normalizedUserRole)) {
+      console.log(`ProtectedCollectorRoute: Role ${normalizedUserRole} not allowed, redirecting`);
+      const redirectPath = getRoleRedirect(normalizedUserRole);
+      return <Navigate to={redirectPath} replace />;
+    }
+
+    return (
+      <CollectorLayout onLogout={handleLogout}>
+        {children}
+      </CollectorLayout>
     );
   };
 
@@ -456,7 +527,6 @@ function App() {
             animation: 'spin 1s linear infinite'
           }} />
           <div>Загрузка приложения...</div>
-          <div>Проверка подключения к базе данных...</div>
         </div>
         <style>{`
           @keyframes spin {
@@ -506,9 +576,11 @@ function App() {
         )}
         
         <Routes>
-          {/* Public Routes */}
+          {/* ✅ Public Routes - доступны без авторизации */}
           <Route path="/login" element={
-            isAuthenticated ? (
+            // Показываем логин ВСЕГДА при первом заходе
+            // даже если есть токен в localStorage
+            isAuthenticated && initialized ? (
               <Navigate to={getRoleRedirect(userRole)} replace />
             ) : (
               <Login 
@@ -519,7 +591,7 @@ function App() {
           } />
           
           <Route path="/register" element={
-            isAuthenticated ? (
+            isAuthenticated && initialized ? (
               <Navigate to={getRoleRedirect(userRole)} replace />
             ) : (
               <Register 
@@ -592,30 +664,30 @@ function App() {
             </ProtectedRoute>
           } />
           
-          {/* Office Routes */}
-          <Route path="/office" element={
-            <ProtectedOfficeRoute allowedRoles={[ROLES.OFFICE]}>
-              <OfficePage />
-            </ProtectedOfficeRoute>
-          } />
-          
-          <Route path="/office/deliveries" element={
-            <ProtectedOfficeRoute allowedRoles={[ROLES.OFFICE]}>
-              <OfficeDeliveries />
-            </ProtectedOfficeRoute>
-          } />
-          
-          <Route path="/office/orders" element={
-            <ProtectedOfficeRoute allowedRoles={[ROLES.OFFICE]}>
-              <OfficeOrders />
-            </ProtectedOfficeRoute>
-          } />
-          
-          <Route path="/office/reports" element={
-            <ProtectedOfficeRoute allowedRoles={[ROLES.OFFICE]}>
-              <OfficeReports />
-            </ProtectedOfficeRoute>
-          } />
+         {/* Office Routes */}
+<Route path="/office" element={
+  <ProtectedOfficeRoute allowedRoles={[ROLES.OFFICE]}>
+    <OfficePage onLogout={handleLogout} /> {/* Добавь onLogout здесь */}
+  </ProtectedOfficeRoute>
+} />
+
+<Route path="/office/deliveries" element={
+  <ProtectedOfficeRoute allowedRoles={[ROLES.OFFICE]}>
+    <OfficeDeliveries onLogout={handleLogout} />
+  </ProtectedOfficeRoute>
+} />
+
+<Route path="/office/orders" element={
+  <ProtectedOfficeRoute allowedRoles={[ROLES.OFFICE]}>
+    <OfficeOrders onLogout={handleLogout} />
+  </ProtectedOfficeRoute>
+} />
+
+<Route path="/office/reports" element={
+  <ProtectedOfficeRoute allowedRoles={[ROLES.OFFICE]}>
+    <OfficeReports onLogout={handleLogout} />
+  </ProtectedOfficeRoute>
+} />
           
           {/* Worker Routes */}
           <Route path="/courier" element={
@@ -625,27 +697,19 @@ function App() {
           } />
           
           <Route path="/collector" element={
-            <ProtectedRoute allowedRoles={[ROLES.COLLECTOR]}>
+            <ProtectedCollectorRoute allowedRoles={[ROLES.COLLECTOR]}>
               <CollectorApp />
-            </ProtectedRoute>
+            </ProtectedCollectorRoute>
           } />
           
-          {/* Default Route - перенаправляем на login если не авторизован */}
+          {/* ✅ DEFAULT ROUTE - ВСЕГДА на логин */}
           <Route path="/" element={
-            isAuthenticated ? (
-              <Navigate to={getRoleRedirect(userRole)} replace />
-            ) : (
-              <Navigate to="/login" replace />
-            )
+            <Navigate to="/login" replace />
           } />
 
-          {/* 404 Route */}
+          {/* ✅ 404 ROUTE - на логин если страница не найдена */}
           <Route path="*" element={
-            isAuthenticated ? (
-              <Navigate to={getRoleRedirect(userRole)} replace />
-            ) : (
-              <Navigate to="/login" replace />
-            )
+            <Navigate to="/login" replace />
           } />
         </Routes>
       </div>
