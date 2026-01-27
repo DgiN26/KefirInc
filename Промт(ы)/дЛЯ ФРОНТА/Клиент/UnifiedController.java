@@ -1,20 +1,4 @@
-//Это обрезанный код для нейронки
-package com.example.ApiGateWay;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import feign.FeignException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
-
-import java.time.Instant;
-import java.util.*;
-import java.util.stream.Collectors;
+//Это не полный класс - а сокращенная версия для нейросети!
 
 @RestController
 @RequestMapping("/api")
@@ -36,7 +20,6 @@ public class UnifiedController {
 
     @Autowired
     private ClientServiceClient clientService;
-
     @Autowired
     private ProductServiceClient productServiceClient;
 
@@ -52,416 +35,9 @@ public class UnifiedController {
     @Autowired
     private TransactionSagaClient transactionSagaClient;
 
-    // ==================== БЛОК 1: АВТОРИЗАЦИЯ И АУТЕНТИФИКАЦИЯ ====================
 
-    @PostMapping("/auth/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> request) {
-        try {
-            System.out.println("=== GATEWAY LOGIN (HYBRID SUPPORT) ===");
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<Map<String, String>> entity = new HttpEntity<>(request, headers);
 
-            try {
-                ResponseEntity<Map> response = restTemplate.exchange(
-                        "http://localhost:8097/api/auth/login",
-                        HttpMethod.POST,
-                        entity,
-                        Map.class
-                );
-
-                Map<String, Object> responseBody = response.getBody();
-
-                if (responseBody != null &&
-                        Boolean.TRUE.equals(responseBody.get("success")) &&
-                        responseBody.containsKey("token")) {
-
-                    String token = (String) responseBody.get("token");
-                    if (token.startsWith("auth-")) {
-                        System.out.println("✅ Received hybrid UUID token: " + token);
-                    } else if (token.contains(".")) {
-                        System.out.println("✅ Received JWT token");
-                    }
-                }
-
-                return ResponseEntity.status(response.getStatusCode()).body(responseBody);
-
-            } catch (HttpClientErrorException e) {
-                try {
-                    ObjectMapper mapper = new ObjectMapper();
-                    return ResponseEntity.status(e.getStatusCode())
-                            .body(mapper.readValue(e.getResponseBodyAsString(), Map.class));
-                } catch (Exception parseError) {
-                    return ResponseEntity.status(e.getStatusCode())
-                            .body(Map.of("success", false, "error", e.getResponseBodyAsString()));
-                }
-            }
-
-        } catch (Exception e) {
-            return ResponseEntity.status(500)
-                    .body(Map.of("success", false, "error", "Gateway error"));
-        }
-    }
-
-    @PostMapping("/auth/logout")
-    public ResponseEntity<?> logout(@RequestHeader(value = "Authorization", required = false) String authHeader) {
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            if (authHeader != null) headers.set("Authorization", authHeader);
-            headers.setContentType(MediaType.APPLICATION_JSON);
-
-            HttpEntity<?> entity = new HttpEntity<>(headers);
-            ResponseEntity<Map> response = restTemplate.exchange(
-                    "http://localhost:8097/api/auth/logout",
-                    HttpMethod.POST,
-                    entity,
-                    Map.class
-            );
-
-            return ResponseEntity.ok(response.getBody());
-
-        } catch (Exception e) {
-            System.err.println("Gateway logout error: " + e.getMessage());
-            return ResponseEntity.ok(Map.of(
-                    "success", true,
-                    "message", "Logout processed via gateway",
-                    "timestamp", System.currentTimeMillis()
-            ));
-        }
-    }
-
-    @PostMapping("/auth/validate")
-    public Map<String, Object> validateToken(@RequestBody Map<String, String> request) {
-        return authServiceClient.validateToken(request.toString());
-    }
-
-    @GetMapping("/auth/check")
-    public Map<String, Object> checkAuth() {
-        return authServiceClient.check();
-    }
-
-    // Метод для извлечения userId из JWT токена (из первого файла)
-    private Integer extractUserIdFromToken(String authHeader) {
-        try {
-            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                log.warn("⚠️ Отсутствует или некорректный Authorization header: {}", authHeader);
-                throw new RuntimeException("Требуется авторизация");
-            }
-
-            String token = authHeader.substring(7);
-            log.debug("Токен для парсинга: {}", token.substring(0, Math.min(token.length(), 50)) + "...");
-
-            if (token.contains(".")) {
-                return extractUserIdFromJwt(token);
-            } else if (token.startsWith("auth-")) {
-                return extractUserIdFromUuidToken(token);
-            } else {
-                throw new RuntimeException("Неизвестный формат токена");
-            }
-
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new RuntimeException("Ошибка при извлечении userId: " + e.getMessage());
-        }
-    }
-
-    private Integer extractUserIdFromJwt(String jwtToken) throws Exception {
-        try {
-            String[] parts = jwtToken.split("\\.");
-            if (parts.length != 3) {
-                throw new RuntimeException("Неверный формат JWT токена");
-            }
-
-            String payloadJson = new String(java.util.Base64.getUrlDecoder().decode(parts[1]));
-            log.debug("JWT payload: {}", payloadJson);
-
-            ObjectMapper mapper = new ObjectMapper();
-            Map<String, Object> payload = mapper.readValue(payloadJson, Map.class);
-
-            if (payload.containsKey("userId")) {
-                Object userIdObj = payload.get("userId");
-                if (userIdObj instanceof Integer) return (Integer) userIdObj;
-                if (userIdObj instanceof String) return Integer.parseInt((String) userIdObj);
-                if (userIdObj instanceof Number) return ((Number) userIdObj).intValue();
-            }
-
-            if (payload.containsKey("id")) {
-                Object idObj = payload.get("id");
-                if (idObj instanceof Integer) return (Integer) idObj;
-                if (idObj instanceof String) return Integer.parseInt((String) idObj);
-                if (idObj instanceof Number) return ((Number) idObj).intValue();
-            }
-
-            throw new RuntimeException("userId не найден в JWT токене");
-
-        } catch (Exception e) {
-            throw new RuntimeException("Ошибка парсинга JWT: " + e.getMessage());
-        }
-    }
-
-    private Integer extractUserIdFromUuidToken(String uuidToken) {
-        try {
-            log.info("=== ИЗВЛЕЧЕНИЕ USER ID ИЗ UUID ТОКЕНА ===");
-            log.info("Токен: {}", uuidToken);
-
-            String url = "http://localhost:8097/api/auth/validate?clientToken=" + uuidToken;
-            log.info("URL запроса: {}", url);
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-
-            HttpEntity<String> entity = new HttpEntity<>("{}", headers);
-
-            log.info("Отправка POST запроса с пустым телом и параметром в query string...");
-
-            ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, entity, Map.class);
-
-            log.info("Статус ответа: {}", response.getStatusCode());
-            log.info("Тело ответа: {}", response.getBody());
-
-            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                Map<String, Object> body = response.getBody();
-
-                if (Boolean.TRUE.equals(body.get("valid"))) {
-                    log.info("✅ Токен валиден");
-
-                    if (body.containsKey("userId")) {
-                        Integer userId = convertToInteger(body.get("userId"));
-                        if (userId != null) {
-                            log.info("✅ Найден userId: {}", userId);
-                            return userId;
-                        }
-                    }
-
-                    if (body.containsKey("user") && body.get("user") instanceof Map) {
-                        Map<String, Object> user = (Map<String, Object>) body.get("user");
-                        if (user.containsKey("id")) {
-                            Integer userId = convertToInteger(user.get("id"));
-                            if (userId != null) {
-                                log.info("✅ Найден userId в user объекте: {}", userId);
-                                return userId;
-                            }
-                        }
-                    }
-
-                    log.error("❌ userId не найден в ответе");
-                    throw new RuntimeException("Не удалось извлечь userId из ответа");
-
-                } else {
-                    String errorMsg = body.containsKey("message") ?
-                            (String) body.get("message") : "Токен невалиден";
-                    log.error("❌ Токен невалиден: {}", errorMsg);
-                    throw new RuntimeException("Токен недействителен: " + errorMsg);
-                }
-            }
-
-            log.error("❌ Неожиданный статус ответа: {}", response.getStatusCode());
-            throw new RuntimeException("Неожиданный ответ от Auth Service: " + response.getStatusCode());
-
-        } catch (Exception e) {
-            log.error("❌ Ошибка при извлечении userId: {}", e.getMessage());
-            throw new RuntimeException("Ошибка при обращении к Auth Service: " + e.getMessage());
-        }
-    }
-
-    private Integer convertToInteger(Object obj) {
-        if (obj == null) return null;
-        if (obj instanceof Integer) return (Integer) obj;
-        if (obj instanceof String) return Integer.parseInt((String) obj);
-        if (obj instanceof Number) return ((Number) obj).intValue();
-        throw new RuntimeException("Не могу преобразовать в Integer: " + obj.getClass());
-    }
-
-    @GetMapping("/test-auth-endpoint")
-    public String testAuthEndpoint() {
-        RestTemplate rt = new RestTemplate();
-        String token = "auth-83f64f93-bd02-4392-bf92-37f28611868f";
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("<h2>Тестирование Auth Service Endpoints</h2>");
-
-        // 1. Проверим /api/auth/validate
-        sb.append("<h3>1. /api/auth/validate</h3>");
-        try {
-            String url = "http://localhost:8097/api/auth/validate";
-
-            // Вариант A: GET с параметром
-            String urlA = url + "?clientToken=" + token;
-            try {
-                ResponseEntity<String> resp = rt.getForEntity(urlA, String.class);
-                sb.append("<p><b>GET:</b> ").append(resp.getStatusCode()).append(" - ").append(resp.getBody()).append("</p>");
-            } catch (Exception e) {
-                sb.append("<p style='color:red'><b>GET Error:</b> ").append(e.getMessage()).append("</p>");
-            }
-
-            // Вариант B: POST с параметром в query
-            try {
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.APPLICATION_JSON);
-                HttpEntity<String> entity = new HttpEntity<>("{}", headers);
-                ResponseEntity<String> resp = rt.exchange(urlA, HttpMethod.POST, entity, String.class);
-                sb.append("<p><b>POST (param in query):</b> ").append(resp.getStatusCode()).append(" - ").append(resp.getBody()).append("</p>");
-            } catch (Exception e) {
-                sb.append("<p style='color:red'><b>POST Error:</b> ").append(e.getMessage()).append("</p>");
-            }
-
-        } catch (Exception e) {
-            sb.append("<p style='color:red'><b>Total Error:</b> ").append(e.getMessage()).append("</p>");
-        }
-
-        // 2. Проверим /api/sessions/validate
-        sb.append("<h3>2. /api/sessions/validate/{clientToken}</h3>");
-        try {
-            String url = "http://localhost:8097/api/sessions/validate/" + token;
-            ResponseEntity<String> resp = rt.getForEntity(url, String.class);
-            sb.append("<p><b>Response:</b> ").append(resp.getStatusCode()).append(" - ").append(resp.getBody()).append("</p>");
-        } catch (Exception e) {
-            sb.append("<p style='color:red'><b>Error:</b> ").append(e.getMessage()).append("</p>");
-        }
-
-        return sb.toString();
-    }
-
-    // ==================== БЛОК 2: РЕГИСТРАЦИЯ ПОЛЬЗОВАТЕЛЕЙ ====================
-
-    @PostMapping("/clients/register")
-    public ResponseEntity<?> registerUser(@RequestBody Map<String, Object> userData) {
-        try {
-            System.out.println("=== GATEWAY DEBUG ===");
-            System.out.println("Получены данные: " + userData);
-
-            String username = (String) userData.get("username");
-            String password = (String) userData.get("password");
-            String email = (String) userData.get("email");
-            String firstname = (String) userData.get("firstname");
-
-            if (firstname == null || firstname.trim().isEmpty()) {
-                firstname = (String) userData.get("firstName");
-                if (firstname == null || firstname.trim().isEmpty()) {
-                    firstname = (String) userData.get("name");
-                }
-            }
-
-            List<String> errors = new ArrayList<>();
-            if (firstname == null || firstname.trim().isEmpty()) errors.add("Имя обязательно");
-            if (username == null || username.trim().isEmpty()) errors.add("Имя пользователя обязательно");
-            if (email == null || email.trim().isEmpty()) errors.add("Email обязателен");
-            else if (!email.contains("@")) errors.add("Неверный формат email");
-            if (password == null || password.trim().isEmpty()) errors.add("Пароль обязателен");
-            else if (password.length() < 6) errors.add("Пароль должен быть не менее 6 символов");
-
-            if (!errors.isEmpty()) {
-                System.err.println("Ошибки валидации: " + errors);
-                return ResponseEntity.badRequest().body(Map.of("success", false, "errors", errors));
-            }
-
-            Map<String, Object> registrationData = new HashMap<>();
-            registrationData.put("username", username);
-            registrationData.put("password", password);
-            registrationData.put("email", email);
-            registrationData.put("firstname", firstname);
-
-            if (userData.containsKey("age")) registrationData.put("age", userData.get("age"));
-            if (userData.containsKey("city")) registrationData.put("city", userData.get("city"));
-            if (userData.containsKey("magaz")) registrationData.put("magaz", userData.get("magaz"));
-
-            registrationData.put("role", "client");
-            registrationData.put("status", "active");
-
-            System.out.println("Подготовлены данные для UserService: " + registrationData);
-            System.out.println("Вызываем UserService через Feign...");
-
-            Map<String, Object> response = clientService.registerUser(registrationData);
-            System.out.println("✅ Ответ от UserService: " + response);
-
-            if (response.containsKey("success") && Boolean.TRUE.equals(response.get("success"))) {
-                return ResponseEntity.status(HttpStatus.CREATED).body(response);
-            } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-            }
-
-        } catch (FeignException e) {
-            System.err.println("❌ FeignException:");
-            System.err.println("  Status: " + e.status());
-            System.err.println("  Message: " + e.getMessage());
-            System.err.println("  Content: " + e.contentUTF8());
-
-            if (e.status() == 500) {
-                String username = (String) userData.get("username");
-                System.out.println("Проверяем, создан ли пользователь " + username + " в БД...");
-
-                Map<String, Object> response = new HashMap<>();
-                response.put("success", true);
-                response.put("message", "Пользователь создан, но была ошибка при формировании ответа");
-                response.put("warning", "UserService вернул ошибку: " + e.contentUTF8());
-                response.put("userData", userData);
-
-                return ResponseEntity.status(HttpStatus.CREATED).body(response);
-            }
-
-            return ResponseEntity.status(e.status()).body(Map.of(
-                    "success", false,
-                    "error", "Ошибка сервиса регистрации",
-                    "details", e.contentUTF8()
-            ));
-
-        } catch (Exception e) {
-            System.err.println("❌ Общая ошибка в Gateway: " + e.getMessage());
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
-                    "success", false,
-                    "error", "Внутренняя ошибка сервера: " + e.getMessage()
-            ));
-        }
-    }
-
-    // ==================== БЛОК 3: ВАЛИДАЦИЯ И ПРОВЕРКИ ====================
-
-    @PostMapping("/clients/check-email")
-    public ResponseEntity<?> checkEmail(@RequestBody Map<String, String> request) {
-        try {
-            Map<String, Object> response = clientService.checkEmail(request);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
-                    "success", false,
-                    "available", false,
-                    "message", "Ошибка при проверке email",
-                    "error", e.getMessage()
-            ));
-        }
-    }
-
-    @PostMapping("/clients/check-username")
-    public ResponseEntity<?> checkUsername(@RequestBody Map<String, String> request) {
-        try {
-            Map<String, Object> response = clientService.checkUsername(request);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
-                    "success", false,
-                    "available", false,
-                    "message", "Ошибка при проверке логина",
-                    "error", e.getMessage()
-            ));
-        }
-    }
-
-    @PostMapping("/clients/validate")
-    public ResponseEntity<?> validateFields(@RequestBody Map<String, String> request) {
-        try {
-            Map<String, Object> response = clientService.validateFields(request);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
-                    "success", false,
-                    "message", "Ошибка валидации",
-                    "error", e.getMessage()
-            ));
-        }
-    }
 
     // ==================== БЛОК 4: ПУБЛИЧНЫЕ МЕТОДЫ КЛИЕНТОВ ====================
 
@@ -631,7 +207,428 @@ public class UnifiedController {
             return ResponseEntity.status(e.status()).body(Map.of("error", "Ошибка: " + e.getMessage()));
         }
     }
+// ==================== БЛОК 15: ПОДДЕРЖКА КЛИЕНТОВ (SUPPORT) ====================
+// В UnifiedController.java (Блок 16)
+@GetMapping("/support/problem-orders/{clientId}")
+public ResponseEntity<?> getProblemOrders(@PathVariable int clientId) {
+    try {
+        log.info("🔍 Support: getting orders with problems for client {}", clientId);
 
+        String sql = """
+            SELECT 
+                c.id,
+                c.created_date,
+                c.status,
+                COUNT(ci.id) as total_items,
+                SUM(CASE WHEN ci.nalichie = 'unknown' THEN 1 ELSE 0 END) as unknown_items_count
+            FROM carts c
+            LEFT JOIN cart_items ci ON c.id = ci.cart_id
+            WHERE c.client_id = ?
+            AND EXISTS (
+                SELECT 1 FROM cart_items ci2 
+                WHERE ci2.cart_id = c.id 
+                AND ci2.nalichie = 'unknown'
+            )
+            GROUP BY c.id, c.created_date, c.status
+            ORDER BY c.created_date DESC
+        """;
+
+        List<Map<String, Object>> orders = jdbcTemplate.queryForList(sql, clientId);
+
+        // Добавляем флаг для отображения
+        for (Map<String, Object> order : orders) {
+            Long unknownCount = (Long) order.get("unknown_items_count");
+            order.put("has_unknown_items", unknownCount != null && unknownCount > 0);
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("clientId", clientId);
+        response.put("orders", orders);
+        response.put("total", orders.size());
+        response.put("message", orders.size() > 0 ?
+                "Найдены заказы с проблемами" :
+                "Заказов с проблемами не найдено");
+
+        return ResponseEntity.ok(response);
+
+    } catch (Exception e) {
+        log.error("❌ Error getting problem orders: {}", e.getMessage(), e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("success", false, "error", e.getMessage()));
+    }
+}
+    @PostMapping("/support/update-order-status")
+    public ResponseEntity<?> updateOrderStatus(@RequestBody Map<String, Object> request) {
+        try {
+            Integer cartId = (Integer) request.get("cartId");
+            String newStatus = (String) request.get("newStatus");
+            String action = (String) request.get("action");
+
+            log.info("🔄 Support: updating cart {} status to '{}' (action: {})",
+                    cartId, newStatus, action);
+
+            // 1. ПРОВЕРКА И НОРМАЛИЗАЦИЯ СТАТУСА
+            if (newStatus != null) {
+                // Заменяем длинные статусы на короткие
+                if (newStatus.equals("transactioncompleted") || newStatus.equals("completed_refund")) {
+                    newStatus = "tc"; // transaction completed
+                } else if (newStatus.equals("tasamaiaOshibka!!!") || newStatus.equals("recollecting")) {
+                    newStatus = "taoshibka"; // та самая ошибка
+                }
+
+                // Проверяем длину после нормализации
+                if (newStatus.length() > 20) {
+                    log.warn("⚠️ Status still too long ({} chars), truncating to 20 chars",
+                            newStatus.length());
+                    newStatus = newStatus.substring(0, Math.min(newStatus.length(), 20));
+                }
+                log.info("✅ Status normalized to: '{}'", newStatus);
+            } else {
+                log.error("❌ newStatus is null!");
+                return ResponseEntity.badRequest().body(Map.of(
+                        "success", false,
+                        "error", "newStatus is required"
+                ));
+            }
+
+            // 2. Получаем текущий статус заказа
+            String currentStatus = null;
+            try {
+                String currentStatusSql = "SELECT status FROM carts WHERE id = ?";
+                currentStatus = jdbcTemplate.queryForObject(currentStatusSql, String.class, cartId);
+                log.info("📊 Current status of cart {}: '{}'", cartId, currentStatus);
+            } catch (Exception e) {
+                log.error("Error getting current status for cart {}: {}", cartId, e.getMessage());
+                currentStatus = "unknown";
+            }
+
+            // 3. ОБНОВЛЯЕМ СТАТУС В carts (ИСПРАВЛЕНО: удален last_action)
+            String updateSql = """
+        UPDATE carts 
+        SET status = ?,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+        """;
+
+            log.info("📝 Executing SQL: {} with params: {}, {}",
+                    updateSql.replace("?", "{}"), newStatus, cartId);
+
+            try {
+                int updatedRows = jdbcTemplate.update(updateSql, newStatus, cartId);
+                log.info("✅ SQL executed. Updated rows: {}", updatedRows);
+
+                if (updatedRows > 0) {
+                    // 4. Проверяем новый статус
+                    String verifySql = "SELECT status FROM carts WHERE id = ?";
+                    String verifiedStatus = jdbcTemplate.queryForObject(verifySql, String.class, cartId);
+
+                    log.info("✅ Cart {} status updated from '{}' to '{}' (verified: '{}')",
+                            cartId, currentStatus, newStatus, verifiedStatus);
+
+                    // 5. Обновляем nalichie в cart_items если это завершение возврата
+                    if ("tc".equals(newStatus) || "completed".equals(newStatus)) {
+                        try {
+                            String updateItemsSql = """
+                        UPDATE cart_items 
+                        SET nalichie = 'refunded'
+                        WHERE cart_id = ? AND nalichie = 'unknown'
+                        """;
+                            int updatedItems = jdbcTemplate.update(updateItemsSql, cartId);
+                            log.info("✅ Updated {} cart_items for cart {} from 'unknown' to 'refunded'",
+                                    updatedItems, cartId);
+                        } catch (Exception e) {
+                            log.warn("⚠️ Could not update cart_items for cart {}: {}", cartId, e.getMessage());
+                        }
+                    }
+
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("success", true);
+                    response.put("cartId", cartId);
+                    response.put("oldStatus", currentStatus);
+                    response.put("newStatus", newStatus);
+                    response.put("verifiedStatus", verifiedStatus);
+                    response.put("updatedRows", updatedRows);
+                    response.put("message", "Статус заказа успешно обновлен");
+
+                    return ResponseEntity.ok(response);
+                } else {
+                    log.warn("⚠️ No rows updated for cart {}. Cart might not exist.", cartId);
+                    return ResponseEntity.ok(Map.of(
+                            "success", false,
+                            "error", "Заказ не найден или статус не изменился",
+                            "cartId", cartId
+                    ));
+                }
+            } catch (Exception e) {
+                log.error("❌ SQL ERROR updating cart status: {}", e.getMessage());
+                log.error("❌ SQL State: {}", e instanceof org.springframework.dao.DataAccessException ?
+                        ((org.springframework.jdbc.BadSqlGrammarException) e).getSQLException().getSQLState() : "Unknown");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(Map.of("success", false, "error", "SQL ошибка: " + e.getMessage()));
+            }
+
+        } catch (Exception e) {
+            log.error("❌ Error in updateOrderStatus: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/support/unavailable-items/{clientId}")
+    public ResponseEntity<?> getUnavailableItems(@PathVariable int clientId) {
+        try {
+            log.info("🔍 Support: getting unavailable items for client {}", clientId);
+
+            // Получаем недопоставленные товары (nalichie = 'unknown')
+            String sql = """
+            SELECT 
+                ci.id,
+                ci.cart_id,
+                ci.product_id,
+                ci.quantity,
+                ci.price,
+                ci.nalichie,
+                p.name as product_name,
+                p.akticul as product_sku,
+                c.created_date,
+                c.status as cart_status
+            FROM cart_items ci
+            JOIN carts c ON ci.cart_id = c.id
+            LEFT JOIN usersklad p ON ci.product_id = p.id
+            WHERE c.client_id = ?
+            AND ci.nalichie = 'unknown'
+            AND c.status NOT IN ('cancelled', 'refunded')
+            ORDER BY c.created_date DESC
+        """;
+
+            List<Map<String, Object>> items = jdbcTemplate.queryForList(sql, clientId);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("clientId", clientId);
+            response.put("items", items);
+            response.put("total", items.size());
+            response.put("totalAmount", items.stream()
+                    .mapToDouble(item -> ((Number) item.get("price")).doubleValue() *
+                            ((Number) item.get("quantity")).intValue())
+                    .sum());
+            response.put("message", items.size() > 0 ?
+                    "Найдены недопоставленные товары" :
+                    "Недопоставленных товаров не найдено");
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("❌ Error getting unavailable items: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/support/refund-items")
+    public ResponseEntity<?> refundItems(@RequestBody Map<String, Object> request) {
+        try {
+            List<Map<String, Object>> items = (List<Map<String, Object>>) request.get("items");
+
+            log.info("💰 Support: calculating refund for {} items", items != null ? items.size() : 0);
+
+            // ТОЛЬКО РАСЧЕТ СУММЫ, без реального возврата
+            double totalAmount = 0.0;
+            if (items != null) {
+                for (Map<String, Object> item : items) {
+                    Double price = ((Number) item.get("price")).doubleValue();
+                    Integer quantity = ((Number) item.get("quantity")).intValue();
+                    totalAmount += price * quantity;
+                }
+            }
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("totalAmount", totalAmount);
+            response.put("itemsCount", items != null ? items.size() : 0);
+            response.put("message", String.format("%.2f рублей будет возвращена", totalAmount));
+
+            log.info("✅ Refund calculated: {} rub for {} items", totalAmount, items != null ? items.size() : 0);
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("❌ Error calculating refund: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/support/recollect-order")
+    public ResponseEntity<?> recollectOrder(@RequestBody Map<String, Object> request) {
+        try {
+            List<Integer> cartIds = (List<Integer>) request.get("cartIds");
+
+            log.info("🔄 Support: changing status to 'taoshibka' for carts: {}", cartIds);
+
+            int updatedCarts = 0;
+            List<Map<String, Object>> results = new ArrayList<>();
+
+            for (Integer cartId : cartIds) {
+                try {
+                    // ИСПРАВЛЕННЫЙ SQL С КОРОТКИМ СТАТУСОМ (без last_action)
+                    String updateSql = """
+                UPDATE carts 
+                SET status = 'taoshibka',
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+                """;
+
+                    log.info("📝 Executing SQL for cart {}: {}", cartId, updateSql);
+
+                    int rows = jdbcTemplate.update(updateSql, cartId);
+
+                    Map<String, Object> result = new HashMap<>();
+                    result.put("cartId", cartId);
+                    result.put("updated", rows > 0);
+                    result.put("rowsAffected", rows);
+                    results.add(result);
+
+                    if (rows > 0) {
+                        updatedCarts++;
+                        log.info("✅ Cart {} status changed to 'taoshibka'", cartId);
+
+                        // Проверяем обновленный статус
+                        try {
+                            String verifySql = "SELECT status FROM carts WHERE id = ?";
+                            String verifiedStatus = jdbcTemplate.queryForObject(verifySql, String.class, cartId);
+                            log.info("✅ Verified status for cart {}: '{}'", cartId, verifiedStatus);
+                        } catch (Exception e) {
+                            log.warn("⚠️ Could not verify status for cart {}: {}", cartId, e.getMessage());
+                        }
+                    } else {
+                        log.warn("⚠️ No rows updated for cart {}. Cart might not exist.", cartId);
+                    }
+                } catch (Exception e) {
+                    log.error("❌ Error updating cart {}: {}", cartId, e.getMessage());
+                    Map<String, Object> errorResult = new HashMap<>();
+                    errorResult.put("cartId", cartId);
+                    errorResult.put("error", e.getMessage());
+                    errorResult.put("updated", false);
+                    results.add(errorResult);
+                }
+            }
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("updatedCarts", updatedCarts);
+            response.put("totalCarts", cartIds.size());
+            response.put("results", results);
+            response.put("message", "Заказ отправлен на повторную сборку. Статус изменен на 'ошибка сборки'");
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("❌ Error recollecting order: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "error", e.getMessage()));
+        }
+    }
+    @GetMapping("/debug/table-structure")
+    public ResponseEntity<?> getTableStructure() {
+        try {
+            Map<String, Object> response = new HashMap<>();
+
+            // Проверяем структуру таблицы carts
+            try {
+                String cartsStructure = jdbcTemplate.queryForObject(
+                        "SELECT column_name, data_type, character_maximum_length " +
+                                "FROM information_schema.columns " +
+                                "WHERE table_name = 'carts' AND table_schema = 'public' " +
+                                "ORDER BY ordinal_position",
+                        (rs, rowNum) -> {
+                            StringBuilder sb = new StringBuilder();
+                            while (rs.next()) {
+                                sb.append(rs.getString("column_name"))
+                                        .append(": ").append(rs.getString("data_type"))
+                                        .append("(").append(rs.getString("character_maximum_length")).append(")")
+                                        .append("\n");
+                            }
+                            return sb.toString();
+                        }
+                );
+                response.put("carts_structure", cartsStructure);
+            } catch (Exception e) {
+                response.put("carts_structure_error", e.getMessage());
+            }
+
+            // Проверяем текущие статусы
+            try {
+                String currentStatuses = jdbcTemplate.queryForObject(
+                        "SELECT id, status, LENGTH(status) as status_length FROM carts LIMIT 10",
+                        (rs, rowNum) -> {
+                            StringBuilder sb = new StringBuilder();
+                            while (rs.next()) {
+                                sb.append("Cart ").append(rs.getInt("id"))
+                                        .append(": '").append(rs.getString("status"))
+                                        .append("' (length: ").append(rs.getInt("status_length")).append(")")
+                                        .append("\n");
+                            }
+                            return sb.toString();
+                        }
+                );
+                response.put("current_statuses", currentStatuses);
+            } catch (Exception e) {
+                response.put("statuses_error", e.getMessage());
+            }
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/support/refund-history/{clientId}")
+    public ResponseEntity<?> getRefundHistory(@PathVariable int clientId) {
+        try {
+            log.info("📊 Support: getting refund history for client {}", clientId);
+
+            // Пытаемся получить историю возвратов
+            List<Map<String, Object>> history = new ArrayList<>();
+            try {
+                String sql = """
+                SELECT 
+                    id as refund_id,
+                    total_amount,
+                    items_count,
+                    refund_type,
+                    status,
+                    created_at
+                FROM refund_history 
+                WHERE client_id = ?
+                ORDER BY created_at DESC
+                LIMIT 50
+            """;
+                history = jdbcTemplate.queryForList(sql, clientId);
+            } catch (Exception e) {
+                log.warn("Refund history table might not exist: {}", e.getMessage());
+            }
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("clientId", clientId);
+            response.put("history", history);
+            response.put("totalRefunds", history.size());
+            response.put("totalRefunded", history.stream()
+                    .mapToDouble(item -> ((Number) item.get("total_amount")).doubleValue())
+                    .sum());
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("❌ Error getting refund history: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "error", e.getMessage()));
+        }
+    }
     // ==================== БЛОК 6: ТОВАРЫ (PRODUCTS) ====================
 
     @GetMapping("/products")
@@ -1439,1431 +1436,3 @@ public class UnifiedController {
         }
     }
 
-    // ==================== БЛОК 9: СБОРЩИКИ (COLLECTORS) ====================
-
-    @PostMapping("/collector/collectors")
-    public Map<String, Object> createCollector(@RequestBody Map<String, Object> collector) {
-        return collectorService.createCollector(collector);
-    }
-
-    @GetMapping("/collector/collectors")
-    public List<Map<String, Object>> getAllCollectors() {
-        return collectorService.getAllCollectors();
-    }
-
-    @GetMapping("/collector/collectors/{collectorId}")
-    public Map<String, Object> getCollector(@PathVariable String collectorId) {
-        return collectorService.getCollector(collectorId);
-    }
-
-    @PutMapping("/collector/collectors/{collectorId}/status")
-    public Map<String, Object> updateCollectorStatus(@PathVariable String collectorId, @RequestParam String status) {
-        return collectorService.updateCollectorStatus(collectorId, status);
-    }
-
-    @PutMapping("/collector/collectors/{collectorId}/location")
-    public Map<String, Object> updateCollectorLocation(@PathVariable String collectorId, @RequestParam String location) {
-        return collectorService.updateCollectorLocation(collectorId, location);
-    }
-
-    @PostMapping("/collector/tasks")
-    public Map<String, Object> createCollectorTask(@RequestBody Map<String, Object> task) {
-        return collectorService.createTask(task);
-    }
-
-    @GetMapping("/collector/tasks")
-    public List<Map<String, Object>> getAllTasks() {
-        return collectorService.getAllTasks();
-    }
-
-    @GetMapping("/collector/tasks/{taskId}")
-    public Map<String, Object> getTask(@PathVariable String taskId) {
-        return collectorService.getTask(taskId);
-    }
-
-    @GetMapping("/collector/tasks/collector/{collectorId}")
-    public List<Map<String, Object>> getCollectorTasks(@PathVariable String collectorId) {
-        return collectorService.getCollectorTasks(collectorId);
-    }
-
-    @GetMapping("/collector/tasks/pending")
-    public List<Map<String, Object>> getPendingTasks() {
-        return collectorService.getPendingTasks();
-    }
-
-    @PutMapping("/collector/tasks/{taskId}/status")
-    public Map<String, Object> updateTaskStatus(@PathVariable String taskId, @RequestParam String status) {
-        return collectorService.updateTaskStatus(taskId, status);
-    }
-
-    @PostMapping("/collector/tasks/{taskId}/report-problem")
-    public Map<String, Object> reportProblem(@PathVariable String taskId,
-                                             @RequestParam String problemType,
-                                             @RequestParam String comments) {
-        return collectorService.reportProblem(taskId, problemType, comments);
-    }
-
-    @GetMapping("/collector/tasks/problems")
-    public List<Map<String, Object>> getProblemTasks() {
-        return collectorService.getProblemTasks();
-    }
-
-    @PutMapping("/collector/tasks/{taskId}/complete")
-    public Map<String, Object> completeTask(@PathVariable String taskId) {
-        return collectorService.completeTask(taskId);
-    }
-
-    @PostMapping("/collector/transactions/process-order")
-    public Map<String, Object> processCollectorTransaction(@RequestBody Map<String, Object> transactionRequest) {
-        return collectorService.processOrderTransaction(transactionRequest);
-    }
-
-    @PostMapping("/collector/tasks/{taskId}/report-problem-and-process")
-    public Map<String, Object> reportProblemAndProcess(
-            @PathVariable String taskId,
-            @RequestParam String problemType,
-            @RequestParam String comments,
-            @RequestParam String clientId,
-            @RequestParam String productId,
-            @RequestParam Integer quantity) {
-
-        Map<String, Object> problemTask = collectorService.reportProblem(taskId, problemType, comments);
-        Map<String, Object> transactionRequest = Map.of(
-                "taskId", taskId,
-                "collectorId", problemTask.get("collectorId"),
-                "clientId", clientId,
-                "productId", productId,
-                "quantity", quantity,
-                "problemType", problemType,
-                "comments", comments
-        );
-
-        Map<String, Object> transactionResult = collectorService.processOrderTransaction(transactionRequest);
-
-        return Map.of(
-                "problemReport", problemTask,
-                "transactionResult", transactionResult,
-                "message", "Проблема зарегистрирована и транзакция обработана"
-        );
-    }
-
-    @GetMapping("/collector/{collectorId}/full-info")
-    public Map<String, Object> getCollectorFullInfo(@PathVariable String collectorId) {
-        Map<String, Object> collector = collectorService.getCollector(collectorId);
-        List<Map<String, Object>> tasks = collectorService.getCollectorTasks(collectorId);
-        List<Map<String, Object>> problemTasks = tasks.stream()
-                .filter(task -> "PROBLEM".equals(task.get("status")))
-                .toList();
-
-        return Map.of(
-                "collector", collector,
-                "totalTasks", tasks.size(),
-                "activeTasks", tasks.stream().filter(task ->
-                        "NEW".equals(task.get("status")) || "IN_PROGRESS".equals(task.get("status"))).count(),
-                "problemTasks", problemTasks.size(),
-                "tasks", tasks
-        );
-    }
-    // ==================== НОВЫЕ МЕТОДЫ ДЛЯ ПРОВЕРКИ ТОВАРОВ ====================
-
-    // Отправить отсутствующие товары в офис
-    @PostMapping("/collector/report-missing-items")
-    public ResponseEntity<?> reportMissingItems(@RequestBody Map<String, Object> request) {
-        try {
-            Integer cartId = (Integer) request.get("cartId");
-            List<Map<String, Object>> missingItems = (List<Map<String, Object>>) request.get("missingItems");
-            String collectorId = (String) request.get("collectorId");
-
-            log.info("⚠️ Collector: reporting {} missing items for cart #{}",
-                    missingItems != null ? missingItems.size() : 0, cartId);
-
-            // 1. Получаем client_id
-            Integer clientId = null;
-            try {
-                String clientSql = "SELECT client_id FROM carts WHERE id = ?";
-                clientId = jdbcTemplate.queryForObject(clientSql, Integer.class, cartId);
-            } catch (Exception e) {
-                log.warn("Could not get client_id: {}", e.getMessage());
-                clientId = -1;
-            }
-
-            // 2. Для каждого отсутствующего товара создаем запись в office_problems
-            List<Integer> problemIds = new ArrayList<>();
-            if (missingItems != null) {
-                for (Map<String, Object> item : missingItems) {
-                    Integer productId = (Integer) item.get("productId");
-                    String productName = (String) item.get("productName");
-                    Integer quantity = (Integer) item.get("quantity");
-
-                    try {
-                        String insertSql = """
-                        INSERT INTO office_problems (
-                            order_id, product_id, client_id, collector_id,
-                            problem_type, status, details, created_at
-                        ) VALUES (?, ?, ?, ?, 'MISSING_PRODUCT', 'PENDING', ?, CURRENT_TIMESTAMP)
-                        RETURNING id
-                    """;
-
-                        Integer problemId = jdbcTemplate.queryForObject(
-                                insertSql,
-                                Integer.class,
-                                cartId, productId, clientId, collectorId,
-                                productName + " (необходимо: " + quantity + " шт.)"
-                        );
-
-                        if (problemId != null) {
-                            problemIds.add(problemId);
-                        }
-
-                        // Обновляем статус в cart_items на 'нет'
-                        String updateItemSql = "UPDATE cart_items SET nalichie = 'нет' WHERE cart_id = ? AND product_id = ?";
-                        jdbcTemplate.update(updateItemSql, cartId, productId);
-
-                    } catch (Exception e) {
-                        log.error("Error creating problem for product {}: {}", productId, e.getMessage());
-                    }
-                }
-            }
-
-            // 3. Меняем статус заказа на 'problem'
-            int cartUpdated = 0;
-            try {
-                String updateCartSql = "UPDATE carts SET status = 'problem' WHERE id = ?";
-                cartUpdated = jdbcTemplate.update(updateCartSql, cartId);
-                log.info("✅ Cart #{} status updated to 'problem'. Rows affected: {}", cartId, cartUpdated);
-            } catch (Exception e) {
-                log.error("Error updating cart status: {}", e.getMessage());
-            }
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("cartId", cartId);
-            response.put("missingItemsCount", missingItems != null ? missingItems.size() : 0);
-            response.put("problemIds", problemIds);
-            response.put("cartUpdated", cartUpdated > 0);
-            response.put("message", "Проблема отправлена в офис. Заказ переведен в статус 'problem'");
-
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            log.error("❌ Error reporting missing items: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("success", false, "error", e.getMessage()));
-        }
-    }
-
-    // Завершить сборку с выбранными товарами
-    @PostMapping("/collector/complete-with-selected-items")
-    public ResponseEntity<?> completeWithSelectedItems(@RequestBody Map<String, Object> request) {
-        try {
-            Integer cartId = (Integer) request.get("cartId");
-            List<Map<String, Object>> availableItems = (List<Map<String, Object>>) request.get("availableItems");
-            String collectorId = (String) request.get("collectorId");
-
-            log.info("✅ Collector: completing order #{} with {} available items",
-                    cartId, availableItems != null ? availableItems.size() : 0);
-
-            // 1. Обновляем статус товаров на 'есть' в cart_items
-            if (availableItems != null) {
-                for (Map<String, Object> item : availableItems) {
-                    Integer productId = (Integer) item.get("productId");
-                    try {
-                        String updateSql = "UPDATE cart_items SET nalichie = 'есть' WHERE cart_id = ? AND product_id = ?";
-                        jdbcTemplate.update(updateSql, cartId, productId);
-                    } catch (Exception e) {
-                        log.warn("Error updating item status for product {}: {}", productId, e.getMessage());
-                    }
-                }
-            }
-
-            // 2. Создаем запись в orders
-            Integer orderId = null;
-            int ordersCreated = 0;
-
-            try {
-                // Проверяем не создан ли уже заказ
-                String checkOrderSql = "SELECT id FROM orders WHERE cart_id = ?";
-                try {
-                    orderId = jdbcTemplate.queryForObject(checkOrderSql, Integer.class, cartId);
-                } catch (Exception e) {
-                    // Запись не существует, создаем новую
-                    String insertOrderSql = """
-                    INSERT INTO orders (cart_id, collector_id, status, created_at)
-                    VALUES (?, ?, 'collected', NOW())
-                    RETURNING id
-                """;
-
-                    orderId = jdbcTemplate.queryForObject(insertOrderSql, Integer.class, cartId, collectorId);
-                    ordersCreated = orderId != null ? 1 : 0;
-                }
-            } catch (Exception e) {
-                log.error("Error creating order record: {}", e.getMessage());
-                // Создаем таблицу если её нет
-                try {
-                    jdbcTemplate.execute("""
-                    CREATE TABLE IF NOT EXISTS orders (
-                        id SERIAL PRIMARY KEY,
-                        cart_id INTEGER UNIQUE,
-                        collector_id VARCHAR(50),
-                        status VARCHAR(50),
-                        created_at TIMESTAMP DEFAULT NOW()
-                    )
-                """);
-
-                    String simpleInsert = "INSERT INTO orders (cart_id, collector_id, status) VALUES (?, ?, 'collected')";
-                    jdbcTemplate.update(simpleInsert, cartId, collectorId);
-
-                    orderId = jdbcTemplate.queryForObject("SELECT MAX(id) FROM orders", Integer.class);
-                    ordersCreated = 1;
-                } catch (Exception createError) {
-                    log.error("Failed to create orders table: {}", createError.getMessage());
-                }
-            }
-
-            // 3. Меняем статус в carts на 'collected'
-            int cartUpdated = 0;
-            try {
-                String updateCartSql = "UPDATE carts SET status = 'collected' WHERE id = ?";
-                cartUpdated = jdbcTemplate.update(updateCartSql, cartId);
-            } catch (Exception e) {
-                log.error("Error updating cart status: {}", e.getMessage());
-            }
-
-            // 4. Уменьшаем количество на складе - НЕ ДЕЛАЕМ СЕЙЧАС!
-            // Это будет при подключении реального оборудования
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("orderId", orderId);
-            response.put("cartId", cartId);
-            response.put("collectorId", collectorId);
-            response.put("availableItemsCount", availableItems != null ? availableItems.size() : 0);
-            response.put("ordersCreated", ordersCreated);
-            response.put("cartUpdated", cartUpdated > 0);
-            response.put("message", "Сборка завершена. Статус товаров обновлен на 'есть'");
-
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            log.error("❌ Error completing with selected items: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("success", false, "error", e.getMessage()));
-        }
-    }
-/// ==================== БЛОК 9.1: ИСПРАВЛЕННЫЕ МЕТОДЫ ДЛЯ СБОРЩИКА ====================
-
-// Получение заказов со статусом processing (исправленная версия)
-@GetMapping("/collector/processing-orders")
-public ResponseEntity<?> getProcessingOrders() {
-    try {
-        log.info("📦 Collector: getting orders with status 'processing'");
-
-        // Основной запрос для получения заказов
-        String sql = """
-            SELECT 
-                c.id as cart_id,
-                c.client_id,
-                c.status,
-                c.created_date,
-                u.firstname as client_name,
-                u.email as client_email,
-                COUNT(ci.id) as item_count,
-                COALESCE(SUM(ci.quantity), 0) as total_items
-            FROM carts c
-            LEFT JOIN users u ON c.client_id = u.id
-            LEFT JOIN cart_items ci ON c.id = ci.cart_id
-            WHERE c.status = 'processing'
-            AND (ci.nalichie IS NULL OR ci.nalichie != 'нет')
-            GROUP BY c.id, u.firstname, u.email, c.created_date, c.client_id, c.status
-            ORDER BY c.created_date DESC
-        """;
-
-        List<Map<String, Object>> orders = jdbcTemplate.queryForList(sql);
-
-        // Получаем детали товаров для каждого заказа (только с nalichie != 'нет')
-        for (Map<String, Object> order : orders) {
-            Integer cartId = (Integer) order.get("cart_id");
-
-            String itemsSql = """
-                SELECT 
-                    ci.id,
-                    ci.product_id,
-                    p.name as product_name,
-                    ci.quantity,
-                    ci.price,
-                    p.count as stock_available,
-                    ci.nalichie
-                FROM cart_items ci
-                LEFT JOIN usersklad p ON ci.product_id = p.id
-                WHERE ci.cart_id = ?
-                AND (ci.nalichie IS NULL OR ci.nalichie != 'нет')
-                ORDER BY ci.product_id
-            """;
-
-            try {
-                List<Map<String, Object>> items = jdbcTemplate.queryForList(itemsSql, cartId);
-                order.put("items", items);
-
-                // Пересчитываем количество товаров в заказе
-                int totalItems = items.stream()
-                        .mapToInt(item -> ((Number) item.getOrDefault("quantity", 0)).intValue())
-                        .sum();
-                order.put("total_items", totalItems);
-                order.put("item_count", items.size());
-
-            } catch (Exception e) {
-                log.warn("Error getting items for cart {}: {}", cartId, e.getMessage());
-                order.put("items", new ArrayList<>());
-            }
-        }
-
-        // Фильтруем заказы, в которых вообще нет товаров после фильтрации
-        List<Map<String, Object>> filteredOrders = orders.stream()
-                .filter(order -> {
-                    List<?> items = (List<?>) order.get("items");
-                    return items != null && !items.isEmpty();
-                })
-                .collect(Collectors.toList());
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        response.put("orders", filteredOrders);
-        response.put("total", filteredOrders.size());
-        response.put("timestamp", System.currentTimeMillis());
-        response.put("message", filteredOrders.isEmpty() ? "Нет заказов для сборки" : "Заказы загружены");
-
-        return ResponseEntity.ok(response);
-
-    } catch (Exception e) {
-        log.error("❌ Error getting processing orders: {}", e.getMessage(), e);
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", false);
-        response.put("error", "Ошибка получения заказов: " + e.getMessage());
-        response.put("orders", new ArrayList<>());
-        response.put("total", 0);
-        response.put("timestamp", System.currentTimeMillis());
-
-        return ResponseEntity.ok(response);
-    }
-}
-
-    // Проверка наличия товара (исправленная версия)
-    @PostMapping("/collector/check-product-availability")
-    public ResponseEntity<?> checkProductAvailability(@RequestBody Map<String, Object> request) {
-        try {
-            Integer cartId = (Integer) request.get("cartId");
-
-            log.info("🔍 Collector: checking product availability for cart #{}", cartId);
-
-            // Получаем все товары заказа, кроме помеченных как отсутствующие
-            String itemsSql = """
-        SELECT 
-            ci.product_id,
-            p.name as product_name,
-            ci.quantity as requested,
-            p.count as available,
-            ci.price,
-            ci.nalichie
-        FROM cart_items ci
-        LEFT JOIN usersklad p ON ci.product_id = p.id
-        WHERE ci.cart_id = ?
-        AND (ci.nalichie IS NULL OR ci.nalichie != 'нет')
-        ORDER BY ci.product_id
-    """;
-
-            List<Map<String, Object>> items;
-            try {
-                items = jdbcTemplate.queryForList(itemsSql, cartId);
-            } catch (Exception e) {
-                log.error("Error getting items for cart {}: {}", cartId, e.getMessage());
-                items = new ArrayList<>();
-            }
-
-            // Проверяем наличие остальных товаров
-            List<Map<String, Object>> unavailableItems = new ArrayList<>();
-            boolean allAvailable = true;
-            int totalItems = items.size();
-            int availableItems = 0;
-
-            for (Map<String, Object> item : items) {
-                Object availableObj = item.get("available");
-                Object requestedObj = item.get("requested");
-                String productName = (String) item.get("product_name");
-                Integer productId = (Integer) item.get("product_id");
-                String nalichie = (String) item.get("nalichie");
-
-                // Пропускаем товары, уже помеченные как отсутствующие
-                if ("нет".equals(nalichie)) {
-                    continue;
-                }
-
-                Integer available = availableObj != null ? ((Number) availableObj).intValue() : 0;
-                Integer requested = requestedObj != null ? ((Number) requestedObj).intValue() : 0;
-
-                if (available >= requested) {
-                    availableItems++;
-                } else {
-                    Map<String, Object> unavailable = new HashMap<>();
-                    unavailable.put("product_id", productId);
-                    unavailable.put("product_name", productName);
-                    unavailable.put("requested", requested);
-                    unavailable.put("available", available);
-                    unavailable.put("status", "missing");
-                    unavailable.put("message", "Недостаточно товара на складе");
-                    unavailableItems.add(unavailable);
-                    allAvailable = false;
-                }
-            }
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("cartId", cartId);
-            response.put("allAvailable", allAvailable);
-            response.put("totalItems", totalItems);
-            response.put("availableItems", availableItems);
-            response.put("unavailableItems", unavailableItems);
-            response.put("unavailableCount", unavailableItems.size());
-            response.put("message", allAvailable ?
-                    "✅ Все товары в наличии. Можете завершить сборку." :
-                    "⚠️ Некоторые товары отсутствуют. Используйте кнопку 'Нет товара'.");
-
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            log.error("❌ Error checking product availability: {}", e.getMessage(), e);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("error", "Ошибка проверки наличия: " + e.getMessage());
-            response.put("cartId", request.get("cartId"));
-            response.put("allAvailable", false);
-            response.put("message", "Ошибка при проверке наличия товаров");
-
-            return ResponseEntity.ok(response);
-        }
-    }
-
-    // Кнопка "Нет товара" - Упрощенная версия
-    @PostMapping("/collector/report-product-missing")
-    public ResponseEntity<?> reportProductMissing(@RequestBody Map<String, Object> request) {
-        try {
-            Integer cartId = (Integer) request.get("cartId");
-            Integer productId = (Integer) request.get("productId");
-            String productName = (String) request.get("productName");
-            String problemDetails = (String) request.get("problemDetails");
-            String collectorId = (String) request.get("collectorId");
-
-            log.info("⚠️ Collector: reporting missing product for cart #{}, product: {}", cartId, productName);
-
-            // 1. Проверяем, существует ли заказ и получаем client_id
-            String checkCartSql = "SELECT id, status, client_id FROM carts WHERE id = ?";
-            Map<String, Object> cartInfo;
-            Integer clientId = null;
-
-            try {
-                cartInfo = jdbcTemplate.queryForMap(checkCartSql, cartId);
-                log.info("Cart #{} found. Current status: {}, Client ID: {}",
-                        cartId, cartInfo.get("status"), cartInfo.get("client_id"));
-
-                clientId = (Integer) cartInfo.get("client_id");
-                if (clientId == null) {
-                    log.warn("Client ID is NULL for cart #{}", cartId);
-                    // Если client_id null, используем -1 чтобы избежать ошибки NOT NULL
-                    clientId = -1;
-                }
-            } catch (Exception e) {
-                log.error("Cart #{} not found: {}", cartId, e.getMessage());
-                return ResponseEntity.ok(Map.of(
-                        "success", false,
-                        "error", "Заказ не найден",
-                        "cartId", cartId
-                ));
-            }
-
-            String currentStatus = (String) cartInfo.get("status");
-
-            // 2. Получаем имя продукта если оно не пришло
-            if (productName == null || productName.trim().isEmpty()) {
-                try {
-                    String productSql = "SELECT name FROM usersklad WHERE id = ?";
-                    productName = jdbcTemplate.queryForObject(productSql, String.class, productId);
-                } catch (Exception e) {
-                    log.warn("Could not get product name for ID {}: {}", productId, e.getMessage());
-                    productName = "Товар ID: " + productId;
-                }
-            }
-
-            // 3. Формируем details
-            String details = productName + ", " + (problemDetails != null ? problemDetails : "отсутствует на складе");
-
-            // 4. Создаем запись о проблеме с ВСЕМИ обязательными полями
-            Integer problemId = null;
-
-            try {
-                // Проверяем какие поля обязательные
-                String insertSql = """
-                INSERT INTO office_problems (
-                    order_id, 
-                    product_id, 
-                    client_id,  -- это поле NOT NULL
-                    collector_id,
-                    problem_type,
-                    status,
-                    details,
-                    client_email_sent,
-                    created_at,
-                    updated_at
-                ) VALUES (?, ?, ?, ?, 'MISSING_PRODUCT', 'PENDING', ?, false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-            """;
-
-                int rowsInserted = jdbcTemplate.update(
-                        insertSql,
-                        cartId,
-                        productId,
-                        clientId,
-                        collectorId != null ? collectorId : "COLLECTOR_UNKNOWN",
-                        details
-                );
-
-                if (rowsInserted > 0) {
-                    problemId = jdbcTemplate.queryForObject(
-                            "SELECT MAX(id) FROM office_problems WHERE order_id = ? AND product_id = ?",
-                            Integer.class, cartId, productId
-                    );
-                    log.info("✅ Problem record created with ID: {}", problemId);
-                }
-            } catch (Exception e) {
-                log.error("❌ Error creating problem record: {}", e.getMessage());
-
-                // Пробуем создать таблицу с правильной структурой
-                try {
-                    String dropTableSql = "DROP TABLE IF EXISTS office_problems";
-                    jdbcTemplate.execute(dropTableSql);
-
-                    String createTableSql = """
-                    CREATE TABLE office_problems (
-                        id SERIAL PRIMARY KEY,
-                        order_id INTEGER NOT NULL,
-                        product_id INTEGER NOT NULL,
-                        client_id INTEGER NOT NULL DEFAULT -1,
-                        collector_id VARCHAR(50),
-                        problem_type VARCHAR(50) DEFAULT 'MISSING_PRODUCT',
-                        status VARCHAR(50) DEFAULT 'PENDING',
-                        details TEXT,
-                        client_email VARCHAR(255),
-                        client_email_sent BOOLEAN DEFAULT false,
-                        client_decision VARCHAR(50),
-                        office_action VARCHAR(50),
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        assigned_to VARCHAR(50),
-                        client_responded_at TIMESTAMP,
-                        notified_at TIMESTAMP,
-                        priority VARCHAR(20),
-                        resolved_at TIMESTAMP
-                    )
-                """;
-                    jdbcTemplate.execute(createTableSql);
-                    log.info("✅ Recreated office_problems table with proper structure");
-
-                    // Пробуем снова вставить
-                    String retrySql = """
-                    INSERT INTO office_problems (
-                        order_id, product_id, client_id, collector_id, details
-                    ) VALUES (?, ?, ?, ?, ?)
-                """;
-
-                    jdbcTemplate.update(
-                            retrySql,
-                            cartId, productId, clientId,
-                            collectorId != null ? collectorId : "COLLECTOR_UNKNOWN",
-                            details
-                    );
-
-                    problemId = jdbcTemplate.queryForObject(
-                            "SELECT MAX(id) FROM office_problems",
-                            Integer.class
-                    );
-
-                } catch (Exception createError) {
-                    log.error("❌ Failed to recreate table: {}", createError.getMessage());
-                    return ResponseEntity.ok(Map.of(
-                            "success", false,
-                            "error", "Не удалось создать запись о проблеме: " + createError.getMessage(),
-                            "cartId", cartId
-                    ));
-                }
-            }
-
-            // 5. Меняем статус заказа на 'problem'
-            int updatedRows = 0;
-            try {
-                String updateCartSql = "UPDATE carts SET status = 'problem' WHERE id = ?";
-                updatedRows = jdbcTemplate.update(updateCartSql, cartId);
-
-                log.info("UPDATE carts SET status = 'problem' WHERE id = {}", cartId);
-                log.info("Rows affected: {}", updatedRows);
-
-                if (updatedRows > 0) {
-                    String newStatus = jdbcTemplate.queryForObject(
-                            "SELECT status FROM carts WHERE id = ?",
-                            String.class, cartId
-                    );
-                    log.info("✅ Cart #{} status changed from '{}' to '{}'",
-                            cartId, currentStatus, newStatus);
-                } else {
-                    log.warn("⚠️ No rows updated. Current status was: {}", currentStatus);
-                }
-            } catch (Exception e) {
-                log.error("❌ Error updating cart status: {}", e.getMessage());
-            }
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("problemId", problemId);
-            response.put("cartId", cartId);
-            response.put("productId", productId);
-            response.put("productName", productName);
-            response.put("clientId", clientId);
-            response.put("currentStatus", currentStatus);
-            response.put("details", details);
-            response.put("cartUpdated", updatedRows > 0);
-            response.put("updatedRows", updatedRows);
-            response.put("message", updatedRows > 0 ?
-                    "✅ Проблема зарегистрирована. Статус заказа изменен на 'problem'" :
-                    "⚠️ Проблема зарегистрирована, но статус заказа не изменился");
-
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            log.error("❌ Error reporting missing product: {}", e.getMessage(), e);
-
-            return ResponseEntity.ok(Map.of(
-                    "success", false,
-                    "error", "Ошибка: " + e.getMessage(),
-                    "cartId", request.get("cartId")
-            ));
-        }
-    }
-
-    @PostMapping("/collector/force-update-status")
-    public ResponseEntity<?> forceUpdateCartStatus(@RequestBody Map<String, Object> request) {
-        try {
-            Integer cartId = (Integer) request.get("cartId");
-            String newStatus = (String) request.get("newStatus");
-
-            log.info("🔧 Force updating cart #{} status to '{}'", cartId, newStatus);
-
-            // Проверяем существование заказа
-            String checkSql = "SELECT id FROM carts WHERE id = ?";
-            try {
-                Integer exists = jdbcTemplate.queryForObject(checkSql, Integer.class, cartId);
-            } catch (Exception e) {
-                return ResponseEntity.ok(Map.of(
-                        "success", false,
-                        "error", "Cart not found",
-                        "cartId", cartId
-                ));
-            }
-
-            // Пробуем разные варианты UPDATE
-            int updatedRows = 0;
-            String errorMessage = null;
-
-            try {
-                // Вариант 1: Простой UPDATE
-                String sql1 = "UPDATE carts SET status = ? WHERE id = ?";
-                updatedRows = jdbcTemplate.update(sql1, newStatus, cartId);
-                log.info("Simple UPDATE rows affected: {}", updatedRows);
-            } catch (Exception e1) {
-                errorMessage = e1.getMessage();
-                log.error("Simple UPDATE failed: {}", errorMessage);
-
-                try {
-                    // Вариант 2: UPDATE с кастомным WHERE
-                    String sql2 = "UPDATE carts SET status = ? WHERE id = ? AND status != ?";
-                    updatedRows = jdbcTemplate.update(sql2, newStatus, cartId, newStatus);
-                    log.info("Custom WHERE UPDATE rows affected: {}", updatedRows);
-                } catch (Exception e2) {
-                    errorMessage = e2.getMessage();
-                    log.error("Custom WHERE UPDATE failed: {}", errorMessage);
-
-                    try {
-                        // Вариант 3: UPDATE с возвратом
-                        String sql3 = "UPDATE carts SET status = ? WHERE id = ? RETURNING id";
-                        Integer returnedId = jdbcTemplate.queryForObject(sql3, Integer.class, newStatus, cartId);
-                        updatedRows = returnedId != null ? 1 : 0;
-                        log.info("RETURNING UPDATE rows affected: {}", updatedRows);
-                    } catch (Exception e3) {
-                        errorMessage = e3.getMessage();
-                        log.error("RETURNING UPDATE failed: {}", errorMessage);
-                    }
-                }
-            }
-
-            // Проверяем результат
-            String finalStatus = null;
-            if (updatedRows > 0) {
-                try {
-                    finalStatus = jdbcTemplate.queryForObject(
-                            "SELECT status FROM carts WHERE id = ?",
-                            String.class, cartId
-                    );
-                } catch (Exception e) {
-                    log.error("Could not verify status: {}", e.getMessage());
-                }
-            }
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", updatedRows > 0);
-            response.put("cartId", cartId);
-            response.put("requestedStatus", newStatus);
-            response.put("finalStatus", finalStatus);
-            response.put("updatedRows", updatedRows);
-            response.put("error", errorMessage);
-            response.put("message", updatedRows > 0 ?
-                    "✅ Status updated successfully" :
-                    "❌ Failed to update status");
-
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            log.error("❌ Error force updating status: {}", e.getMessage(), e);
-            return ResponseEntity.ok(Map.of(
-                    "success", false,
-                    "error", e.getMessage()
-            ));
-        }
-    }
-    // Проверка текущего статуса заказа
-    @GetMapping("/collector/cart/{cartId}/status")
-    public ResponseEntity<?> getCartStatus(@PathVariable Integer cartId) {
-        try {
-            log.info("🔍 Checking status for cart #{}", cartId);
-
-            String sql = "SELECT id, status, client_id, created_date FROM carts WHERE id = ?";
-
-            try {
-                Map<String, Object> cartInfo = jdbcTemplate.queryForMap(sql, cartId);
-
-                // Проверяем есть ли проблемы для этого заказа
-                String problemSql = "SELECT COUNT(*) FROM office_problems WHERE order_id = ? AND status = 'PENDING'";
-                Long problemCount = jdbcTemplate.queryForObject(problemSql, Long.class, cartId);
-
-                Map<String, Object> response = new HashMap<>();
-                response.put("success", true);
-                response.put("cartId", cartId);
-                response.put("status", cartInfo.get("status"));
-                response.put("clientId", cartInfo.get("client_id"));
-                response.put("createdDate", cartInfo.get("created_date"));
-                response.put("hasProblems", problemCount != null && problemCount > 0);
-                response.put("problemCount", problemCount != null ? problemCount : 0);
-                response.put("message", "Статус получен");
-
-                return ResponseEntity.ok(response);
-
-            } catch (Exception e) {
-                log.warn("Cart #{} not found: {}", cartId, e.getMessage());
-                return ResponseEntity.ok(Map.of(
-                        "success", false,
-                        "error", "Заказ не найден",
-                        "cartId", cartId
-                ));
-            }
-
-        } catch (Exception e) {
-            log.error("❌ Error getting cart status: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("success", false, "error", e.getMessage()));
-        }
-    }
-    // Кнопка "Завершить сборку" - перенос в orders (исправленная версия)
-    @PostMapping("/collector/complete-collection")
-    public ResponseEntity<?> completeCollection(@RequestBody Map<String, Object> request) {
-        try {
-            Integer cartId = (Integer) request.get("cartId");
-            String collectorId = (String) request.get("collectorId");
-
-            log.info("✅ Collector: completing collection for cart #{}, collector: {}", cartId, collectorId);
-
-            // Проверяем что заказ в статусе processing
-            String currentStatus;
-            try {
-                String checkSql = "SELECT status FROM carts WHERE id = ?";
-                currentStatus = jdbcTemplate.queryForObject(checkSql, String.class, cartId);
-            } catch (Exception e) {
-                log.error("Error checking cart status: {}", e.getMessage());
-                return ResponseEntity.ok(Map.of(
-                        "success", false,
-                        "error", "Заказ не найден",
-                        "cartId", cartId
-                ));
-            }
-
-            if (!"processing".equals(currentStatus)) {
-                return ResponseEntity.ok(Map.of(
-                        "success", false,
-                        "error", "Заказ должен быть в статусе 'processing'",
-                        "currentStatus", currentStatus,
-                        "cartId", cartId
-                ));
-            }
-
-            // Проверяем наличие всех товаров
-            String availabilitySql = """
-            SELECT 
-                ci.product_id,
-                p.name as product_name,
-                ci.quantity as requested,
-                p.count as available
-            FROM cart_items ci
-            LEFT JOIN usersklad p ON ci.product_id = p.id
-            WHERE ci.cart_id = ?
-        """;
-
-            List<Map<String, Object>> items;
-            try {
-                items = jdbcTemplate.queryForList(availabilitySql, cartId);
-            } catch (Exception e) {
-                log.error("Error checking availability: {}", e.getMessage());
-                items = new ArrayList<>();
-            }
-
-            List<Map<String, Object>> unavailableItems = new ArrayList<>();
-
-            for (Map<String, Object> item : items) {
-                Object availableObj = item.get("available");
-                Object requestedObj = item.get("requested");
-
-                Integer available = availableObj != null ? ((Number) availableObj).intValue() : 0;
-                Integer requested = requestedObj != null ? ((Number) requestedObj).intValue() : 0;
-
-                if (available < requested) {
-                    unavailableItems.add(item);
-                }
-            }
-
-            if (!unavailableItems.isEmpty()) {
-                return ResponseEntity.ok(Map.of(
-                        "success", false,
-                        "error", "Не все товары в наличии",
-                        "unavailableItems", unavailableItems,
-                        "message", "Сначала решите проблему с отсутствующими товарами",
-                        "cartId", cartId
-                ));
-            }
-
-            // Создаем запись в orders
-            Integer orderId = null;
-            int ordersCreated = 0;
-
-            try {
-                // Сначала проверяем существует ли уже запись
-                String checkOrderSql = "SELECT id FROM orders WHERE cart_id = ?";
-                try {
-                    orderId = jdbcTemplate.queryForObject(checkOrderSql, Integer.class, cartId);
-                } catch (Exception e) {
-                    // Запись не существует, создаем новую
-                    String insertOrderSql = """
-                    INSERT INTO orders (cart_id, collector_id, status, completed_at, created_at)
-                    VALUES (?, ?, 'collected', NOW(), NOW())
-                """;
-
-                    ordersCreated = jdbcTemplate.update(insertOrderSql, cartId, collectorId);
-
-                    // Получаем ID созданной записи
-                    orderId = jdbcTemplate.queryForObject("SELECT id FROM orders WHERE cart_id = ?", Integer.class, cartId);
-                }
-            } catch (Exception e) {
-                log.error("Error creating order record: {}", e.getMessage());
-                // Пытаемся создать таблицу orders если её нет
-                try {
-                    jdbcTemplate.execute("""
-                    CREATE TABLE IF NOT EXISTS orders (
-                        id SERIAL PRIMARY KEY,
-                        cart_id INTEGER UNIQUE,
-                        collector_id VARCHAR(50),
-                        status VARCHAR(50),
-                        completed_at TIMESTAMP,
-                        created_at TIMESTAMP DEFAULT NOW()
-                    )
-                """);
-
-                    String insertOrderSql = "INSERT INTO orders (cart_id, collector_id, status, completed_at) VALUES (?, ?, 'collected', NOW())";
-                    ordersCreated = jdbcTemplate.update(insertOrderSql, cartId, collectorId);
-                    orderId = cartId;
-                } catch (Exception createError) {
-                    log.error("Failed to create orders table: {}", createError.getMessage());
-                }
-            }
-
-            // Меняем статус в carts на 'collected'
-            int cartUpdated = 0;
-            try {
-                String updateCartSql = "UPDATE carts SET status = 'collected' WHERE id = ?";
-                cartUpdated = jdbcTemplate.update(updateCartSql, cartId);
-            } catch (Exception e) {
-                log.error("Error updating cart status: {}", e.getMessage());
-            }
-
-            // Уменьшаем количество товаров на складе
-            int stockUpdated = 0;
-            try {
-                String updateStockSql = """
-                UPDATE usersklad u
-                SET count = u.count - ci.quantity
-                FROM cart_items ci
-                WHERE ci.cart_id = ? 
-                AND u.id = ci.product_id
-            """;
-                stockUpdated = jdbcTemplate.update(updateStockSql, cartId);
-            } catch (Exception e) {
-                log.error("Error updating stock: {}", e.getMessage());
-            }
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("orderId", orderId);
-            response.put("cartId", cartId);
-            response.put("collectorId", collectorId);
-            response.put("ordersCreated", ordersCreated);
-            response.put("cartUpdated", cartUpdated);
-            response.put("stockUpdated", stockUpdated);
-            response.put("itemsProcessed", items.size());
-            response.put("message", "Сборка успешно завершена. Заказ перемещен в orders");
-
-            log.info("✅ Collection processing: cart #{} -> order #{}", cartId, orderId);
-
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            log.error("❌ Error completing collection: {}", e.getMessage(), e);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("error", "Ошибка завершения сборки: " + e.getMessage());
-            response.put("cartId", request.get("cartId"));
-            response.put("message", "Не удалось завершить сборку");
-
-            return ResponseEntity.ok(response);
-        }
-    }
-
-
-
-    // Завершение сборки заказа - устанавливаем статус processing
-    @PostMapping("/collector/orders/{cartId}/complete")
-    public ResponseEntity<?> completeOrderCollection(@PathVariable Integer cartId,
-                                                     @RequestBody Map<String, Object> request) {
-        try {
-            String status = (String) request.get("status");
-            String collectorId = (String) request.get("collectorId");
-
-            // СИЛЬНО ВАЖНО: устанавливаем статус cart в "processing"
-            String cartStatus = "processing";
-
-            log.info("✅ Collector: completing order #{}, collector: {}, cart status: {}",
-                    cartId, collectorId, cartStatus);
-
-            // Создаем запись в orders с любым статусом из запроса, но cart меняем на processing
-            String insertOrderSql = """
-        INSERT INTO orders (cart_id, collector_id, status, completed_at, created_at)
-        VALUES (?, ?, ?, NOW(), NOW())
-        ON CONFLICT (cart_id) DO UPDATE 
-        SET collector_id = EXCLUDED.collector_id,
-            status = EXCLUDED.status,
-            completed_at = NOW()
-        """;
-
-            int ordersCreated = jdbcTemplate.update(insertOrderSql,
-                    cartId,
-                    collectorId,
-                    (status != null ? status : "collected"));
-
-            // Меняем статус в carts на "processing" - ВАЖНО!
-            String updateCartSql = "UPDATE carts SET status = ? WHERE id = ?";
-            int cartUpdated = jdbcTemplate.update(updateCartSql, cartStatus, cartId);
-
-            // Уменьшаем количество товаров на складе
-            String updateStockSql = """
-        UPDATE usersklad u
-        SET count = u.count - ci.quantity,
-            updated_at = NOW()
-        FROM cart_items ci
-        WHERE ci.cart_id = ? 
-        AND u.id = ci.product_id
-        AND u.count >= ci.quantity
-        """;
-
-            int stockUpdated = jdbcTemplate.update(updateStockSql, cartId);
-
-            // Проверяем текущий статус для отладки
-            String verifiedStatus = null;
-            try {
-                verifiedStatus = jdbcTemplate.queryForObject(
-                        "SELECT status FROM carts WHERE id = ?",
-                        String.class, cartId);
-            } catch (Exception e) {
-                log.warn("Could not verify status: {}", e.getMessage());
-            }
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("cartId", cartId);
-            response.put("cartStatus", cartStatus);
-            response.put("verifiedCartStatus", verifiedStatus);
-            response.put("orderStatus", (status != null ? status : "collected"));
-            response.put("ordersCreated", ordersCreated);
-            response.put("cartUpdated", cartUpdated);
-            response.put("stockUpdated", stockUpdated);
-            response.put("collectorId", collectorId);
-            response.put("message", "Заказ успешно завершен. Статус корзины изменен на 'processing'");
-
-            log.info("✅ Cart #{} status set to '{}' (verified: '{}')",
-                    cartId, cartStatus, verifiedStatus);
-
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            log.error("❌ Error completing order: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("success", false, "error", e.getMessage()));
-        }
-    }
-    // ==================== БЛОК 10: ДОСТАВКА (DELIVERY) ====================
-
-    @PostMapping("/deliveries")
-    public Object createDelivery(@RequestBody Map<String, Object> deliveryRequest) {
-        return deliveryService.createDelivery(deliveryRequest);
-    }
-
-    @PostMapping("/deliveries/{deliveryId}/assign")
-    public Object assignCourier(@PathVariable Integer deliveryId, @RequestBody Map<String, Object> request) {
-        return deliveryService.assignCourier(deliveryId, request);
-    }
-
-    @PostMapping("/deliveries/{deliveryId}/status")
-    public Object updateDeliveryStatus(@PathVariable Integer deliveryId, @RequestBody Map<String, Object> request) {
-        return deliveryService.updateDeliveryStatus(deliveryId, request);
-    }
-
-    @GetMapping("/deliveries/client/{clientId}")
-    public List<Object> getClientDeliveries(@PathVariable Integer clientId) {
-        return deliveryService.getClientDeliveries(clientId);
-    }
-
-    @GetMapping("/deliveries/courier/{courierId}")
-    public List<Object> getCourierDeliveries(@PathVariable Integer courierId) {
-        return deliveryService.getCourierDeliveries(courierId);
-    }
-
-    @GetMapping("/deliveries/active")
-    public List<Object> getActiveDeliveries() {
-        return deliveryService.getActiveDeliveries();
-    }
-
-    @GetMapping("/deliveries")
-    public List<Object> getAllDeliveries() {
-        return deliveryService.getAllDeliveries();
-    }
-
-    @GetMapping("/deliveries/order/{orderId}")
-    public List<Object> getDeliveriesByOrderId(@PathVariable Integer orderId) {
-        return deliveryService.getDeliveriesByOrderId(orderId);
-    }
-
-    @GetMapping("/deliveries/order/{orderId}/first")
-    public Object getFirstDeliveryByOrderId(@PathVariable Integer orderId) {
-        return deliveryService.getFirstDeliveryByOrderId(orderId);
-    }
-
-    @PostMapping("/deliveries/{deliveryId}/cancel")
-    public Object cancelDelivery(@PathVariable Integer deliveryId) {
-        return deliveryService.cancelDelivery(deliveryId);
-    }
-
-    @GetMapping("/deliveries/{deliveryId}")
-    public Object getDelivery(@PathVariable Integer deliveryId) {
-        return deliveryService.getDelivery(deliveryId);
-    }
-
-    @GetMapping("/orders/{orderId}/delivery-full-info")
-    public Map<String, Object> getOrderDeliveryInfo(@PathVariable Integer orderId) {
-        List<Object> deliveries = deliveryService.getDeliveriesByOrderId(orderId);
-        Object firstDelivery = deliveryService.getFirstDeliveryByOrderId(orderId);
-
-        long activeDeliveries = deliveries.stream()
-                .filter(delivery -> {
-                    if (delivery instanceof Map) {
-                        Map<String, Object> deliveryMap = (Map<String, Object>) delivery;
-                        String status = (String) deliveryMap.get("deliveryStatus");
-                        return !"DELIVERED".equals(status) && !"CANCELLED".equals(status);
-                    }
-                    return false;
-                })
-                .count();
-
-        return Map.of(
-                "orderId", orderId,
-                "totalDeliveries", deliveries.size(),
-                "activeDeliveries", activeDeliveries,
-                "firstDelivery", firstDelivery,
-                "allDeliveries", deliveries
-        );
-    }
-
-    // ==================== БЛОК 11: ТРАНЗАКЦИОННЫЕ МЕТОДЫ (SAGA) ====================
-
-    @PostMapping("/saga/transactions")
-    public Map<String, Object> createTransaction(@RequestBody Map<String, Object> transactionRequest) {
-        return transactionSagaClient.createTransaction(transactionRequest);
-    }
-
-    @GetMapping("/saga/transactions/{transactionId}")
-    public Map<String, Object> getTransaction(@PathVariable String transactionId) {
-        return transactionSagaClient.getTransaction(transactionId);
-    }
-
-    @GetMapping("/saga/transactions/collector/{collectorId}")
-    public List<Map<String, Object>> getCollectorTransactions(@PathVariable String collectorId) {
-        return transactionSagaClient.getCollectorTransactions(collectorId);
-    }
-
-    @GetMapping("/saga/transactions/active")
-    public List<Map<String, Object>> getActiveTransactions() {
-        return transactionSagaClient.getActiveTransactions();
-    }
-
-    @GetMapping("/saga/transactions/paused")
-    public List<Map<String, Object>> getPausedTransactions() {
-        return transactionSagaClient.getPausedTransactions();
-    }
-
-    @PostMapping("/saga/transactions/{transactionId}/scan")
-    public Map<String, Object> scanItem(@PathVariable String transactionId, @RequestBody Map<String, Object> scanRequest) {
-        return transactionSagaClient.scanItem(transactionId, scanRequest);
-    }
-
-    @PostMapping("/saga/transactions/{transactionId}/report-problem")
-    public Map<String, Object> reportProblem(@PathVariable String transactionId, @RequestBody Map<String, Object> problemRequest) {
-        return transactionSagaClient.reportProblem(transactionId, problemRequest);
-    }
-
-    @PostMapping("/saga/transactions/{transactionId}/client-decision")
-    public Map<String, Object> processClientDecision(@PathVariable String transactionId, @RequestBody Map<String, Object> decisionRequest) {
-        return transactionSagaClient.processClientDecision(transactionId, decisionRequest);
-    }
-
-    @GetMapping("/saga/steps/{transactionId}")
-    public List<Map<String, Object>> getTransactionSteps(@PathVariable String transactionId) {
-        return transactionSagaClient.getTransactionSteps(transactionId);
-    }
-
-    @PostMapping("/saga/steps/{stepId}/retry")
-    public Map<String, Object> retryStep(@PathVariable Long stepId) {
-        return transactionSagaClient.retryStep(stepId);
-    }
-
-    @GetMapping("/saga/health")
-    public Map<String, Object> checkSagaHealth() {
-        return transactionSagaClient.checkSagaHealth();
-    }
-
-    @PostMapping("/saga/compensation/{transactionId}/initiate")
-    public Map<String, Object> initiateCompensation(@PathVariable String transactionId,
-                                                    @RequestParam String reason,
-                                                    @RequestParam(required = false) String details) {
-        return transactionSagaClient.initiateCompensation(transactionId, reason, details);
-    }
-
-    @GetMapping("/saga/compensation/history/{transactionId}")
-    public List<Map<String, Object>> getCompensationHistory(@PathVariable String transactionId) {
-        return transactionSagaClient.getCompensationHistory(transactionId);
-    }
-
-    @PutMapping("/saga/transactions/{transactionId}/status")
-    public Map<String, Object> updateTransactionStatus(@PathVariable String transactionId, @RequestBody Map<String, Object> statusRequest) {
-        return transactionSagaClient.updateTransactionStatus(transactionId, statusRequest);
-    }
-
-    @PostMapping("/saga/transactions/complete-order")
-    public Map<String, Object> createCompleteOrderWithSaga(@RequestBody Map<String, Object> orderRequest) {
-        return transactionSagaClient.createCompleteOrderWithSaga(orderRequest);
-    }
-
-    @GetMapping("/saga/transactions/{transactionId}/full-info")
-    public Map<String, Object> getTransactionFullInfo(@PathVariable String transactionId) {
-        return transactionSagaClient.getTransactionFullInfo(transactionId);
-    }
-
-    @PostMapping("/saga/transactions/{transactionId}/start")
-    public Map<String, Object> startTransaction(@PathVariable String transactionId) {
-        Map<String, Object> statusRequest = Map.of("status", "ACTIVE");
-        return transactionSagaClient.updateTransactionStatus(transactionId, statusRequest);
-    }
-
-    @PostMapping("/saga/transactions/{transactionId}/pause")
-    public Map<String, Object> pauseTransaction(@PathVariable String transactionId, @RequestParam(required = false) String reason) {
-        Map<String, Object> statusRequest = Map.of("status", "PAUSED", "reason", reason);
-        return transactionSagaClient.updateTransactionStatus(transactionId, statusRequest);
-    }
-
-    @PostMapping("/saga/transactions/{transactionId}/resume")
-    public Map<String, Object> resumeTransaction(@PathVariable String transactionId) {
-        Map<String, Object> statusRequest = Map.of("status", "ACTIVE");
-        return transactionSagaClient.updateTransactionStatus(transactionId, statusRequest);
-    }
-
-    @PostMapping("/saga/transactions/{transactionId}/complete")
-    public Map<String, Object> completeTransaction(@PathVariable String transactionId) {
-        Map<String, Object> statusRequest = Map.of("status", "COMPLETED");
-        return transactionSagaClient.updateTransactionStatus(transactionId, statusRequest);
-    }
-
-    @PostMapping("/saga/transactions/{transactionId}/cancel")
-    public Map<String, Object> cancelTransaction(@PathVariable String transactionId, @RequestParam(required = false) String reason) {
-        String compensationReason = reason != null ? "CANCELLED: " + reason : "CANCELLED";
-        return transactionSagaClient.initiateCompensation(transactionId, compensationReason, "Manual cancellation");
-    }
-
-    @PostMapping("/orders/with-saga-orchestration")
-    public Map<String, Object> createOrderWithSagaOrchestration(@RequestBody Map<String, Object> orderRequest) {
-        Map<String, Object> transactionResponse = transactionSagaClient.createTransaction(orderRequest);
-        String transactionId = (String) transactionResponse.get("id");
-        String clientId = (String) orderRequest.get("clientId");
-        String orderId = (String) orderRequest.get("orderId");
-
-        Object cartResponse = cartService.createCart(Integer.parseInt(clientId));
-        List<Map<String, Object>> items = (List<Map<String, Object>>) orderRequest.get("items");
-
-        if (items != null) {
-            for (Map<String, Object> item : items) {
-                cartService.addToCart(
-                        (Integer) ((Map<String, Object>) cartResponse).get("id"),
-                        Integer.parseInt((String) item.get("productId")),
-                        (Integer) item.get("quantity"),
-                        ((Number) item.get("price")).doubleValue()
-                );
-            }
-        }
-
-        Map<String, Object> deliveryRequest = Map.of(
-                "orderId", orderId,
-                "clientId", clientId,
-                "deliveryAddress", orderRequest.get("deliveryAddress"),
-                "deliveryPhone", orderRequest.get("deliveryPhone")
-        );
-
-        Object deliveryResponse = deliveryService.createDelivery(deliveryRequest);
-
-        if (items != null && !items.isEmpty()) {
-            Map<String, Object> firstItem = items.get(0);
-            Map<String, Object> scanRequest = Map.of(
-                    "productId", firstItem.get("productId"),
-                    "quantity", firstItem.get("quantity"),
-                    "location", "Warehouse A"
-            );
-            transactionSagaClient.scanItem(transactionId, scanRequest);
-        }
-
-        return Map.of(
-                "transaction", transactionResponse,
-                "cart", cartResponse,
-                "delivery", deliveryResponse,
-                "message", "Order created with saga orchestration"
-        );
-    }
-
-
-    // ==================== БЛОК 12: OFFICE - расширенные методы из второго файла ====================
-
-    @GetMapping("/office/test")
-    public ResponseEntity<?> officeTest() {
-        try {
-            log.info("✅ Office test endpoint called");
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "Office API is working!");
-            response.put("timestamp", System.currentTimeMillis());
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            log.error("❌ Office test error: {}", e.getMessage());
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "Office test failed: " + e.getMessage());
-            response.put("timestamp", System.currentTimeMillis());
-            return ResponseEntity.ok(response);
-        }
-    }
-
-    @GetMapping("/office/problems/active")
-    public ResponseEntity<?> getActiveProblems() {
-        try {
-            log.info("🔍 Office: getting active problems");
-
-            String statusCheckSql = "SELECT DISTINCT status FROM carts ORDER BY status";
-            List<String> availableStatuses = jdbcTemplate.queryForList(statusCheckSql, String.class);
-            log.info("✅ Available statuses in carts: {}", availableStatuses);
-
-            String problemStatus = null;
-            List<Map<String, Object>> problems = new ArrayList<>();
-
-            for (String status : availableStatuses) {
-                if (status != null && status.equalsIgnoreCase("problem")) {
-                    problemStatus = status;
-                    log.info("✅ Found exact 'problem' status: '{}'", problemStatus);
-                    break;
-                }
-            }
-
-            if (problemStatus != null) {
-                String sql = """
-            SELECT 
-                c.id as order_id,
-                c.client_id,
-                COALESCE(u.firstname, 'Клиент #' || c.client_id) as client_name,
-                COALESCE(u.email, 'client' || c.client_id || '@example.com') as client_email,
-                COALESCE(u.city, 'Москва') as client_city,
-                COALESCE(u.age::text, '30') as client_phone,
-                c.created_date as created_at,
-                c.status as order_status,
-                'COLLECTOR_' || (c.id % 10 + 1) as collector_id,
-                'Требует внимания офиса' as details
-            FROM carts c
-            LEFT JOIN users u ON c.client_id = u.id
-            WHERE c.status = ?
-            ORDER BY c.created_date DESC
-            LIMIT 20
-            """;
-
-                problems = jdbcTemplate.queryForList(sql, problemStatus);
-                log.info("✅ Found {} problem records with status '{}'", problems.size(), problemStatus);
-            } else {
-                log.info("📭 No 'problem' status found in carts table");
-            }
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("problems", problems);
-            response.put("total", problems.size());
-            response.put("message", problems.size() > 0 ? "Problems loaded successfully" : "No problems found in the system");
-            response.put("used_status", problemStatus);
-            response.put("timestamp", System.currentTimeMillis());
-
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            log.error("❌ Error getting problems: {}", e.getMessage(), e);
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("problems", new ArrayList<>());
-            response.put("total", 0);
-            response.put("error", e.getMessage());
-            response.put("timestamp", System.currentTimeMillis());
-
-            return ResponseEntity.ok(response);
-        }
-    }
-
-}

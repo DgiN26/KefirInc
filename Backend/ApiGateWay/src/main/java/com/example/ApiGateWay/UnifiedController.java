@@ -35,7 +35,6 @@ public class UnifiedController {
 
     @Autowired
     private ClientServiceClient clientService;
-
     @Autowired
     private ProductServiceClient productServiceClient;
 
@@ -630,7 +629,121 @@ public class UnifiedController {
             return ResponseEntity.status(e.status()).body(Map.of("error", "Ошибка: " + e.getMessage()));
         }
     }
-// ==================== БЛОК 15: ПОДДЕРЖКА КЛИЕНТОВ (SUPPORT) ====================
+    @PostMapping("/support/update-order-status")
+    public ResponseEntity<?> updateOrderStatus(@RequestBody Map<String, Object> request) {
+        try {
+            Integer cartId = (Integer) request.get("cartId");
+            String newStatus = (String) request.get("newStatus");
+            String action = (String) request.get("action");
+
+            log.info("🔄 Support: updating cart {} status to '{}' (action: {})",
+                    cartId, newStatus, action);
+
+            // 1. ПРОВЕРКА И НОРМАЛИЗАЦИЯ СТАТУСА
+            if (newStatus != null) {
+                // Заменяем длинные статусы на короткие
+                if (newStatus.equals("transactioncompleted") || newStatus.equals("completed_refund")) {
+                    newStatus = "tc"; // transaction completed
+                } else if (newStatus.equals("tasamaiaOshibka!!!") || newStatus.equals("recollecting")) {
+                    newStatus = "taoshibka"; // та самая ошибка
+                }
+
+                // Проверяем длину после нормализации
+                if (newStatus.length() > 20) {
+                    log.warn("⚠️ Status still too long ({} chars), truncating to 20 chars",
+                            newStatus.length());
+                    newStatus = newStatus.substring(0, Math.min(newStatus.length(), 20));
+                }
+                log.info("✅ Status normalized to: '{}'", newStatus);
+            } else {
+                log.error("❌ newStatus is null!");
+                return ResponseEntity.badRequest().body(Map.of(
+                        "success", false,
+                        "error", "newStatus is required"
+                ));
+            }
+
+            // 2. Получаем текущий статус заказа
+            String currentStatus = null;
+            try {
+                String currentStatusSql = "SELECT status FROM carts WHERE id = ?";
+                currentStatus = jdbcTemplate.queryForObject(currentStatusSql, String.class, cartId);
+                log.info("📊 Current status of cart {}: '{}'", cartId, currentStatus);
+            } catch (Exception e) {
+                log.error("Error getting current status for cart {}: {}", cartId, e.getMessage());
+                currentStatus = "unknown";
+            }
+
+            // 3. ОБНОВЛЯЕМ СТАТУС В carts (ИСПРАВЛЕНО: удален last_action)
+            String updateSql = """
+UPDATE carts 
+SET status = ?
+WHERE id = ?
+""";
+
+            log.info("📝 Executing SQL: {} with params: {}, {}",
+                    updateSql.replace("?", "{}"), newStatus, cartId);
+
+            try {
+                int updatedRows = jdbcTemplate.update(updateSql, newStatus, cartId);
+                log.info("✅ SQL executed. Updated rows: {}", updatedRows);
+
+                if (updatedRows > 0) {
+                    // 4. Проверяем новый статус
+                    String verifySql = "SELECT status FROM carts WHERE id = ?";
+                    String verifiedStatus = jdbcTemplate.queryForObject(verifySql, String.class, cartId);
+
+                    log.info("✅ Cart {} status updated from '{}' to '{}' (verified: '{}')",
+                            cartId, currentStatus, newStatus, verifiedStatus);
+
+                    // 5. Обновляем nalichie в cart_items если это завершение возврата
+                    if ("tc".equals(newStatus) || "completed".equals(newStatus)) {
+                        try {
+                            String updateItemsSql = """
+                    UPDATE cart_items 
+                    SET nalichie = 'refunded'
+                    WHERE cart_id = ? AND nalichie = 'unknown'
+                    """;
+                            int updatedItems = jdbcTemplate.update(updateItemsSql, cartId);
+                            log.info("✅ Updated {} cart_items for cart {} from 'unknown' to 'refunded'",
+                                    updatedItems, cartId);
+                        } catch (Exception e) {
+                            log.warn("⚠️ Could not update cart_items for cart {}: {}", cartId, e.getMessage());
+                        }
+                    }
+
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("success", true);
+                    response.put("cartId", cartId);
+                    response.put("oldStatus", currentStatus);
+                    response.put("newStatus", newStatus);
+                    response.put("verifiedStatus", verifiedStatus);
+                    response.put("updatedRows", updatedRows);
+                    response.put("message", "Статус заказа успешно обновлен");
+
+                    return ResponseEntity.ok(response);
+                } else {
+                    log.warn("⚠️ No rows updated for cart {}. Cart might not exist.", cartId);
+                    return ResponseEntity.ok(Map.of(
+                            "success", false,
+                            "error", "Заказ не найден или статус не изменился",
+                            "cartId", cartId
+                    ));
+                }
+            } catch (Exception e) {
+                log.error("❌ SQL ERROR updating cart status: {}", e.getMessage());
+                log.error("❌ SQL State: {}", e instanceof org.springframework.dao.DataAccessException ?
+                        ((org.springframework.jdbc.BadSqlGrammarException) e).getSQLException().getSQLState() : "Unknown");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(Map.of("success", false, "error", "SQL ошибка: " + e.getMessage()));
+            }
+
+        } catch (Exception e) {
+            log.error("❌ Error in updateOrderStatus: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "error", e.getMessage()));
+        }
+    }
 
     @GetMapping("/support/unavailable-items/{clientId}")
     public ResponseEntity<?> getUnavailableItems(@PathVariable int clientId) {
@@ -722,26 +835,52 @@ public class UnifiedController {
         try {
             List<Integer> cartIds = (List<Integer>) request.get("cartIds");
 
-            log.info("🔄 Support: changing status to processing for carts: {}", cartIds);
+            log.info("🔄 Support: changing status to 'taoshibka' for carts: {}", cartIds);
 
-            // ТОЛЬКО смена статуса cart на 'processing'
             int updatedCarts = 0;
+            List<Map<String, Object>> results = new ArrayList<>();
+
             for (Integer cartId : cartIds) {
                 try {
+                    // ИСПРАВЛЕННЫЙ SQL С КОРОТКИМ СТАТУСОМ (без last_action)
                     String updateSql = """
-                    UPDATE carts 
-                    SET status = 'processing',
-                        updated_at = CURRENT_TIMESTAMP
-                    WHERE id = ?
-                """;
+UPDATE carts 
+SET status = 'taoshibka'
+WHERE id = ?
+""";
+
+                    log.info("📝 Executing SQL for cart {}: {}", cartId, updateSql);
 
                     int rows = jdbcTemplate.update(updateSql, cartId);
+
+                    Map<String, Object> result = new HashMap<>();
+                    result.put("cartId", cartId);
+                    result.put("updated", rows > 0);
+                    result.put("rowsAffected", rows);
+                    results.add(result);
+
                     if (rows > 0) {
                         updatedCarts++;
-                        log.info("✅ Cart {} status changed to 'processing'", cartId);
+                        log.info("✅ Cart {} status changed to 'taoshibka'", cartId);
+
+                        // Проверяем обновленный статус
+                        try {
+                            String verifySql = "SELECT status FROM carts WHERE id = ?";
+                            String verifiedStatus = jdbcTemplate.queryForObject(verifySql, String.class, cartId);
+                            log.info("✅ Verified status for cart {}: '{}'", cartId, verifiedStatus);
+                        } catch (Exception e) {
+                            log.warn("⚠️ Could not verify status for cart {}: {}", cartId, e.getMessage());
+                        }
+                    } else {
+                        log.warn("⚠️ No rows updated for cart {}. Cart might not exist.", cartId);
                     }
                 } catch (Exception e) {
-                    log.error("Error updating cart {}: {}", cartId, e.getMessage());
+                    log.error("❌ Error updating cart {}: {}", cartId, e.getMessage());
+                    Map<String, Object> errorResult = new HashMap<>();
+                    errorResult.put("cartId", cartId);
+                    errorResult.put("error", e.getMessage());
+                    errorResult.put("updated", false);
+                    results.add(errorResult);
                 }
             }
 
@@ -749,7 +888,8 @@ public class UnifiedController {
             response.put("success", true);
             response.put("updatedCarts", updatedCarts);
             response.put("totalCarts", cartIds.size());
-            response.put("message", "Заказ отправлен на повторную сборку. Статус изменен на 'processing'");
+            response.put("results", results);
+            response.put("message", "Заказ отправлен на повторную сборку. Статус изменен на 'ошибка сборки'");
 
             return ResponseEntity.ok(response);
 
@@ -757,6 +897,62 @@ public class UnifiedController {
             log.error("❌ Error recollecting order: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("success", false, "error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/debug/table-structure")
+    public ResponseEntity<?> getTableStructure() {
+        try {
+            Map<String, Object> response = new HashMap<>();
+
+            // Проверяем структуру таблицы carts
+            try {
+                String cartsStructure = jdbcTemplate.queryForObject(
+                        "SELECT column_name, data_type, character_maximum_length " +
+                                "FROM information_schema.columns " +
+                                "WHERE table_name = 'carts' AND table_schema = 'public' " +
+                                "ORDER BY ordinal_position",
+                        (rs, rowNum) -> {
+                            StringBuilder sb = new StringBuilder();
+                            while (rs.next()) {
+                                sb.append(rs.getString("column_name"))
+                                        .append(": ").append(rs.getString("data_type"))
+                                        .append("(").append(rs.getString("character_maximum_length")).append(")")
+                                        .append("\n");
+                            }
+                            return sb.toString();
+                        }
+                );
+                response.put("carts_structure", cartsStructure);
+            } catch (Exception e) {
+                response.put("carts_structure_error", e.getMessage());
+            }
+
+            // Проверяем текущие статусы
+            try {
+                String currentStatuses = jdbcTemplate.queryForObject(
+                        "SELECT id, status, LENGTH(status) as status_length FROM carts LIMIT 10",
+                        (rs, rowNum) -> {
+                            StringBuilder sb = new StringBuilder();
+                            while (rs.next()) {
+                                sb.append("Cart ").append(rs.getInt("id"))
+                                        .append(": '").append(rs.getString("status"))
+                                        .append("' (length: ").append(rs.getInt("status_length")).append(")")
+                                        .append("\n");
+                            }
+                            return sb.toString();
+                        }
+                );
+                response.put("current_statuses", currentStatuses);
+            } catch (Exception e) {
+                response.put("statuses_error", e.getMessage());
+            }
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", e.getMessage()));
         }
     }
 
