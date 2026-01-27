@@ -38,6 +38,8 @@ const ClientCart = () => {
         `http://localhost:8080/api/cart/client/${clientId}/full`
       );
       
+      console.log('Ответ от API:', response.data); // Для отладки
+      
       if (response.data.success) {
         return response.data.carts || [];
       }
@@ -65,7 +67,7 @@ const ClientCart = () => {
 
       const cartsData = await fetchCarts();
 
-      console.log('Получено carts:', cartsData.length);
+      console.log('Получено корзин:', cartsData.length);
 
       setCarts(cartsData);
 
@@ -179,47 +181,96 @@ const ClientCart = () => {
   const totalAmount = carts.reduce((sum, cart) => sum + (cart.totalAmount || 0), 0);
   const completedCarts = carts.filter(cart => cart.status === 'completed').length;
 
-  // Функция для отображения статуса
+  // Функция для отображения статуса (ИСПРАВЛЕННАЯ)
   const renderStatus = (cart) => {
     const status = cart.status || 'active';
     
     const getStatusConfig = () => {
-      if (status === 'completed') {
-        return {
-          text: '✅ Завершен',
-          bgColor: '#e8f5e9',
-          textColor: '#2e7d32',
-        };
-      } else if (status === 'active' || status === 'pending') {
-        return {
-          text: '🔄 Активен',
-          bgColor: '#fff3e0',
-          textColor: '#ef6c00',
-        };
-      } else {
-        return {
-          text: `❓ ${status}`,
-          bgColor: '#f5f5f5',
-          textColor: '#757575',
-        };
+      const normalizedStatus = String(status).toLowerCase().trim();
+      
+      switch(normalizedStatus) {
+        case 'completed':
+          return {
+            text: '✅ Завершен',
+            bgColor: '#e8f5e9',
+            textColor: '#2e7d32'
+          };
+        
+        case 'collected':
+          return {
+            text: '📦 Собран',
+            bgColor: '#e3f2fd',
+            textColor: '#1565c0'
+          };
+        
+        case 'processing':
+        case 'in_progress':
+          return {
+            text: '⚙️ В обработке',
+            bgColor: '#fff3e0',
+            textColor: '#ef6c00'
+          };
+        
+        case 'problem':
+          return {
+            text: '🚨 Проблема',
+            bgColor: '#ffebee',
+            textColor: '#c62828'
+          };
+        
+        case 'waiting':
+          return {
+            text: '⏳ Ожидание',
+            bgColor: '#f5f5f5',
+            textColor: '#616161'
+          };
+        
+        case 'pending':
+          return {
+            text: '⏳ Ожидание',
+            bgColor: '#f5f5f5',
+            textColor: '#757575'
+          };
+        
+        case 'active':
+          return {
+            text: '🟢 Активен',
+            bgColor: '#f1f8e9',
+            textColor: '#689f38'
+          };
+        
+        case 'created':
+          return {
+            text: '📝 Создан',
+            bgColor: '#e3f2fd',
+            textColor: '#1976d2'
+          };
+        
+        default:
+          return {
+            text: `❓ ${status}`,
+            bgColor: '#f5f5f5',
+            textColor: '#757575'
+          };
       }
     };
 
     const config = getStatusConfig();
     
     return (
-      <div style={{ 
-        padding: '2px 8px',
-        borderRadius: '4px',
-        fontSize: '12px',
-        background: config.bgColor,
+      <span style={{
+        backgroundColor: config.bgColor,
         color: config.textColor,
-        display: 'flex',
+        padding: '4px 8px',
+        borderRadius: '12px',
+        fontSize: '12px',
+        fontWeight: '500',
+        display: 'inline-flex',
         alignItems: 'center',
         gap: '4px'
       }}>
         {config.text}
-      </div>
+      </span>
     );
   };
 

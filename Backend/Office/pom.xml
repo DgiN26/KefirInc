@@ -54,8 +54,6 @@
             <artifactId>spring-boot-starter-logging</artifactId>
         </dependency>
 
-
-
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>

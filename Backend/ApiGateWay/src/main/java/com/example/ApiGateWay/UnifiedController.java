@@ -1652,7 +1652,10 @@ WHERE id = ?
             for (Map<String, Object> cart : carts) {
                 Integer cartId = (Integer) cart.get("id");
                 Map<String, Object> fullCart = new HashMap<>(cart);
-                String cartStatus = "active";
+                String cartStatus = (String) cart.get("status"); // ← Взять статус из таблицы carts
+                if (cartStatus == null || cartStatus.trim().isEmpty()) {
+                    cartStatus = "active"; // fallback
+                }
 
                 for (Map<String, Object> order : orders) {
                     Object orderCartId = order.get("cartId");
