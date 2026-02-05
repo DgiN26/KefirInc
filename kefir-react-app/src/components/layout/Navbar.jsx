@@ -38,9 +38,13 @@ const Navbar = ({ userRole, onLogout }) => {
     ],
     [ROLES.CLIENT]: [
       { path: '/client', label: 'Магазин', icon: '🛍️', color: '#2196F3', exact: true },
+<<<<<<< HEAD
       { path: '/client/cart', label: 'Корзина', icon: '🛒', color: '#FF9800' },
       // ✅ ДОБАВЛЕНА ПОДДЕРЖКА:
       { path: '/client/support', label: 'Поддержка', icon: '📞', color: '#9C27B0' },
+=======
+      { path: '/client/cart', label: 'История заказов', icon: '🛒', color: '#FF9800' },
+>>>>>>> 564aab1fe7bb07a8b7dbf2263c3f15f5d97137da
       { path: '/client/profile', label: 'Профиль', icon: '👤', color: '#4CAF50' },
       { path: '/client/notification', label: 'Уведомление', icon: '🔔', color: '#4CAF50'}
     ],

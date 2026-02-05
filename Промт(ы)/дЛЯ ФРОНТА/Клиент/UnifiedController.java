@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 Это не полный код - а часть кода для нейросети без лишних блоков! package com.example.ApiGateWay;
 
@@ -15,6 +16,9 @@ import org.springframework.web.client.RestTemplate;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
+=======
+//Это не полный класс - а сокращенная версия для нейросети!
+>>>>>>> 32a18439d5d309833c2b1fdf191b7cd04ba94f69
 
 @RestController
 @RequestMapping("/api")
@@ -51,416 +55,9 @@ public class UnifiedController {
     @Autowired
     private TransactionSagaClient transactionSagaClient;
 
-    // ==================== БЛОК 1: АВТОРИЗАЦИЯ И АУТЕНТИФИКАЦИЯ ====================
 
-    @PostMapping("/auth/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> request) {
-        try {
-            System.out.println("=== GATEWAY LOGIN (HYBRID SUPPORT) ===");
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<Map<String, String>> entity = new HttpEntity<>(request, headers);
 
-            try {
-                ResponseEntity<Map> response = restTemplate.exchange(
-                        "http://localhost:8097/api/auth/login",
-                        HttpMethod.POST,
-                        entity,
-                        Map.class
-                );
-
-                Map<String, Object> responseBody = response.getBody();
-
-                if (responseBody != null &&
-                        Boolean.TRUE.equals(responseBody.get("success")) &&
-                        responseBody.containsKey("token")) {
-
-                    String token = (String) responseBody.get("token");
-                    if (token.startsWith("auth-")) {
-                        System.out.println("✅ Received hybrid UUID token: " + token);
-                    } else if (token.contains(".")) {
-                        System.out.println("✅ Received JWT token");
-                    }
-                }
-
-                return ResponseEntity.status(response.getStatusCode()).body(responseBody);
-
-            } catch (HttpClientErrorException e) {
-                try {
-                    ObjectMapper mapper = new ObjectMapper();
-                    return ResponseEntity.status(e.getStatusCode())
-                            .body(mapper.readValue(e.getResponseBodyAsString(), Map.class));
-                } catch (Exception parseError) {
-                    return ResponseEntity.status(e.getStatusCode())
-                            .body(Map.of("success", false, "error", e.getResponseBodyAsString()));
-                }
-            }
-
-        } catch (Exception e) {
-            return ResponseEntity.status(500)
-                    .body(Map.of("success", false, "error", "Gateway error"));
-        }
-    }
-
-    @PostMapping("/auth/logout")
-    public ResponseEntity<?> logout(@RequestHeader(value = "Authorization", required = false) String authHeader) {
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            if (authHeader != null) headers.set("Authorization", authHeader);
-            headers.setContentType(MediaType.APPLICATION_JSON);
-
-            HttpEntity<?> entity = new HttpEntity<>(headers);
-            ResponseEntity<Map> response = restTemplate.exchange(
-                    "http://localhost:8097/api/auth/logout",
-                    HttpMethod.POST,
-                    entity,
-                    Map.class
-            );
-
-            return ResponseEntity.ok(response.getBody());
-
-        } catch (Exception e) {
-            System.err.println("Gateway logout error: " + e.getMessage());
-            return ResponseEntity.ok(Map.of(
-                    "success", true,
-                    "message", "Logout processed via gateway",
-                    "timestamp", System.currentTimeMillis()
-            ));
-        }
-    }
-
-    @PostMapping("/auth/validate")
-    public Map<String, Object> validateToken(@RequestBody Map<String, String> request) {
-        return authServiceClient.validateToken(request.toString());
-    }
-
-    @GetMapping("/auth/check")
-    public Map<String, Object> checkAuth() {
-        return authServiceClient.check();
-    }
-
-    // Метод для извлечения userId из JWT токена (из первого файла)
-    private Integer extractUserIdFromToken(String authHeader) {
-        try {
-            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                log.warn("⚠️ Отсутствует или некорректный Authorization header: {}", authHeader);
-                throw new RuntimeException("Требуется авторизация");
-            }
-
-            String token = authHeader.substring(7);
-            log.debug("Токен для парсинга: {}", token.substring(0, Math.min(token.length(), 50)) + "...");
-
-            if (token.contains(".")) {
-                return extractUserIdFromJwt(token);
-            } else if (token.startsWith("auth-")) {
-                return extractUserIdFromUuidToken(token);
-            } else {
-                throw new RuntimeException("Неизвестный формат токена");
-            }
-
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new RuntimeException("Ошибка при извлечении userId: " + e.getMessage());
-        }
-    }
-
-    private Integer extractUserIdFromJwt(String jwtToken) throws Exception {
-        try {
-            String[] parts = jwtToken.split("\\.");
-            if (parts.length != 3) {
-                throw new RuntimeException("Неверный формат JWT токена");
-            }
-
-            String payloadJson = new String(java.util.Base64.getUrlDecoder().decode(parts[1]));
-            log.debug("JWT payload: {}", payloadJson);
-
-            ObjectMapper mapper = new ObjectMapper();
-            Map<String, Object> payload = mapper.readValue(payloadJson, Map.class);
-
-            if (payload.containsKey("userId")) {
-                Object userIdObj = payload.get("userId");
-                if (userIdObj instanceof Integer) return (Integer) userIdObj;
-                if (userIdObj instanceof String) return Integer.parseInt((String) userIdObj);
-                if (userIdObj instanceof Number) return ((Number) userIdObj).intValue();
-            }
-
-            if (payload.containsKey("id")) {
-                Object idObj = payload.get("id");
-                if (idObj instanceof Integer) return (Integer) idObj;
-                if (idObj instanceof String) return Integer.parseInt((String) idObj);
-                if (idObj instanceof Number) return ((Number) idObj).intValue();
-            }
-
-            throw new RuntimeException("userId не найден в JWT токене");
-
-        } catch (Exception e) {
-            throw new RuntimeException("Ошибка парсинга JWT: " + e.getMessage());
-        }
-    }
-
-    private Integer extractUserIdFromUuidToken(String uuidToken) {
-        try {
-            log.info("=== ИЗВЛЕЧЕНИЕ USER ID ИЗ UUID ТОКЕНА ===");
-            log.info("Токен: {}", uuidToken);
-
-            String url = "http://localhost:8097/api/auth/validate?clientToken=" + uuidToken;
-            log.info("URL запроса: {}", url);
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-
-            HttpEntity<String> entity = new HttpEntity<>("{}", headers);
-
-            log.info("Отправка POST запроса с пустым телом и параметром в query string...");
-
-            ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, entity, Map.class);
-
-            log.info("Статус ответа: {}", response.getStatusCode());
-            log.info("Тело ответа: {}", response.getBody());
-
-            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                Map<String, Object> body = response.getBody();
-
-                if (Boolean.TRUE.equals(body.get("valid"))) {
-                    log.info("✅ Токен валиден");
-
-                    if (body.containsKey("userId")) {
-                        Integer userId = convertToInteger(body.get("userId"));
-                        if (userId != null) {
-                            log.info("✅ Найден userId: {}", userId);
-                            return userId;
-                        }
-                    }
-
-                    if (body.containsKey("user") && body.get("user") instanceof Map) {
-                        Map<String, Object> user = (Map<String, Object>) body.get("user");
-                        if (user.containsKey("id")) {
-                            Integer userId = convertToInteger(user.get("id"));
-                            if (userId != null) {
-                                log.info("✅ Найден userId в user объекте: {}", userId);
-                                return userId;
-                            }
-                        }
-                    }
-
-                    log.error("❌ userId не найден в ответе");
-                    throw new RuntimeException("Не удалось извлечь userId из ответа");
-
-                } else {
-                    String errorMsg = body.containsKey("message") ?
-                            (String) body.get("message") : "Токен невалиден";
-                    log.error("❌ Токен невалиден: {}", errorMsg);
-                    throw new RuntimeException("Токен недействителен: " + errorMsg);
-                }
-            }
-
-            log.error("❌ Неожиданный статус ответа: {}", response.getStatusCode());
-            throw new RuntimeException("Неожиданный ответ от Auth Service: " + response.getStatusCode());
-
-        } catch (Exception e) {
-            log.error("❌ Ошибка при извлечении userId: {}", e.getMessage());
-            throw new RuntimeException("Ошибка при обращении к Auth Service: " + e.getMessage());
-        }
-    }
-
-    private Integer convertToInteger(Object obj) {
-        if (obj == null) return null;
-        if (obj instanceof Integer) return (Integer) obj;
-        if (obj instanceof String) return Integer.parseInt((String) obj);
-        if (obj instanceof Number) return ((Number) obj).intValue();
-        throw new RuntimeException("Не могу преобразовать в Integer: " + obj.getClass());
-    }
-
-    @GetMapping("/test-auth-endpoint")
-    public String testAuthEndpoint() {
-        RestTemplate rt = new RestTemplate();
-        String token = "auth-83f64f93-bd02-4392-bf92-37f28611868f";
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("<h2>Тестирование Auth Service Endpoints</h2>");
-
-        // 1. Проверим /api/auth/validate
-        sb.append("<h3>1. /api/auth/validate</h3>");
-        try {
-            String url = "http://localhost:8097/api/auth/validate";
-
-            // Вариант A: GET с параметром
-            String urlA = url + "?clientToken=" + token;
-            try {
-                ResponseEntity<String> resp = rt.getForEntity(urlA, String.class);
-                sb.append("<p><b>GET:</b> ").append(resp.getStatusCode()).append(" - ").append(resp.getBody()).append("</p>");
-            } catch (Exception e) {
-                sb.append("<p style='color:red'><b>GET Error:</b> ").append(e.getMessage()).append("</p>");
-            }
-
-            // Вариант B: POST с параметром в query
-            try {
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.APPLICATION_JSON);
-                HttpEntity<String> entity = new HttpEntity<>("{}", headers);
-                ResponseEntity<String> resp = rt.exchange(urlA, HttpMethod.POST, entity, String.class);
-                sb.append("<p><b>POST (param in query):</b> ").append(resp.getStatusCode()).append(" - ").append(resp.getBody()).append("</p>");
-            } catch (Exception e) {
-                sb.append("<p style='color:red'><b>POST Error:</b> ").append(e.getMessage()).append("</p>");
-            }
-
-        } catch (Exception e) {
-            sb.append("<p style='color:red'><b>Total Error:</b> ").append(e.getMessage()).append("</p>");
-        }
-
-        // 2. Проверим /api/sessions/validate
-        sb.append("<h3>2. /api/sessions/validate/{clientToken}</h3>");
-        try {
-            String url = "http://localhost:8097/api/sessions/validate/" + token;
-            ResponseEntity<String> resp = rt.getForEntity(url, String.class);
-            sb.append("<p><b>Response:</b> ").append(resp.getStatusCode()).append(" - ").append(resp.getBody()).append("</p>");
-        } catch (Exception e) {
-            sb.append("<p style='color:red'><b>Error:</b> ").append(e.getMessage()).append("</p>");
-        }
-
-        return sb.toString();
-    }
-
-    // ==================== БЛОК 2: РЕГИСТРАЦИЯ ПОЛЬЗОВАТЕЛЕЙ ====================
-
-    @PostMapping("/clients/register")
-    public ResponseEntity<?> registerUser(@RequestBody Map<String, Object> userData) {
-        try {
-            System.out.println("=== GATEWAY DEBUG ===");
-            System.out.println("Получены данные: " + userData);
-
-            String username = (String) userData.get("username");
-            String password = (String) userData.get("password");
-            String email = (String) userData.get("email");
-            String firstname = (String) userData.get("firstname");
-
-            if (firstname == null || firstname.trim().isEmpty()) {
-                firstname = (String) userData.get("firstName");
-                if (firstname == null || firstname.trim().isEmpty()) {
-                    firstname = (String) userData.get("name");
-                }
-            }
-
-            List<String> errors = new ArrayList<>();
-            if (firstname == null || firstname.trim().isEmpty()) errors.add("Имя обязательно");
-            if (username == null || username.trim().isEmpty()) errors.add("Имя пользователя обязательно");
-            if (email == null || email.trim().isEmpty()) errors.add("Email обязателен");
-            else if (!email.contains("@")) errors.add("Неверный формат email");
-            if (password == null || password.trim().isEmpty()) errors.add("Пароль обязателен");
-            else if (password.length() < 6) errors.add("Пароль должен быть не менее 6 символов");
-
-            if (!errors.isEmpty()) {
-                System.err.println("Ошибки валидации: " + errors);
-                return ResponseEntity.badRequest().body(Map.of("success", false, "errors", errors));
-            }
-
-            Map<String, Object> registrationData = new HashMap<>();
-            registrationData.put("username", username);
-            registrationData.put("password", password);
-            registrationData.put("email", email);
-            registrationData.put("firstname", firstname);
-
-            if (userData.containsKey("age")) registrationData.put("age", userData.get("age"));
-            if (userData.containsKey("city")) registrationData.put("city", userData.get("city"));
-            if (userData.containsKey("magaz")) registrationData.put("magaz", userData.get("magaz"));
-
-            registrationData.put("role", "client");
-            registrationData.put("status", "active");
-
-            System.out.println("Подготовлены данные для UserService: " + registrationData);
-            System.out.println("Вызываем UserService через Feign...");
-
-            Map<String, Object> response = clientService.registerUser(registrationData);
-            System.out.println("✅ Ответ от UserService: " + response);
-
-            if (response.containsKey("success") && Boolean.TRUE.equals(response.get("success"))) {
-                return ResponseEntity.status(HttpStatus.CREATED).body(response);
-            } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-            }
-
-        } catch (FeignException e) {
-            System.err.println("❌ FeignException:");
-            System.err.println("  Status: " + e.status());
-            System.err.println("  Message: " + e.getMessage());
-            System.err.println("  Content: " + e.contentUTF8());
-
-            if (e.status() == 500) {
-                String username = (String) userData.get("username");
-                System.out.println("Проверяем, создан ли пользователь " + username + " в БД...");
-
-                Map<String, Object> response = new HashMap<>();
-                response.put("success", true);
-                response.put("message", "Пользователь создан, но была ошибка при формировании ответа");
-                response.put("warning", "UserService вернул ошибку: " + e.contentUTF8());
-                response.put("userData", userData);
-
-                return ResponseEntity.status(HttpStatus.CREATED).body(response);
-            }
-
-            return ResponseEntity.status(e.status()).body(Map.of(
-                    "success", false,
-                    "error", "Ошибка сервиса регистрации",
-                    "details", e.contentUTF8()
-            ));
-
-        } catch (Exception e) {
-            System.err.println("❌ Общая ошибка в Gateway: " + e.getMessage());
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
-                    "success", false,
-                    "error", "Внутренняя ошибка сервера: " + e.getMessage()
-            ));
-        }
-    }
-
-    // ==================== БЛОК 3: ВАЛИДАЦИЯ И ПРОВЕРКИ ====================
-
-    @PostMapping("/clients/check-email")
-    public ResponseEntity<?> checkEmail(@RequestBody Map<String, String> request) {
-        try {
-            Map<String, Object> response = clientService.checkEmail(request);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
-                    "success", false,
-                    "available", false,
-                    "message", "Ошибка при проверке email",
-                    "error", e.getMessage()
-            ));
-        }
-    }
-
-    @PostMapping("/clients/check-username")
-    public ResponseEntity<?> checkUsername(@RequestBody Map<String, String> request) {
-        try {
-            Map<String, Object> response = clientService.checkUsername(request);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
-                    "success", false,
-                    "available", false,
-                    "message", "Ошибка при проверке логина",
-                    "error", e.getMessage()
-            ));
-        }
-    }
-
-    @PostMapping("/clients/validate")
-    public ResponseEntity<?> validateFields(@RequestBody Map<String, String> request) {
-        try {
-            Map<String, Object> response = clientService.validateFields(request);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
-                    "success", false,
-                    "message", "Ошибка валидации",
-                    "error", e.getMessage()
-            ));
-        }
-    }
 
     // ==================== БЛОК 4: ПУБЛИЧНЫЕ МЕТОДЫ КЛИЕНТОВ ====================
 
@@ -630,6 +227,7 @@ public class UnifiedController {
             return ResponseEntity.status(e.status()).body(Map.of("error", "Ошибка: " + e.getMessage()));
         }
     }
+<<<<<<< HEAD
     @PostMapping("/support/update-order-status")
     public ResponseEntity<?> updateOrderStatus(@RequestBody Map<String, Object> request) {
         try {
@@ -637,6 +235,66 @@ public class UnifiedController {
             String newStatus = (String) request.get("newStatus");
             String action = (String) request.get("action");
 
+=======
+// ==================== БЛОК 15: ПОДДЕРЖКА КЛИЕНТОВ (SUPPORT) ====================
+// В UnifiedController.java (Блок 16)
+@GetMapping("/support/problem-orders/{clientId}")
+public ResponseEntity<?> getProblemOrders(@PathVariable int clientId) {
+    try {
+        log.info("🔍 Support: getting orders with problems for client {}", clientId);
+
+        String sql = """
+            SELECT 
+                c.id,
+                c.created_date,
+                c.status,
+                COUNT(ci.id) as total_items,
+                SUM(CASE WHEN ci.nalichie = 'unknown' THEN 1 ELSE 0 END) as unknown_items_count
+            FROM carts c
+            LEFT JOIN cart_items ci ON c.id = ci.cart_id
+            WHERE c.client_id = ?
+            AND EXISTS (
+                SELECT 1 FROM cart_items ci2 
+                WHERE ci2.cart_id = c.id 
+                AND ci2.nalichie = 'unknown'
+            )
+            GROUP BY c.id, c.created_date, c.status
+            ORDER BY c.created_date DESC
+        """;
+
+        List<Map<String, Object>> orders = jdbcTemplate.queryForList(sql, clientId);
+
+        // Добавляем флаг для отображения
+        for (Map<String, Object> order : orders) {
+            Long unknownCount = (Long) order.get("unknown_items_count");
+            order.put("has_unknown_items", unknownCount != null && unknownCount > 0);
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("clientId", clientId);
+        response.put("orders", orders);
+        response.put("total", orders.size());
+        response.put("message", orders.size() > 0 ?
+                "Найдены заказы с проблемами" :
+                "Заказов с проблемами не найдено");
+
+        return ResponseEntity.ok(response);
+
+    } catch (Exception e) {
+        log.error("❌ Error getting problem orders: {}", e.getMessage(), e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("success", false, "error", e.getMessage()));
+    }
+}
+    @PostMapping("/support/update-order-status")
+    public ResponseEntity<?> updateOrderStatus(@RequestBody Map<String, Object> request) {
+        try {
+            Integer cartId = (Integer) request.get("cartId");
+            String newStatus = (String) request.get("newStatus");
+            String action = (String) request.get("action");
+
+>>>>>>> 32a18439d5d309833c2b1fdf191b7cd04ba94f69
             log.info("🔄 Support: updating cart {} status to '{}' (action: {})",
                     cartId, newStatus, action);
 
@@ -677,10 +335,18 @@ public class UnifiedController {
 
             // 3. ОБНОВЛЯЕМ СТАТУС В carts (ИСПРАВЛЕНО: удален last_action)
             String updateSql = """
+<<<<<<< HEAD
 UPDATE carts 
 SET status = ?
 WHERE id = ?
 """;
+=======
+        UPDATE carts 
+        SET status = ?,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+        """;
+>>>>>>> 32a18439d5d309833c2b1fdf191b7cd04ba94f69
 
             log.info("📝 Executing SQL: {} with params: {}, {}",
                     updateSql.replace("?", "{}"), newStatus, cartId);
@@ -701,10 +367,17 @@ WHERE id = ?
                     if ("tc".equals(newStatus) || "completed".equals(newStatus)) {
                         try {
                             String updateItemsSql = """
+<<<<<<< HEAD
                     UPDATE cart_items 
                     SET nalichie = 'refunded'
                     WHERE cart_id = ? AND nalichie = 'unknown'
                     """;
+=======
+                        UPDATE cart_items 
+                        SET nalichie = 'refunded'
+                        WHERE cart_id = ? AND nalichie = 'unknown'
+                        """;
+>>>>>>> 32a18439d5d309833c2b1fdf191b7cd04ba94f69
                             int updatedItems = jdbcTemplate.update(updateItemsSql, cartId);
                             log.info("✅ Updated {} cart_items for cart {} from 'unknown' to 'refunded'",
                                     updatedItems, cartId);
@@ -845,10 +518,18 @@ WHERE id = ?
                 try {
                     // ИСПРАВЛЕННЫЙ SQL С КОРОТКИМ СТАТУСОМ (без last_action)
                     String updateSql = """
+<<<<<<< HEAD
 UPDATE carts 
 SET status = 'taoshibka'
 WHERE id = ?
 """;
+=======
+                UPDATE carts 
+                SET status = 'taoshibka',
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+                """;
+>>>>>>> 32a18439d5d309833c2b1fdf191b7cd04ba94f69
 
                     log.info("📝 Executing SQL for cart {}: {}", cartId, updateSql);
 
@@ -900,7 +581,10 @@ WHERE id = ?
                     .body(Map.of("success", false, "error", e.getMessage()));
         }
     }
+<<<<<<< HEAD
 
+=======
+>>>>>>> 32a18439d5d309833c2b1fdf191b7cd04ba94f69
     @GetMapping("/debug/table-structure")
     public ResponseEntity<?> getTableStructure() {
         try {
@@ -1807,6 +1491,7 @@ WHERE id = ?
         }
     }
 
+<<<<<<< HEAD
    
 
     // ==================== БЛОК 13: КОМПЛЕКСНЫЕ ОПЕРАЦИИ ====================
@@ -1956,3 +1641,5 @@ WHERE id = ?
         ));
     }
 }
+=======
+>>>>>>> 32a18439d5d309833c2b1fdf191b7cd04ba94f69
