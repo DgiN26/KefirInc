@@ -1,7 +1,6 @@
 // src/pages/office/OfficePage.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import OfficeSidebar from '../../components/office/OfficeSidebar';
 
 const OfficePage = ({ onLogout }) => {
     const [problems, setProblems] = useState([]);
@@ -22,29 +21,28 @@ const OfficePage = ({ onLogout }) => {
                     setProblems(newProblems);
                     
                     if (newProblems.length > 0 && !selectedProblem) {
-                        setSelectedProblem(newProblems[0]);
-                        generateEmailMessage(newProblems[0]);
+                        // Загружаем полную информацию о товарах для первой проблемы
+                        await loadProblemDetails(newProblems[0]);
                     }
                 }
             } catch (error) {
                 console.error('Ошибка загрузки проблем:', error);
                 // Заглушка для демонстрации
-                setProblems([
-                    {
-                        id: 1,
-                        order_id: 1001,
-                        client_id: 1,
-                        client_name: 'Иван Иванов',
-                        client_email: 'ivan@example.com',
-                        product_id: 501,
-                        product_name: 'Ноутбук ASUS ROG',
-                        collector_id: 'COLLECTOR_1',
-                        details: 'Товар отсутствует на складе',
-                        status: 'PENDING',
-                        created_at: new Date().toISOString(),
-                        selected: true
-                    }
-                ]);
+                const demoProblems = [{
+                    id: 1,
+                    order_id: 1001,
+                    client_id: 1,
+                    client_name: 'Иван Иванов',
+                    client_email: 'ivan@example.com',
+                    collector_id: 'COLLECTOR_1',
+                    details: 'Товар отсутствует на складе',
+                    status: 'PENDING',
+                    created_at: new Date().toISOString()
+                }];
+                setProblems(demoProblems);
+                if (!selectedProblem) {
+                    await loadProblemDetails(demoProblems[0]);
+                }
             } finally {
                 setLoading(false);
             }
@@ -58,26 +56,56 @@ const OfficePage = ({ onLogout }) => {
         return () => clearInterval(intervalId);
     }, []);
 
-    // Генерация email сообщения
-   const generateEmailMessage = (data) => {
-    if (!data) return;
-    
-    // Если пришла строка с сервера - используем ее
-    if (typeof data === 'string') {
-        setEmailMessage(data);
-        return;
-    }
-    
-    // Если есть данные о товарах из full-info
-    if (data.items && data.items.length > 0) {
-        // Формируем список товаров
-        const itemsList = data.items.map(item => 
-            `• ${item.product_name} (Артикул: ${item.product_sku}, Количество: ${item.quantity}, Цена: ${parseFloat(item.price || 0).toFixed(2)} ₽)`
-        ).join('\n');
-        
-        const message = `Уважаемый(ая) ${data.client?.client_name || data.client_name || 'Клиент'},
+    // Загрузка деталей проблемы с реальными товарами
+    const loadProblemDetails = async (problem) => {
+        try {
+            const cartId = problem.cart_id || problem.order_id;
+            if (!cartId) return;
+            
+            const response = await axios.get(`http://localhost:8080/api/office/problems/full-info/${cartId}`);
+            
+            if (response.data.success) {
+                const detailedProblem = {
+                    ...problem,
+                    ...response.data,
+                    id: problem.id || cartId,
+                    order_id: cartId
+                };
+                setSelectedProblem(detailedProblem);
+                generateEmailMessage(detailedProblem);
+            } else {
+                setSelectedProblem(problem);
+                generateEmailMessage(problem);
+            }
+        } catch (error) {
+            console.error('Ошибка загрузки деталей:', error);
+            setSelectedProblem(problem);
+            generateEmailMessage(problem);
+        }
+    };
 
-В вашем заказе #${data.cart_id || data.order_id} обнаружена проблема.
+    // Генерация email сообщения с реальными товарами
+    const generateEmailMessage = (data) => {
+        if (!data) return;
+        
+        // Если пришла строка с сервера - используем ее
+        if (typeof data === 'string') {
+            setEmailMessage(data);
+            return;
+        }
+        
+        const clientName = data.client?.client_name || data.client_name || 'Клиент';
+        const cartId = data.cart?.cart_id || data.cart_id || data.order_id || 'N/A';
+        
+        // Формируем сообщение с товарами из data.items
+        if (data.items && data.items.length > 0) {
+            const itemsList = data.items.map(item => 
+                `• ${item.product_name || `Товар #${item.product_id}`} (Артикул: ${item.product_sku || 'N/A'}, Количество: ${item.quantity}, Цена: ${parseFloat(item.price || 0).toFixed(2)} ₽)`
+            ).join('\n');
+            
+            const message = `Уважаемый(ая) ${clientName},
+
+В вашем заказе #${cartId} обнаружена проблема.
 
 Товары в заказе:
 ${itemsList}
@@ -94,15 +122,14 @@ ${itemsList}
 
 С уважением,
 Команда KEFIR Logistics`;
-        
-        setEmailMessage(message);
-    } else {
-        // Если нет детальной информации о товарах
-        const message = `Уважаемый(ая) ${data.client_name || 'Клиент'},
+            
+            setEmailMessage(message);
+        } else {
+            // Если нет детальной информации о товарах
+            const message = `Уважаемый(ая) ${clientName},
 
-В вашем заказе #${data.order_id || data.cart_id} обнаружена проблема.
+В вашем заказе #${cartId} обнаружена проблема.
 
-Товар: ${data.product_names || data.details || 'Требует внимания офиса'}
 Тип проблемы: Отсутствует товар на складе
 
 Пожалуйста, выберите один из вариантов:
@@ -115,15 +142,14 @@ ${itemsList}
 
 С уважением,
 Команда KEFIR Logistics`;
-        
-        setEmailMessage(message);
-    }
-};
+            
+            setEmailMessage(message);
+        }
+    };
 
     // Обработка выбора проблемы
-    const handleSelectProblem = (problem) => {
-        setSelectedProblem(problem);
-        generateEmailMessage(problem);
+    const handleSelectProblem = async (problem) => {
+        await loadProblemDetails(problem);
     };
 
     // Отправка email клиенту
@@ -143,7 +169,7 @@ ${itemsList}
                 
                 // Обновляем статус проблемы
                 const updatedProblems = problems.map(p => 
-                    p.id === selectedProblem.id 
+                    p.order_id === selectedProblem.order_id 
                     ? { ...p, status: 'NOTIFIED' }
                     : p
                 );
@@ -171,11 +197,11 @@ ${itemsList}
                 alert(`✅ Решение принято! Статус заказа обновлен.`);
                 
                 // Удаляем проблему из списка
-                const updatedProblems = problems.filter(p => p.id !== selectedProblem.id);
+                const updatedProblems = problems.filter(p => p.order_id !== selectedProblem.order_id);
                 setProblems(updatedProblems);
                 
                 if (updatedProblems.length > 0) {
-                    setSelectedProblem(updatedProblems[0]);
+                    await loadProblemDetails(updatedProblems[0]);
                 } else {
                     setSelectedProblem(null);
                     setEmailMessage('');
@@ -338,11 +364,11 @@ ${itemsList}
                             </div>
                         ) : (
                             <div className="space-y-4">
-                                {problems.map((problem) => (
+                                {problems.map((problem, index) => (
                                     <div
-                                        key={problem.id}
+                                        key={problem.id || problem.order_id || index}
                                         onClick={() => handleSelectProblem(problem)}
-                                        style={selectedProblem?.id === problem.id ? 
+                                        style={selectedProblem?.order_id === problem.order_id ? 
                                             styles.problemCardSelected : 
                                             styles.problemCard}
                                         className="cursor-felt-pen comic-font"
@@ -350,7 +376,7 @@ ${itemsList}
                                         <div className="flex justify-between">
                                             <div>
                                                 <h3 className="font-bold text-lg" style={styles.orderNumber}>
-                                                    Заказ #{problem.order_id}
+                                                    Заказ #{problem.order_id || problem.cart_id}
                                                 </h3>
                                                 <p className="text-gray-600 mt-1">
                                                     <span style={styles.clientIcon}>👤</span>
@@ -408,14 +434,14 @@ ${itemsList}
                             
                             <div className="flex-1 mb-4">
                                 <label className="block text-sm font-medium mb-2 comic-font">
-                                    📝 Сообщение
+                                    📝 Сообщение с товарами
                                 </label>
                                 <textarea
                                     value={emailMessage}
                                     onChange={(e) => setEmailMessage(e.target.value)}
                                     className="w-full h-full min-h-[200px] p-3 comic-font"
                                     style={styles.textarea}
-                                    placeholder="Напишите сообщение клиенту..."
+                                    placeholder="Текст email с товарами будет сгенерирован автоматически..."
                                 />
                             </div>
                             
@@ -503,31 +529,6 @@ const styles = {
         `,
         transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
         outline: 'none',
-        
-        // Псевдоэлементы для дополнительной глубины
-        '::before': {
-            content: '""',
-            position: 'absolute',
-            top: '10%',
-            left: '15%',
-            width: '30%',
-            height: '20%',
-            backgroundColor: 'rgba(255,255,255,0.1)',
-            borderRadius: '50%',
-            filter: 'blur(2px)'
-        },
-        
-        '::after': {
-            content: '""',
-            position: 'absolute',
-            bottom: '15%',
-            right: '20%',
-            width: '20%',
-            height: '15%',
-            backgroundColor: 'rgba(255,255,255,0.05)',
-            borderRadius: '50%',
-            filter: 'blur(1px)'
-        }
     },
     problemContainer: {
         height: '100%',
