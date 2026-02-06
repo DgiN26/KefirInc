@@ -17,6 +17,8 @@ import Register from './pages/auth/Register';
 import ClientPortal from './pages/client/ClientPortal';
 import ClientCart from './pages/client/ClientCart';
 import ClientProfile from './pages/client/ClientProfile';
+import ClientNotification from './pages/client/Notification';
+import SupportPage from './pages/client/SupportPage'; // ДОБАВЛЕН ИМПОРТ
 
 // Admin Pages
 import AdminDashboard from './pages/admin/Dashboard';
@@ -153,7 +155,7 @@ function App() {
         setIsAuthenticated(false);
       }
     }
-  }, []);
+  }, [checkAuthFromStorage, isAuthenticated]);
 
   // Инициализация приложения
   useEffect(() => {
@@ -620,6 +622,19 @@ function App() {
               <ClientProfile />
             </ProtectedRoute>
           } />
+
+          <Route path="/client/notification" element={
+            <ProtectedRoute allowedRoles={[ROLES.CLIENT]}>
+              <ClientNotification />
+            </ProtectedRoute>
+          } />
+
+          {/* ✅ ДОБАВЛЕН НОВЫЙ РОУТ ДЛЯ ПОДДЕРЖКИ */}
+          <Route path="/client/support" element={
+            <ProtectedRoute allowedRoles={[ROLES.CLIENT]}>
+              <SupportPage />
+            </ProtectedRoute>
+          } />
           
           {/* Admin Routes */}
           <Route path="/admin" element={
@@ -667,7 +682,7 @@ function App() {
          {/* Office Routes */}
 <Route path="/office" element={
   <ProtectedOfficeRoute allowedRoles={[ROLES.OFFICE]}>
-    <OfficePage onLogout={handleLogout} /> {/* Добавь onLogout здесь */}
+    <OfficePage onLogout={handleLogout} />
   </ProtectedOfficeRoute>
 } />
 

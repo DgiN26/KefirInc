@@ -1,5 +1,5 @@
-// CollectorApp.jsx - полный код с модальным окном
-import React, { useState, useEffect } from 'react';
+// CollectorApp.jsx - полная версия с поддержкой starаyoshibka и Reshenie
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import './CollectorApp.css';
 
@@ -7,6 +7,7 @@ const CollectorApp = () => {
   const [orders, setOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [stats, setStats] = useState({
     totalOrders: 0,
     completedToday: 0,
@@ -17,14 +18,126 @@ const CollectorApp = () => {
   // СОСТОЯНИЯ ДЛЯ МОДАЛЬНОГО ОКНА
   const [showItemCheckModal, setShowItemCheckModal] = useState(false);
   const [itemStatuses, setItemStatuses] = useState({}); // {index: 'есть'/'нет'/'unknown'}
+  const [fixedStatuses, setFixedStatuses] = useState({}); // Фиксированные статусы из БД
+
+  // Получение токена в правильном формате
+  const getAuthToken = () => {
+    const token = localStorage.getItem('token') || 
+                  localStorage.getItem('authToken') ||
+                  sessionStorage.getItem('token');
+    return token;
+  };
+
+  // Формирование заголовков с правильным форматом Authorization
+  const getAuthHeaders = () => {
+    const token = getAuthToken();
+    if (!token) {
+      console.warn('Токен не найден');
+      return {};
+    }
+
+    console.log('Токен из хранилища:', token);
+    
+    let authHeader;
+    if (token.startsWith('Bearer ')) {
+      authHeader = token;
+    } else if (token.startsWith('auth-')) {
+      authHeader = `Bearer ${token}`;
+    } else if (token.includes('.')) {
+      authHeader = `Bearer ${token}`;
+    } else {
+      authHeader = token;
+    }
+    
+    console.log('Authorization header:', authHeader);
+    
+    return {
+      headers: {
+        'Authorization': authHeader,
+        'Content-Type': 'application/json'
+      }
+    };
+  };
+
+  // Проверка, является ли пользователь starаyoshibka
+  const checkIfStarayoshibka = () => {
+    try {
+      const userData = JSON.parse(localStorage.getItem('user') || '{}');
+      const username = userData.username || userData.id || '';
+      const isStar = username.includes('starаyoshibka');
+      console.log('👤 Проверка пользователя starаyoshibka:', username, 'isStar:', isStar);
+      return isStar;
+    } catch (error) {
+      console.error('Ошибка проверки starаyoshibka:', error);
+      return false;
+    }
+  };
+
+  // Проверка, является ли пользователь Reshenie
+  const checkIfReshenie = () => {
+    try {
+      const userData = JSON.parse(localStorage.getItem('user') || '{}');
+      const username = userData.username || '';
+      const isReshenie = username === 'Reshenie'; // ТОЧНОЕ совпадение
+      console.log('👤 Проверка пользователя Reshenie:', username, 'isReshenie:', isReshenie);
+      return isReshenie;
+    } catch (error) {
+      console.error('Ошибка проверки Reshenie:', error);
+      return false;
+    }
+  };
+
+  // Получение фиксированных статусов из БД для starаyoshibka
+  const fetchFixedStatuses = async (cartId) => {
+    if (!checkIfStarayoshibka()) {
+      console.log('Не starаyoshibka, пропускаем загрузку фиксированных статусов');
+      return {};
+    }
+
+    try {
+      console.log('⭐ starаyoshibka: загружаем фиксированные статусы для заказа #', cartId);
+      
+      const response = await axios.get(
+        `http://localhost:8080/api/collector/cart/${cartId}/nalichie-status`,
+        getAuthHeaders()
+      );
+      
+      if (response.data.success && response.data.nalichieStatuses) {
+        const statuses = {};
+        response.data.nalichieStatuses.forEach(status => {
+          statuses[status.productId] = status.nalichie;
+        });
+        
+        console.log(`✅ Загружено ${Object.keys(statuses).length} фиксированных статусов`);
+        return statuses;
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки фиксированных статусов:', error);
+    }
+    
+    return {};
+  };
 
   // Загрузка заказов
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/collector/processing-orders');
+      setLoading(true);
+      setError('');
+      
+      const headers = getAuthHeaders();
+      console.log('Запрашиваем заказы с headers:', headers);
+
+      const response = await axios.get(
+        'http://localhost:8080/api/collector/processing-orders', 
+        headers
+      );
+      
+      console.log('Ответ от сервера:', response.data);
       
       if (response.data.success) {
         const newOrders = response.data.orders || [];
+        console.log('Получено заказов:', newOrders.length);
+        
         setOrders(newOrders);
         setStats(prev => ({
           ...prev,
@@ -33,29 +146,61 @@ const CollectorApp = () => {
         
         if (newOrders.length > 0 && !selectedOrder) {
           setSelectedOrder(newOrders[0]);
+          // Загружаем фиксированные статусы для выбранного заказа
+          if (checkIfStarayoshibka()) {
+            const fixed = await fetchFixedStatuses(newOrders[0].cart_id);
+            setFixedStatuses(fixed);
+          }
         }
         
         if (selectedOrder && !newOrders.find(o => o.cart_id === selectedOrder.cart_id)) {
           if (newOrders.length > 0) {
             setSelectedOrder(newOrders[0]);
+            // Загружаем фиксированные статусы для нового выбранного заказа
+            if (checkIfStarayoshibka()) {
+              const fixed = await fetchFixedStatuses(newOrders[0].cart_id);
+              setFixedStatuses(fixed);
+            }
           } else {
             setSelectedOrder(null);
+            setFixedStatuses({});
           }
           resetItemCheck();
         }
       } else {
+        console.warn('Сервер вернул success: false', response.data);
         setMockData();
       }
     } catch (error) {
       console.error('Ошибка загрузки заказов:', error);
+      
+      if (error.response) {
+        console.error('Статус ошибки:', error.response.status);
+        console.error('Данные ошибки:', error.response.data);
+        
+        if (error.response.status === 401) {
+          setError('Ошибка авторизации. Проверьте токен.');
+        } else if (error.response.status === 404) {
+          setError('Эндпоинт не найден. Проверьте URL.');
+        } else {
+          setError(`Ошибка сервера: ${error.response.status}`);
+        }
+      } else if (error.request) {
+        setError('Нет ответа от сервера. Проверьте подключение.');
+      } else {
+        setError(`Ошибка: ${error.message}`);
+      }
+      
       setMockData();
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedOrder]);
 
-  // Моковые данные
+  // Моковые данные для демонстрации
   const setMockData = () => {
+    console.log('Используем моковые данные');
+    
     const mockOrders = [
       { 
         cart_id: 40, 
@@ -67,9 +212,30 @@ const CollectorApp = () => {
         item_count: 3,
         total_items: 4,
         items: [
-          { id: 1, product_id: 1, product_name: 'Ноутбук ASUS ROG', quantity: 1, price: 85000.00 },
-          { id: 2, product_id: 6, product_name: 'Игровая мышь Razer DeathAdder V3', quantity: 2, price: 7999.00 },
-          { id: 3, product_id: 7, product_name: 'Игровые наушники SteelSeries Arctis Nova 7', quantity: 1, price: 15999.00 }
+          { 
+            id: 1, 
+            product_id: 1, 
+            product_name: 'Ноутбук ASUS ROG', 
+            quantity: 1, 
+            price: 85000.00,
+            warehouse: 'skladodin'
+          },
+          { 
+            id: 2, 
+            product_id: 6, 
+            product_name: 'Игровая мышь Razer DeathAdder V3', 
+            quantity: 2, 
+            price: 7999.00,
+            warehouse: 'skladdva'
+          },
+          { 
+            id: 3, 
+            product_id: 7, 
+            product_name: 'Игровые наушники SteelSeries Arctis Nova 7', 
+            quantity: 1, 
+            price: 15999.00,
+            warehouse: 'skladtri'
+          }
         ]
       }
     ];
@@ -78,71 +244,215 @@ const CollectorApp = () => {
     if (!selectedOrder && mockOrders.length > 0) {
       setSelectedOrder(mockOrders[0]);
     }
+    
+    setStats(prev => ({
+      ...prev,
+      totalOrders: mockOrders.length
+    }));
   };
 
-  // Инициализация
+  // Инициализация приложения
   useEffect(() => {
     const initializeApp = async () => {
       try {
-        await axios.post('http://localhost:8080/api/collector/init-database');
+        console.log('Инициализация CollectorApp...');
+        
+        const token = getAuthToken();
+        if (!token) {
+          console.warn('Токен не найден. Используем моковые данные.');
+          setError('Требуется авторизация. Войдите в систему.');
+          setMockData();
+          return;
+        }
+        
+        console.log('Токен найден, загружаем заказы...');
         await fetchOrders();
+        
       } catch (error) {
         console.error('Ошибка инициализации:', error);
-        await fetchOrders();
+        setMockData();
       }
     };
 
     initializeApp();
+    
     const intervalId = setInterval(fetchOrders, 15000);
+    
     return () => clearInterval(intervalId);
-  }, []);
+  }, [fetchOrders]);
 
-  // Сброс проверки
+  // Сброс проверки товаров
   const resetItemCheck = () => {
     setShowItemCheckModal(false);
     setItemStatuses({});
   };
 
   // Обработка выбора заказа
-  const handleSelectOrder = (order) => {
+  const handleSelectOrder = async (order) => {
+    console.log('Выбран заказ:', order.cart_id);
     setSelectedOrder(order);
+    
+    // Загружаем фиксированные статусы для starаyoshibka
+    if (checkIfStarayoshibka()) {
+      const fixed = await fetchFixedStatuses(order.cart_id);
+      setFixedStatuses(fixed);
+    } else {
+      setFixedStatuses({});
+    }
+    
     resetItemCheck();
   };
 
   // Открыть модальное окно проверки
-  const openItemCheckModal = () => {
+  const openItemCheckModal = async () => {
     if (!selectedOrder || !selectedOrder.items || selectedOrder.items.length === 0) {
       alert('Нет товаров для проверки');
       return;
     }
+    
+    // Особое сообщение для Reshenie
+    if (checkIfReshenie()) {
+      alert('🔍 Режим Reshenie: Вы должны проверить ВСЕ товары перед завершением сборки.');
+    }
+    
     setShowItemCheckModal(true);
-    // Инициализируем статусы как 'unknown'
+    
+    // Инициализируем статусы
     const initialStatuses = {};
-    selectedOrder.items.forEach((_, index) => {
-      initialStatuses[index] = 'unknown';
+    const isStar = checkIfStarayoshibka();
+    
+    selectedOrder.items.forEach((item, index) => {
+      if (isStar && fixedStatuses[item.product_id] === 'есть') {
+        // Для starаyoshibka: устанавливаем фиксированные статусы
+        initialStatuses[index] = 'есть';
+        console.log(`⭐ Товар ${item.product_name} имеет фиксированный статус "есть"`);
+      } else {
+        initialStatuses[index] = 'unknown';
+      }
     });
+    
     setItemStatuses(initialStatuses);
+    
+    console.log('Открыто модальное окно для заказа:', selectedOrder.cart_id);
+    console.log('Статусы инициализированы:', initialStatuses);
   };
 
-  // Изменить статус товара
-  const toggleItemStatus = (index, status) => {
-    setItemStatuses(prev => ({
-      ...prev,
-      [index]: prev[index] === status ? 'unknown' : status
-    }));
+  // Проверка, имеет ли товар фиксированный статус 'есть'
+  const hasFixedEстьStatus = (productId) => {
+    const isStar = checkIfStarayoshibka();
+    const isFixed = isStar && fixedStatuses[productId] === 'есть';
+    console.log(`Проверка фиксированного статуса: productId=${productId}, isStar=${isStar}, isFixed=${isFixed}`);
+    return isFixed;
+  };
+
+  // Изменить статус товара с проверкой склада
+  const toggleItemStatus = async (index, status) => {
+    if (!selectedOrder || !selectedOrder.items[index]) return;
+    
+    const item = selectedOrder.items[index];
+    const isStar = checkIfStarayoshibka();
+    
+    // ========== БЛОКИРОВКА ДЛЯ starаyoshibka ==========
+    if (isStar && status === 'нет' && hasFixedEстьStatus(item.product_id)) {
+      alert('❌ Этот товар имеет фиксированный статус "есть" и не может быть изменён на "нет".\n' +
+            'Такие товары были проверены ранее в процессе работы с заказом.');
+      console.log(`🚫 starаyoshibka: попытка изменить фиксированный товар ${item.product_name} на "нет"`);
+      return;
+    }
+    
+    // ========== СТАНДАРТНАЯ ЛОГИКА ==========
+    if (status === 'есть') {
+      try {
+        const userData = JSON.parse(localStorage.getItem('user') || '{}');
+        const collectorId = userData.username || userData.id || 'sborshikodin';
+        
+        console.log('🔍 Проверка товара для сборщика:', collectorId);
+        
+        const response = await axios.post(
+          'http://localhost:8080/api/collector/check-item-in-warehouse', 
+          {
+            productId: item.product_id,
+            collectorId: collectorId
+          },
+          getAuthHeaders()
+        );
+        
+        console.log('Ответ от сервера при проверке товара:', response.data);
+        
+        if (response.data.available) {
+          setItemStatuses(prev => ({
+            ...prev,
+            [index]: prev[index] === status ? 'unknown' : status
+          }));
+          console.log(`✅ Товар ${item.product_name} отмечен как "есть"`);
+          
+          alert(`✅ Товар "${item.product_name}" есть на складе ${response.data.warehouseTable}`);
+        } else {
+          alert(`❌ Товар "${item.product_name}" отсутствует на складе ${response.data.warehouseTable || 'вашем'}!`);
+        }
+      } catch (error) {
+        console.error('Ошибка проверки товара:', error);
+        
+        if (error.response?.status === 404) {
+          alert('Эндпоинт проверки товара не найден. Обратитесь к администратору.');
+        } else {
+          // Демо-режим
+          setItemStatuses(prev => ({
+            ...prev,
+            [index]: prev[index] === status ? 'unknown' : status
+          }));
+          console.log(`Товар ${item.product_name} отмечен как "есть" (демо-режим)`);
+          alert(`⚠️ Сервер проверки недоступен. Товар "${item.product_name}" отмечен в демо-режиме.`);
+        }
+      }
+    } else {
+      // Для статуса "нет" просто переключаем
+      setItemStatuses(prev => ({
+        ...prev,
+        [index]: prev[index] === status ? 'unknown' : status
+      }));
+      console.log(`Товар ${item.product_name} отмечен как "нет"`);
+    }
   };
 
   // Проверка можно ли нажать "Нет товара"
   const canReportMissing = () => {
-    return Object.values(itemStatuses).some(status => status === 'нет');
+    const isReshenie = checkIfReshenie();
+    
+    if (isReshenie) {
+      // Reshenie: можно отправить "Нет товара" если есть хотя бы один "нет"
+      return Object.values(itemStatuses).some(status => status === 'нет');
+    } else {
+      // Обычные сборщики: как было
+      return Object.values(itemStatuses).some(status => status === 'нет');
+    }
   };
 
   // Проверка можно ли нажать "Завершить сборку"
   const canCompleteCollection = () => {
-    return Object.values(itemStatuses).some(status => status === 'есть');
+    const isReshenie = checkIfReshenie();
+    
+    if (isReshenie) {
+      // Reshenie: ВСЕ товары должны быть "есть", НИ ОДНОГО "нет" или "unknown"
+      if (!selectedOrder || !selectedOrder.items) return false;
+      
+      const totalItems = selectedOrder.items.length;
+      const countEсть = Object.values(itemStatuses).filter(s => s === 'есть').length;
+      const countНет = Object.values(itemStatuses).filter(s => s === 'нет').length;
+      const countUnknown = Object.values(itemStatuses).filter(s => s === 'unknown').length;
+      
+      const canComplete = countEсть === totalItems && countНет === 0 && countUnknown === 0;
+      
+      console.log(`🔍 Reshenie проверка завершения: всего=${totalItems}, есть=${countEсть}, нет=${countНет}, unknown=${countUnknown}, можно=${canComplete}`);
+      
+      return canComplete;
+    } else {
+      // Обычные сборщики: хотя бы один товар "есть"
+      return Object.values(itemStatuses).some(status => status === 'есть');
+    }
   };
 
-  // Кнопка "Нет товара"
+  // Кнопка "Нет товара" - отправка проблемы в офис
   const reportMissingItems = async () => {
     if (!selectedOrder || !canReportMissing()) return;
     
@@ -150,18 +460,48 @@ const CollectorApp = () => {
       // Собираем все товары со статусом 'нет'
       const missingItems = selectedOrder.items.filter((_, index) => itemStatuses[index] === 'нет');
       
-      const response = await axios.post('http://localhost:8080/api/collector/report-missing-items', {
-        cartId: selectedOrder.cart_id,
-        missingItems: missingItems.map(item => ({
-          productId: item.product_id,
-          productName: item.product_name,
-          quantity: item.quantity
-        })),
-        collectorId: 'COLLECTOR_1'
-      });
+      // Собираем товары со статусом 'есть' для starаyoshibka
+      const availableItems = selectedOrder.items.filter((_, index) => itemStatuses[index] === 'есть');
+      
+      console.log('📦 Отправка проблемы в офис:');
+      console.log('- Отсутствует товаров:', missingItems.length);
+      console.log('- Доступно товаров:', availableItems.length);
+      
+      const response = await axios.post(
+        'http://localhost:8080/api/collector/report-missing-items',
+        {
+          cartId: selectedOrder.cart_id,
+          missingItems: missingItems.map(item => ({
+            productId: item.product_id,
+            productName: item.product_name,
+            quantity: item.quantity,
+            warehouse: item.warehouse
+          })),
+          availableItems: availableItems.map(item => ({
+            productId: item.product_id,
+            productName: item.product_name,
+            quantity: item.quantity,
+            warehouse: item.warehouse
+          }))
+        },
+        getAuthHeaders()
+      );
       
       if (response.data.success) {
-        alert(`⚠️ Проблема отправлена в офис!\nОтсутствует ${missingItems.length} товар(ов)`);
+        const isStar = checkIfStarayoshibka();
+        const isReshenie = checkIfReshenie();
+        
+        let message = `⚠️ Проблема отправлена в офис!\nОтсутствует ${missingItems.length} товар(ов)`;
+        
+        if (isStar && response.data.availableItemsUpdated > 0) {
+          message += `\n⭐ ${response.data.availableItemsUpdated} товаров отмечены как "есть" для starаyoshibka`;
+        }
+        
+        if (isReshenie) {
+          message += `\n🔍 Reshenie: заказ отправлен на доработку`;
+        }
+        
+        alert(message);
         
         // Закрываем модальное окно
         setShowItemCheckModal(false);
@@ -169,22 +509,30 @@ const CollectorApp = () => {
         // Удаляем заказ из списка
         const filteredOrders = orders.filter(order => order.cart_id !== selectedOrder.cart_id);
         setOrders(filteredOrders);
+        
         if (filteredOrders.length > 0) {
           setSelectedOrder(filteredOrders[0]);
         } else {
           setSelectedOrder(null);
         }
+        
         resetItemCheck();
+        setFixedStatuses({});
         
         // Обновляем статистику
         setStats(prev => ({
           ...prev,
           totalOrders: filteredOrders.length
         }));
+        
+        console.log('Проблема отправлена в офис');
       }
     } catch (error) {
       console.error('Ошибка отправки проблемы:', error);
-      alert('Ошибка: ' + (error.response?.data?.error || error.message));
+      alert('Ошибка отправки. Используется демо-режим.');
+      
+      alert(`⚠️ ДЕМО: Проблема отправлена в офис!\nОтсутствует ${missingItems.length} товар(ов)`);
+      setShowItemCheckModal(false);
     }
   };
 
@@ -192,22 +540,43 @@ const CollectorApp = () => {
   const completeOrderCollection = async () => {
     if (!selectedOrder || !canCompleteCollection()) return;
     
+    const isReshenie = checkIfReshenie();
+    
+    // Дополнительная проверка для Reshenie
+    if (isReshenie) {
+      const totalItems = selectedOrder.items.length;
+      const checkedItems = Object.values(itemStatuses).filter(s => s !== 'unknown').length;
+      
+      if (checkedItems !== totalItems) {
+        alert('❌ Reshenie: Вы должны проверить ВСЕ товары перед завершением сборки!');
+        return;
+      }
+    }
+    
     try {
       // Собираем все товары со статусом 'есть'
       const availableItems = selectedOrder.items.filter((_, index) => itemStatuses[index] === 'есть');
       
-      const response = await axios.post('http://localhost:8080/api/collector/complete-with-selected-items', {
-        cartId: selectedOrder.cart_id,
-        availableItems: availableItems.map(item => ({
-          productId: item.product_id,
-          productName: item.product_name,
-          quantity: item.quantity
-        })),
-        collectorId: 'COLLECTOR_1'
-      });
+      const response = await axios.post(
+        'http://localhost:8080/api/collector/complete-with-selected-items',
+        {
+          cartId: selectedOrder.cart_id,
+          availableItems: availableItems.map(item => ({
+            productId: item.product_id,
+            productName: item.product_name,
+            quantity: item.quantity,
+            warehouse: item.warehouse
+          }))
+        },
+        getAuthHeaders()
+      );
       
       if (response.data.success) {
-        alert(`✅ Заказ #${selectedOrder.cart_id} собран!\nСобрано ${availableItems.length} из ${selectedOrder.items.length} товаров`);
+        const message = isReshenie 
+          ? `✅ Reshenie: Заказ #${selectedOrder.cart_id} полностью проверен и собран!\nВсе ${availableItems.length} товаров проверены.`
+          : `✅ Заказ #${selectedOrder.cart_id} собран!\nСобрано ${availableItems.length} из ${selectedOrder.items.length} товаров`;
+        
+        alert(message);
         
         // Закрываем модальное окно
         setShowItemCheckModal(false);
@@ -221,16 +590,36 @@ const CollectorApp = () => {
         // Удаляем заказ из списка
         const filteredOrders = orders.filter(order => order.cart_id !== selectedOrder.cart_id);
         setOrders(filteredOrders);
+        
         if (filteredOrders.length > 0) {
           setSelectedOrder(filteredOrders[0]);
         } else {
           setSelectedOrder(null);
         }
+        
         resetItemCheck();
+        setFixedStatuses({});
+        
+        console.log('Заказ завершен');
       }
     } catch (error) {
       console.error('Ошибка завершения заказа:', error);
-      alert(error.response?.data?.error || 'Ошибка при завершении заказа');
+      
+      // Демо-режим
+      alert(`✅ ДЕМО: Заказ #${selectedOrder.cart_id} собран!\nСобрано ${availableItems.length} из ${selectedOrder.items.length} товаров`);
+      setShowItemCheckModal(false);
+      
+      const filteredOrders = orders.filter(order => order.cart_id !== selectedOrder.cart_id);
+      setOrders(filteredOrders);
+      
+      if (filteredOrders.length > 0) {
+        setSelectedOrder(filteredOrders[0]);
+      } else {
+        setSelectedOrder(null);
+      }
+      
+      resetItemCheck();
+      setFixedStatuses({});
     }
   };
 
@@ -242,13 +631,32 @@ const CollectorApp = () => {
     const checkedCount = Object.values(itemStatuses).filter(s => s !== 'unknown').length;
     const availableCount = Object.values(itemStatuses).filter(s => s === 'есть').length;
     const missingCount = Object.values(itemStatuses).filter(s => s === 'нет').length;
+    const unknownCount = Object.values(itemStatuses).filter(s => s === 'unknown').length;
+    
+    const isStar = checkIfStarayoshibka();
+    const isReshenie = checkIfReshenie();
+    const fixedCount = Object.keys(fixedStatuses).length;
 
     return (
       <div style={styles.modalOverlay}>
         <div style={styles.modalContent}>
           {/* Шапка модального окна */}
           <div style={styles.modalHeader}>
-            <h3 className="comic-font mb-0">📦 Проверка товаров заказа #{selectedOrder.cart_id}</h3>
+            <h3 className="comic-font mb-0">
+              📦 Проверка товаров заказа #{selectedOrder.cart_id}
+              {isReshenie && (
+                <span style={{
+                  marginLeft: '10px',
+                  fontSize: '14px',
+                  backgroundColor: '#0d6efd',
+                  color: 'white',
+                  padding: '2px 8px',
+                  borderRadius: '4px'
+                }}>
+                  🔍 Reshenie
+                </span>
+              )}
+            </h3>
             <button
               onClick={() => setShowItemCheckModal(false)}
               style={styles.closeButton}
@@ -260,6 +668,31 @@ const CollectorApp = () => {
 
           {/* Тело модального окна */}
           <div style={styles.modalBody}>
+            {/* Информация для special пользователей */}
+            {(isStar && fixedCount > 0) || isReshenie ? (
+              <div style={{
+                backgroundColor: isReshenie ? '#cce5ff' : '#d4edda',
+                border: `1px solid ${isReshenie ? '#b8daff' : '#c3e6cb'}`,
+                borderRadius: '6px',
+                padding: '10px 15px',
+                marginBottom: '15px',
+                fontSize: '14px'
+              }}>
+                {isReshenie ? (
+                  <div>
+                    <strong>🔍 Режим Reshenie:</strong> Вы должны проверить ВСЕ товары перед завершением сборки.
+                    <br />
+                    <small>Проверено: {checkedCount} из {totalItems} товаров</small>
+                  </div>
+                ) : (
+                  <div>
+                    <strong>⭐ Режим starаyoshibka:</strong> Обнаружено {fixedCount} товаров с фиксированным статусом "есть". 
+                    Эти товары нельзя изменить на "нет".
+                  </div>
+                )}
+              </div>
+            ) : null}
+
             {/* Статистика */}
             <div style={styles.modalStats}>
               <div style={styles.statCard}>
@@ -278,54 +711,100 @@ const CollectorApp = () => {
                 <div style={{...styles.statNumber, color: '#dc3545'}}>{missingCount}</div>
                 <div style={styles.statLabel}>❌ Нет</div>
               </div>
+              {isReshenie && (
+                <div style={styles.statCard}>
+                  <div style={{...styles.statNumber, color: unknownCount > 0 ? '#ffc107' : '#6c757d'}}>
+                    {unknownCount}
+                  </div>
+                  <div style={styles.statLabel}>➖ Осталось</div>
+                </div>
+              )}
             </div>
 
             {/* Список товаров */}
             <div style={styles.itemsList}>
-              {selectedOrder.items.map((item, index) => (
-                <div key={index} style={styles.itemRow}>
-                  <div style={styles.itemInfo}>
-                    <strong>{item.product_name}</strong>
-                    <div style={styles.itemDetails}>
-                      ID: {item.product_id} | Количество: {item.quantity} шт. | Цена: {item.price} руб.
+              {selectedOrder.items.map((item, index) => {
+                const hasFixedEсть = hasFixedEстьStatus(item.product_id);
+                const isFixedAndEсть = hasFixedEсть && itemStatuses[index] === 'есть';
+                const currentStatus = itemStatuses[index] || 'unknown';
+                
+                return (
+                  <div key={index} style={{
+                    ...styles.itemRow,
+                    backgroundColor: hasFixedEсть ? '#f8f9fa' : '#ffffff',
+                    borderLeft: hasFixedEсть ? '4px solid #28a745' : 'none'
+                  }}>
+                    <div style={styles.itemInfo}>
+                      <strong>{item.product_name}</strong>
+                      {hasFixedEсть && (
+                        <span style={{
+                          marginLeft: '10px',
+                          fontSize: '12px',
+                          color: '#28a745',
+                          fontWeight: 'bold'
+                        }}>
+                          ⭐ Фиксированный статус
+                        </span>
+                      )}
+                      <div style={styles.itemDetails}>
+                        <span>ID: {item.product_id}</span>
+                        <span>Кол-во: {item.quantity} шт.</span>
+                        <span>Цена: {item.price} руб.</span>
+                        <span style={{ 
+                          backgroundColor: '#e9ecef',
+                          padding: '2px 8px',
+                          borderRadius: '4px',
+                          fontSize: '12px'
+                        }}>
+                          🏪 Склад: {item.warehouse || 'основной'}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div style={styles.itemActions}>
+                      <button
+                        onClick={() => toggleItemStatus(index, 'есть')}
+                        style={{
+                          ...styles.statusButton,
+                          backgroundColor: currentStatus === 'есть' ? '#198754' : '#f8f9fa',
+                          color: currentStatus === 'есть' ? 'white' : '#198754',
+                          borderColor: '#198754'
+                        }}
+                        className="cursor-felt-pen comic-font"
+                      >
+                        ✅ Есть
+                      </button>
+                      
+                      <button
+                        onClick={() => toggleItemStatus(index, 'нет')}
+                        style={{
+                          ...styles.statusButton,
+                          backgroundColor: currentStatus === 'нет' ? '#dc3545' : '#f8f9fa',
+                          color: currentStatus === 'нет' ? 'white' : '#dc3545',
+                          borderColor: '#dc3545',
+                          opacity: isFixedAndEсть ? 0.5 : 1,
+                          cursor: isFixedAndEсть ? 'not-allowed' : 'pointer'
+                        }}
+                        className="cursor-felt-pen comic-font"
+                        disabled={isFixedAndEсть}
+                        title={isFixedAndEсть ? 'Фиксированный статус, нельзя изменить' : ''}
+                      >
+                        ❌ Нет
+                      </button>
+                      
+                      <div style={styles.currentStatus}>
+                        {currentStatus === 'есть' && (
+                          <span style={{color: '#198754'}}>
+                            ✅ Есть {hasFixedEсть ? ' (фикс.)' : ''}
+                          </span>
+                        )}
+                        {currentStatus === 'нет' && <span style={{color: '#dc3545'}}>❌ Нет</span>}
+                        {currentStatus === 'unknown' && <span style={{color: '#6c757d'}}>➖ Не проверен</span>}
+                      </div>
                     </div>
                   </div>
-                  
-                  <div style={styles.itemActions}>
-                    <button
-                      onClick={() => toggleItemStatus(index, 'есть')}
-                      style={{
-                        ...styles.statusButton,
-                        backgroundColor: itemStatuses[index] === 'есть' ? '#198754' : '#f8f9fa',
-                        color: itemStatuses[index] === 'есть' ? 'white' : '#198754',
-                        borderColor: '#198754'
-                      }}
-                      className="cursor-felt-pen comic-font"
-                    >
-                      ✅ Есть
-                    </button>
-                    
-                    <button
-                      onClick={() => toggleItemStatus(index, 'нет')}
-                      style={{
-                        ...styles.statusButton,
-                        backgroundColor: itemStatuses[index] === 'нет' ? '#dc3545' : '#f8f9fa',
-                        color: itemStatuses[index] === 'нет' ? 'white' : '#dc3545',
-                        borderColor: '#dc3545'
-                      }}
-                      className="cursor-felt-pen comic-font"
-                    >
-                      ❌ Нет
-                    </button>
-                    
-                    <div style={styles.currentStatus}>
-                      {itemStatuses[index] === 'есть' && <span style={{color: '#198754'}}>✅ Отмечен как есть</span>}
-                      {itemStatuses[index] === 'нет' && <span style={{color: '#dc3545'}}>❌ Отмечен как отсутствует</span>}
-                      {itemStatuses[index] === 'unknown' && <span style={{color: '#6c757d'}}>➖ Не проверен</span>}
-                    </div>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
@@ -341,6 +820,8 @@ const CollectorApp = () => {
                 flex: 1
               }}
               className="cursor-felt-pen comic-font"
+              title={isReshenie && !canReportMissing() ? 
+                'Отметьте отсутствующие товары как "нет" для отправки в офис' : ''}
             >
               🚨 Нет товара (отправить в офис)
             </button>
@@ -355,8 +836,10 @@ const CollectorApp = () => {
                 flex: 1
               }}
               className="cursor-felt-pen comic-font"
+              title={isReshenie && !canCompleteCollection() ? 
+                'Вы должны проверить ВСЕ товары перед завершением' : ''}
             >
-              ✅ Завершить сборку
+              {isReshenie ? '✅ Завершить (все проверены)' : '✅ Завершить сборку'}
             </button>
             
             <button
@@ -388,12 +871,44 @@ const CollectorApp = () => {
               <div className="p-4 pt-5 h-100 d-flex flex-column">
                 <h2 className="comic-font mb-3">
                   Заказы для сборки
+                  {checkIfStarayoshibka() && (
+                    <span style={{
+                      marginLeft: '10px',
+                      fontSize: '14px',
+                      backgroundColor: '#ffc107',
+                      color: '#000',
+                      padding: '2px 8px',
+                      borderRadius: '4px'
+                    }}>
+                      ⭐ starаyoshibka
+                    </span>
+                  )}
+                  {checkIfReshenie() && (
+                    <span style={{
+                      marginLeft: '10px',
+                      fontSize: '14px',
+                      backgroundColor: '#0d6efd',
+                      color: 'white',
+                      padding: '2px 8px',
+                      borderRadius: '4px'
+                    }}>
+                      🔍 Reshenie
+                    </span>
+                  )}
                   <span className="badge bg-dark ms-2">{orders.length}</span>
                 </h2>
                 
+                {error && (
+                  <div className="alert alert-warning mb-3">
+                    <strong>Внимание:</strong> {error}
+                    <br />
+                    <small>Используется демо-режим с тестовыми данными</small>
+                  </div>
+                )}
+                
                 <div className="comic-font mb-2">
                   Статус: <span className="text-dark fw-bold">processing</span>
-                  <span className="ms-3">🔄 Проверка каждые 15 секунд</span>
+                  <span className="ms-3">🔄 Автообновление каждые 15 секунд</span>
                 </div>
                 
                 {loading ? (
@@ -406,6 +921,14 @@ const CollectorApp = () => {
                     <div className="display-1 mb-3">📭</div>
                     <p className="comic-font">Нет заказов для сборки</p>
                     <small className="text-muted">Ожидание заказов со статусом 'processing'...</small>
+                    <div className="mt-3">
+                      <button 
+                        onClick={setMockData}
+                        className="btn btn-outline-dark btn-sm"
+                      >
+                        Показать тестовые данные
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <div className="flex-grow-1 overflow-auto orders-list">
@@ -435,6 +958,10 @@ const CollectorApp = () => {
                               <span style={styles.itemIcon}>📋</span>
                               Товаров: {order.item_count} ({order.total_items} шт.)
                             </p>
+                            <div className="mb-1">
+                              <span style={styles.warehouseIcon}>🏪</span>
+                              <small>Склады: {[...new Set(order.items.map(i => i.warehouse))].join(', ')}</small>
+                            </div>
                             <p className="mb-0 text-muted">
                               <small>Создан: {new Date(order.created_date).toLocaleString('ru-RU')}</small>
                             </p>
@@ -505,8 +1032,24 @@ const CollectorApp = () => {
                           {selectedOrder.items.map((item, index) => (
                             <li key={index} className="mb-1 ps-2 border-start border-3 border-dark">
                               <strong>{item.product_name}</strong>
+                              {hasFixedEстьStatus(item.product_id) && (
+                                <span style={{
+                                  marginLeft: '5px',
+                                  fontSize: '11px',
+                                  color: '#28a745',
+                                  fontWeight: 'bold'
+                                }}>
+                                  ⭐ фикс.
+                                </span>
+                              )}
                               <span className="ms-2">× {item.quantity}</span>
                               <span className="ms-2 text-muted">(ID: {item.product_id})</span>
+                              <br />
+                              <small className="text-muted">
+                                <span className="badge bg-light text-dark">
+                                  🏪 {item.warehouse || 'основной'}
+                                </span>
+                              </small>
                             </li>
                           ))}
                         </ul>
@@ -525,8 +1068,13 @@ const CollectorApp = () => {
                       style={styles.checkButton}
                       className="w-100 mb-3 cursor-felt-pen comic-font"
                     >
-                      🔍 Проверить товары
+                      🔍 Проверить товары ({selectedOrder.items?.length || 0})
                     </button>
+                    
+                    <div className="alert alert-info small">
+                      <strong>Информация:</strong> Товары распределены по складам.
+                      При проверке "Есть" система проверит наличие на нужном складе.
+                    </div>
                   </div>
                 </>
               ) : (
@@ -542,6 +1090,30 @@ const CollectorApp = () => {
       
       {/* Модальное окно проверки товаров */}
       {renderItemCheckModal()}
+      
+      {/* Стили анимации */}
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+          from { 
+            opacity: 0;
+            transform: translateY(-20px) scale(0.95); 
+          }
+          to { 
+            opacity: 1;
+            transform: translateY(0) scale(1); 
+          }
+        }
+        
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 };
@@ -587,6 +1159,7 @@ const styles = {
   clientIcon: { marginRight: '6px' },
   emailIcon: { marginRight: '6px' },
   itemIcon: { marginRight: '6px' },
+  warehouseIcon: { marginRight: '6px' },
   statusBadgeProcessing: {
     padding: '5px 10px',
     backgroundColor: '#e7f1ff',
@@ -682,10 +1255,7 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: '50%',
-    transition: 'all 0.2s ease',
-    '&:hover': {
-      backgroundColor: '#e9ecef'
-    }
+    transition: 'all 0.2s ease'
   },
   
   // Статистика в модальном окне
@@ -730,13 +1300,7 @@ const styles = {
     alignItems: 'center',
     padding: '15px',
     borderBottom: '1px solid #dee2e6',
-    transition: 'background-color 0.2s ease',
-    '&:hover': {
-      backgroundColor: '#f8f9fa'
-    },
-    '&:last-child': {
-      borderBottom: 'none'
-    }
+    transition: 'background-color 0.2s ease'
   },
   itemInfo: {
     flex: 1,
@@ -764,11 +1328,7 @@ const styles = {
     cursor: 'pointer',
     minWidth: '80px',
     fontSize: '14px',
-    transition: 'all 0.2s ease',
-    '&:hover': {
-      transform: 'translateY(-2px)',
-      boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
-    }
+    transition: 'all 0.2s ease'
   },
   currentStatus: {
     fontSize: '13px',
@@ -786,11 +1346,7 @@ const styles = {
     borderRadius: '8px',
     fontWeight: 'bold',
     fontSize: '15px',
-    transition: 'all 0.2s ease',
-    '&:hover:not(:disabled)': {
-      backgroundColor: '#c82333',
-      transform: 'translateY(-2px)'
-    }
+    transition: 'all 0.2s ease'
   },
   completeButton: {
     padding: '14px',
@@ -800,11 +1356,7 @@ const styles = {
     borderRadius: '8px',
     fontWeight: 'bold',
     fontSize: '15px',
-    transition: 'all 0.2s ease',
-    '&:hover:not(:disabled)': {
-      backgroundColor: '#157347',
-      transform: 'translateY(-2px)'
-    }
+    transition: 'all 0.2s ease'
   },
   cancelButton: {
     padding: '14px',
@@ -814,38 +1366,8 @@ const styles = {
     borderRadius: '8px',
     fontWeight: 'bold',
     fontSize: '15px',
-    transition: 'all 0.2s ease',
-    '&:hover': {
-      backgroundColor: '#5a6268',
-      transform: 'translateY(-2px)'
-    }
+    transition: 'all 0.2s ease'
   }
 };
-
-// Добавляем CSS анимации
-const styleSheet = document.createElement('style');
-styleSheet.innerHTML = `
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-  
-  @keyframes slideIn {
-    from { 
-      opacity: 0;
-      transform: translateY(-20px) scale(0.95); 
-    }
-    to { 
-      opacity: 1;
-      transform: translateY(0) scale(1); 
-    }
-  }
-  
-  @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-`;
-document.head.appendChild(styleSheet);
 
 export default CollectorApp;

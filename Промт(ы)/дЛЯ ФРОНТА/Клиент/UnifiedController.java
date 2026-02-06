@@ -1,4 +1,24 @@
+<<<<<<< HEAD
+
+Это не полный код - а часть кода для нейросети без лишних блоков! package com.example.ApiGateWay;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import feign.FeignException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.*;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
+
+import java.time.Instant;
+import java.util.*;
+import java.util.stream.Collectors;
+=======
 //Это не полный класс - а сокращенная версия для нейросети!
+>>>>>>> 32a18439d5d309833c2b1fdf191b7cd04ba94f69
 
 @RestController
 @RequestMapping("/api")
@@ -207,6 +227,15 @@ public class UnifiedController {
             return ResponseEntity.status(e.status()).body(Map.of("error", "Ошибка: " + e.getMessage()));
         }
     }
+<<<<<<< HEAD
+    @PostMapping("/support/update-order-status")
+    public ResponseEntity<?> updateOrderStatus(@RequestBody Map<String, Object> request) {
+        try {
+            Integer cartId = (Integer) request.get("cartId");
+            String newStatus = (String) request.get("newStatus");
+            String action = (String) request.get("action");
+
+=======
 // ==================== БЛОК 15: ПОДДЕРЖКА КЛИЕНТОВ (SUPPORT) ====================
 // В UnifiedController.java (Блок 16)
 @GetMapping("/support/problem-orders/{clientId}")
@@ -265,6 +294,7 @@ public ResponseEntity<?> getProblemOrders(@PathVariable int clientId) {
             String newStatus = (String) request.get("newStatus");
             String action = (String) request.get("action");
 
+>>>>>>> 32a18439d5d309833c2b1fdf191b7cd04ba94f69
             log.info("🔄 Support: updating cart {} status to '{}' (action: {})",
                     cartId, newStatus, action);
 
@@ -305,11 +335,18 @@ public ResponseEntity<?> getProblemOrders(@PathVariable int clientId) {
 
             // 3. ОБНОВЛЯЕМ СТАТУС В carts (ИСПРАВЛЕНО: удален last_action)
             String updateSql = """
+<<<<<<< HEAD
+UPDATE carts 
+SET status = ?
+WHERE id = ?
+""";
+=======
         UPDATE carts 
         SET status = ?,
             updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
         """;
+>>>>>>> 32a18439d5d309833c2b1fdf191b7cd04ba94f69
 
             log.info("📝 Executing SQL: {} with params: {}, {}",
                     updateSql.replace("?", "{}"), newStatus, cartId);
@@ -330,10 +367,17 @@ public ResponseEntity<?> getProblemOrders(@PathVariable int clientId) {
                     if ("tc".equals(newStatus) || "completed".equals(newStatus)) {
                         try {
                             String updateItemsSql = """
+<<<<<<< HEAD
+                    UPDATE cart_items 
+                    SET nalichie = 'refunded'
+                    WHERE cart_id = ? AND nalichie = 'unknown'
+                    """;
+=======
                         UPDATE cart_items 
                         SET nalichie = 'refunded'
                         WHERE cart_id = ? AND nalichie = 'unknown'
                         """;
+>>>>>>> 32a18439d5d309833c2b1fdf191b7cd04ba94f69
                             int updatedItems = jdbcTemplate.update(updateItemsSql, cartId);
                             log.info("✅ Updated {} cart_items for cart {} from 'unknown' to 'refunded'",
                                     updatedItems, cartId);
@@ -474,11 +518,18 @@ public ResponseEntity<?> getProblemOrders(@PathVariable int clientId) {
                 try {
                     // ИСПРАВЛЕННЫЙ SQL С КОРОТКИМ СТАТУСОМ (без last_action)
                     String updateSql = """
+<<<<<<< HEAD
+UPDATE carts 
+SET status = 'taoshibka'
+WHERE id = ?
+""";
+=======
                 UPDATE carts 
                 SET status = 'taoshibka',
                     updated_at = CURRENT_TIMESTAMP
                 WHERE id = ?
                 """;
+>>>>>>> 32a18439d5d309833c2b1fdf191b7cd04ba94f69
 
                     log.info("📝 Executing SQL for cart {}: {}", cartId, updateSql);
 
@@ -530,6 +581,10 @@ public ResponseEntity<?> getProblemOrders(@PathVariable int clientId) {
                     .body(Map.of("success", false, "error", e.getMessage()));
         }
     }
+<<<<<<< HEAD
+
+=======
+>>>>>>> 32a18439d5d309833c2b1fdf191b7cd04ba94f69
     @GetMapping("/debug/table-structure")
     public ResponseEntity<?> getTableStructure() {
         try {
@@ -1436,3 +1491,155 @@ public ResponseEntity<?> getProblemOrders(@PathVariable int clientId) {
         }
     }
 
+<<<<<<< HEAD
+   
+
+    // ==================== БЛОК 13: КОМПЛЕКСНЫЕ ОПЕРАЦИИ ====================
+
+    @GetMapping("/clients/{clientId}/with-carts")
+    public Map<String, Object> getClientWithCarts(@PathVariable int clientId) {
+        Map<String, Object> client = clientService.getClient(clientId);
+        List<Map<String, Object>> carts = cartService.getClientCarts(clientId);
+
+        return Map.of(
+                "client", client,
+                "carts", carts
+        );
+    }
+
+    @GetMapping("/clients/{clientId}/deliveries-info")
+    public Map<String, Object> getClientWithDeliveries(@PathVariable Integer clientId) {
+        Object client = clientService.getClient(clientId);
+
+        // Безопасное приведение типов
+        List<?> deliveries = (List<?>) deliveryService.getClientDeliveries(clientId);
+        List<?> carts = (List<?>) cartService.getClientCarts(clientId);
+
+        return Map.of(
+                "client", client,
+                "deliveries", deliveries != null ? deliveries : Collections.emptyList(),
+                "carts", carts != null ? carts : Collections.emptyList()
+        );
+    }
+
+    @PostMapping("/clients/{clientId}/complete-order")
+    public Map<String, Object> createCompleteOrder(
+            @PathVariable Integer clientId,
+            @RequestBody Map<String, Object> orderRequest) {
+
+        Object cart = cartService.createCart(clientId);
+        List<Map<String, Object>> items = (List<Map<String, Object>>) orderRequest.get("items");
+
+        if (items != null) {
+            for (Map<String, Object> item : items) {
+                cartService.addToCart(
+                        (Integer) ((Map<String, Object>) cart).get("id"),
+                        (Integer) item.get("productId"),
+                        (Integer) item.get("quantity"),
+                        (Double) item.get("price")
+                );
+            }
+        }
+
+        Map<String, Object> deliveryRequest = Map.of(
+                "orderId", orderRequest.get("orderId"),
+                "clientId", clientId,
+                "deliveryAddress", orderRequest.get("deliveryAddress"),
+                "deliveryPhone", orderRequest.get("deliveryPhone")
+        );
+
+        Object delivery = deliveryService.createDelivery(deliveryRequest);
+
+        return Map.of(
+                "clientId", clientId,
+                "cart", cart,
+                "delivery", delivery,
+                "message", "Complete order created successfully"
+        );
+    }
+
+    // ==================== БЛОК 14: БАЗА ДАННЫХ И HEALTH CHECKS ====================
+
+    @GetMapping("/database/test-connection")
+    public ResponseEntity<Map<String, Object>> testDatabaseConnection() {
+        log.info("Testing PostgreSQL connection...");
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            String result = jdbcTemplate.queryForObject("SELECT 'PostgreSQL Connected Successfully'", String.class);
+            String dbName = jdbcTemplate.queryForObject("SELECT current_database()", String.class);
+            String dbVersion = jdbcTemplate.queryForObject("SELECT version()", String.class);
+
+            log.info("Database connected: {} {}", dbName, dbVersion);
+            response.put("connected", true);
+            response.put("message", result);
+            response.put("databaseName", dbName);
+            response.put("databaseVersion", dbVersion);
+            response.put("port", 8082);
+            response.put("service", "sklad-service");
+            response.put("status", "UP");
+        } catch (Exception e) {
+            log.error("Database connection failed: {}", e.getMessage());
+            response.put("connected", false);
+            response.put("message", "Failed to connect to PostgreSQL");
+            response.put("error", e.getMessage());
+            response.put("port", 8082);
+            response.put("service", "sklad-service");
+            response.put("status", "DOWN");
+        }
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/database/stats")
+    public ResponseEntity<Map<String, Object>> getDatabaseStats() {
+        log.info("Getting database statistics...");
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            String dbName = jdbcTemplate.queryForObject("SELECT current_database()", String.class);
+            String dbSize = jdbcTemplate.queryForObject("SELECT pg_size_pretty(pg_database_size(current_database()))", String.class);
+            Integer tableCount = jdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public'", Integer.class);
+            Integer productsCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM usersklad", Integer.class);
+
+            response.put("status", "connected");
+            response.put("databaseName", dbName);
+            response.put("databaseSize", dbSize);
+            response.put("tableCount", tableCount != null ? tableCount : 0);
+            response.put("productsCount", productsCount != null ? productsCount : 0);
+            response.put("port", 8082);
+        } catch (Exception e) {
+            log.error("Failed to get database stats: {}", e.getMessage());
+            response.put("status", "error");
+            response.put("message", e.getMessage());
+            response.put("port", 8082);
+        }
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/health")
+    public ResponseEntity<Map<String, Object>> health() {
+        return ResponseEntity.ok(Map.of(
+                "status", "UP",
+                "service", "api-stub",
+                "timestamp", Instant.now().toString(),
+                "version", "1.0.0"
+        ));
+    }
+
+    @GetMapping("/actuator/health")
+    public ResponseEntity<Map<String, Object>> actuatorHealth() {
+        return ResponseEntity.ok(Map.of(
+                "status", "UP",
+                "components", Map.of(
+                        "db", Map.of("status", "UP", "details", Map.of("database", "H2")),
+                        "diskSpace", Map.of("status", "UP", "details", Map.of("total", 1000000000, "free", 500000000, "threshold", 10485760)),
+                        "ping", Map.of("status", "UP")
+                )
+        ));
+    }
+}
+=======
+>>>>>>> 32a18439d5d309833c2b1fdf191b7cd04ba94f69

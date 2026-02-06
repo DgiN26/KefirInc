@@ -48,42 +48,88 @@ const ClientPortal = () => {
     };
   }, [getCleanToken]);
 
-  const fetchProducts = useCallback(async () => {
-    try {
-      setLoading(true);
-      const headers = getAuthHeaders();
+  // В методе fetchProducts внутри ClientPortal.jsx
+const fetchProducts = useCallback(async () => {
+  try {
+    setLoading(true);
+    const headers = getAuthHeaders();
+    
+    // ИЗМЕНЕНИЕ 1: Новый URL для клиентских товаров
+    const response = await axios.get('http://localhost:8080/api/client/products', headers);
+    const responseData = response.data;
+    
+    // ИЗМЕНЕНИЕ 2: Новый формат ответа (объект с полем products)
+    let productsData = [];
+    if (responseData.success && responseData.products) {
+      productsData = responseData.products;
       
-      const response = await axios.get('http://localhost:8080/api/products', headers);
-      const productsData = response.data;
+      // Логируем информацию о складе для отладки
+      console.log('✅ Товары получены со склада:', responseData.warehouse);
+      console.log('📍 Город пользователя:', responseData.userCity);
+      console.log('📦 Количество товаров:', productsData.length);
+    } else if (Array.isArray(responseData)) {
+      // Обратная совместимость: если ответ массив (старый формат)
+      productsData = responseData;
+      console.warn('⚠️ Получен старый формат ответа (массив)');
+    } else {
+      console.error('❌ Неожиданный формат ответа:', responseData);
+      throw new Error('Неверный формат ответа от сервера');
+    }
+    
+    productsData.sort((a, b) => a.name.localeCompare(b.name));
+    
+    setProducts(productsData);
+    
+    // Извлекаем категории из полученных товаров
+    const uniqueCategories = ['Все', ...new Set(productsData.map(p => p.category))];
+    setCategories(uniqueCategories);
+    setFilteredProducts(productsData);
+    setError(null);
+    
+    // Сохраняем информацию о складе в состоянии (для отображения)
+    if (responseData.warehouse) {
+      console.log(`🏪 Текущий склад: ${responseData.warehouse}`);
+      // Можно добавить состояние для отображения информации о складе
+      // setCurrentWarehouse(responseData.warehouse);
+    }
+    
+  } catch (err) {
+    console.error('❌ Ошибка при загрузке товаров:', err);
+    
+    // Улучшенная обработка ошибок
+    if (err.response) {
+      const status = err.response.status;
+      const errorData = err.response.data;
       
-      productsData.sort((a, b) => a.name.localeCompare(b.name));
-      
-      setProducts(productsData);
-      
-      const uniqueCategories = ['Все', ...new Set(productsData.map(p => p.category))];
-      setCategories(uniqueCategories);
-      setFilteredProducts(productsData);
-      setError(null);
-    } catch (err) {
-      console.error('Ошибка при загрузке товаров:', err);
-      
-      if (err.response && err.response.status === 401) {
+      if (status === 401) {
         setError('Сессия истекла. Пожалуйста, войдите снова.');
         localStorage.removeItem('token');
-      } else if (err.response && err.response.status === 403) {
+        // Можно добавить редирект на логин
+        // window.location.href = '/login';
+      } else if (status === 403) {
         setError('Доступ запрещен. Недостаточно прав.');
+      } else if (status === 404) {
+        setError('Товары не найдены на вашем складе.');
+      } else if (errorData && errorData.message) {
+        setError(`Ошибка: ${errorData.message}`);
       } else {
-        setError('Не удалось загрузить товары. Пожалуйста, попробуйте позже.');
+        setError(`Ошибка сервера (${status}). Пожалуйста, попробуйте позже.`);
       }
-      
-      setProducts([]);
-      setFilteredProducts([]);
-      setCategories(['Все']);
-    } finally {
-      setLoading(false);
+    } else if (err.request) {
+      setError('Нет ответа от сервера. Проверьте подключение к сети.');
+    } else if (err.message) {
+      setError(`Ошибка: ${err.message}`);
+    } else {
+      setError('Неизвестная ошибка при загрузке товаров.');
     }
-  }, [getAuthHeaders]);
-
+    
+    setProducts([]);
+    setFilteredProducts([]);
+    setCategories(['Все']);
+  } finally {
+    setLoading(false);
+  }
+}, [getAuthHeaders]);
   useEffect(() => {
     const checkAuth = () => {
       const token = getAuthToken();
