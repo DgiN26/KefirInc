@@ -456,9 +456,11 @@ const CollectorApp = () => {
   const reportMissingItems = async () => {
     if (!selectedOrder || !canReportMissing()) return;
     
+const missingItems = selectedOrder.items.filter((_, index) => itemStatuses[index] === 'нет');
+
     try {
       // Собираем все товары со статусом 'нет'
-      const missingItems = selectedOrder.items.filter((_, index) => itemStatuses[index] === 'нет');
+      
       
       // Собираем товары со статусом 'есть' для starаyoshibka
       const availableItems = selectedOrder.items.filter((_, index) => itemStatuses[index] === 'есть');
@@ -553,9 +555,11 @@ const CollectorApp = () => {
       }
     }
     
+const availableItems = selectedOrder.items.filter((_, index) => itemStatuses[index] === 'есть');
+
     try {
       // Собираем все товары со статусом 'есть'
-      const availableItems = selectedOrder.items.filter((_, index) => itemStatuses[index] === 'есть');
+      
       
       const response = await axios.post(
         'http://localhost:8080/api/collector/complete-with-selected-items',

@@ -33,3 +33,9 @@ Thumbs.db
 # Configuration files with sensitive data
 application-*.properties
 *.env
+
+# Maven wrapper
+.mvn/wrapper/maven-wrapper.jar
+
+# Maven dependencies (optional, но можно добавить если не хранятся в репозитории)
+.m2/

@@ -21,6 +21,9 @@ public class CartItem {
     @Column(name = "price", nullable = false)
     private double price;
 
+    @Column(name = "nalichie", nullable = false)
+    private String nalichie = "unknown";
+
     // Конструкторы, геттеры, сеттеры
     public CartItem() {
     }
@@ -30,6 +33,15 @@ public class CartItem {
         this.productId = productId;
         this.quantity = quantity;
         this.price = price;
+        this.nalichie = "unknown";
+    }
+
+    public CartItem(int cartId, int productId, int quantity, double price, String nalichie ) {
+        this.cartId = cartId;
+        this.productId = productId;
+        this.quantity = quantity;
+        this.price = price;
+        this.nalichie = "unknown";
     }
 
     public int getId() {
@@ -70,5 +82,13 @@ public class CartItem {
 
     public void setPrice(double price) {
         this.price = price;
+    }
+
+    public String getNalichie() {
+        return nalichie;
+    }
+
+    public void setNalichie(String nalichie) {
+        this.nalichie = nalichie;
     }
 }

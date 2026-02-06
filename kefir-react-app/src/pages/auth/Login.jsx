@@ -261,7 +261,7 @@ const Login = ({ onLogin, loading }) => {
               className="demo-button"
               style={{
                 padding: '8px 12px',
-                background: '#60ade4ff',
+                background: '#e3f2fd',
                 border: '1px solid #1976d2',
                 borderRadius: '4px',
                 fontSize: '12px',
@@ -270,6 +270,57 @@ const Login = ({ onLogin, loading }) => {
               }}
             >
               Клиент
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDemoLogin('skladodin', '123123')}
+              disabled={loading}
+              className="demo-button"
+              style={{
+                padding: '8px 12px',
+                background: '#e3f2fd',
+                border: '1px solid #1976d2',
+                borderRadius: '4px',
+                fontSize: '12px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.6 : 1
+              }}
+            >
+              Клиент1
+            </button>
+             <button
+              type="button"
+              onClick={() => handleDemoLogin('skladdva', '123123')}
+              disabled={loading}
+              className="demo-button"
+              style={{
+                padding: '8px 12px',
+                background: '#e3f2fd',
+                border: '1px solid #1976d2',
+                borderRadius: '4px',
+                fontSize: '12px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.6 : 1
+              }}
+            >
+              Клиент2
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDemoLogin('skladtri', '123123')}
+              disabled={loading}
+              className="demo-button"
+              style={{
+                padding: '8px 12px',
+                background: '#e3f2fd',
+                border: '1px solid #1976d2',
+                borderRadius: '4px',
+                fontSize: '12px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.6 : 1
+              }}
+            >
+              Клиент3
             </button>
             <button
               type="button"
@@ -324,6 +375,57 @@ const Login = ({ onLogin, loading }) => {
             </button>
             <button
               type="button"
+              onClick={() => handleDemoLogin('sborshikodin', '123123')}
+              disabled={loading}
+              className="demo-button"
+              style={{
+                padding: '8px 12px',
+                background: '#f3e5f5',
+                border: '1px solid #7b1fa2',
+                borderRadius: '4px',
+                fontSize: '12px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.6 : 1
+              }}
+            >
+              sborshikodin
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDemoLogin('sborshikdva', '123123')}
+              disabled={loading}
+              className="demo-button"
+              style={{
+                padding: '8px 12px',
+                background: '#f3e5f5',
+                border: '1px solid #7b1fa2',
+                borderRadius: '4px',
+                fontSize: '12px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.6 : 1
+              }}
+            >
+              sborshikdva
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDemoLogin('sborshiktri', '123123')}
+              disabled={loading}
+              className="demo-button"
+              style={{
+                padding: '8px 12px',
+                background: '#f3e5f5',
+                border: '1px solid #7b1fa2',
+                borderRadius: '4px',
+                fontSize: '12px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.6 : 1
+              }}
+            >
+              sborshiktri
+            </button>
+            <button
+              type="button"
               onClick={() => handleDemoLogin('banned', 'banned')}
               disabled={loading}
               className="demo-button"
@@ -355,6 +457,40 @@ const Login = ({ onLogin, loading }) => {
               }}
             >
               Офис
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDemoLogin('starаyoshibka', '123123')}
+              disabled={loading}
+              className="demo-button"
+              style={{
+                padding: '8px 12px',
+                background: '#e3f2fd',
+                border: '1px solid #1976d2',
+                borderRadius: '4px',
+                fontSize: '12px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.6 : 1
+              }}
+            >
+              starаyoshibka
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDemoLogin('Reshenie', '123123')}
+              disabled={loading}
+              className="demo-button"
+              style={{
+                padding: '8px 12px',
+                background: '#e3f2fd',
+                border: '1px solid #1976d2',
+                borderRadius: '4px',
+                fontSize: '12px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.6 : 1
+              }}
+            >
+              Reshenie
             </button>
           </div>
         </div>
