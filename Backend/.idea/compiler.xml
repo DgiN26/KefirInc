@@ -10,6 +10,7 @@
         <module name="sklad" />
         <module name="untitled" />
         <module name="User" />
+        <module name="payment-service" />
         <module name="collector-service" />
         <module name="backet" />
         <module name="Auth" />
@@ -41,6 +42,7 @@
       <module name="collector-service" options="-parameters" />
       <module name="delivery-service" options="-parameters" />
       <module name="office-service" options="-parameters" />
+      <module name="payment-service" options="-parameters" />
       <module name="sklad" options="-parameters" />
     </option>
   </component>
