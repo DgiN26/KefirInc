@@ -3716,166 +3716,17 @@ public ResponseEntity<?> getProcessingOrders(
         );
     }
 
-    // ==================== БЛОК 11: ТРАНЗАКЦИОННЫЕ МЕТОДЫ (SAGA) ====================
-
-    @PostMapping("/saga/transactions")
-    public Map<String, Object> createTransaction(@RequestBody Map<String, Object> transactionRequest) {
-        return transactionSagaClient.createTransaction(transactionRequest);
-    }
-
-    @GetMapping("/saga/transactions/{transactionId}")
-    public Map<String, Object> getTransaction(@PathVariable String transactionId) {
-        return transactionSagaClient.getTransaction(transactionId);
-    }
-
-    @GetMapping("/saga/transactions/collector/{collectorId}")
-    public List<Map<String, Object>> getCollectorTransactions(@PathVariable String collectorId) {
-        return transactionSagaClient.getCollectorTransactions(collectorId);
-    }
-
-    @GetMapping("/saga/transactions/active")
-    public List<Map<String, Object>> getActiveTransactions() {
-        return transactionSagaClient.getActiveTransactions();
-    }
-
-    @GetMapping("/saga/transactions/paused")
-    public List<Map<String, Object>> getPausedTransactions() {
-        return transactionSagaClient.getPausedTransactions();
-    }
-
-    @PostMapping("/saga/transactions/{transactionId}/scan")
-    public Map<String, Object> scanItem(@PathVariable String transactionId, @RequestBody Map<String, Object> scanRequest) {
-        return transactionSagaClient.scanItem(transactionId, scanRequest);
-    }
-
-    @PostMapping("/saga/transactions/{transactionId}/report-problem")
-    public Map<String, Object> reportProblem(@PathVariable String transactionId, @RequestBody Map<String, Object> problemRequest) {
-        return transactionSagaClient.reportProblem(transactionId, problemRequest);
-    }
-
-    @PostMapping("/saga/transactions/{transactionId}/client-decision")
-    public Map<String, Object> processClientDecision(@PathVariable String transactionId, @RequestBody Map<String, Object> decisionRequest) {
-        return transactionSagaClient.processClientDecision(transactionId, decisionRequest);
-    }
-
-    @GetMapping("/saga/steps/{transactionId}")
-    public List<Map<String, Object>> getTransactionSteps(@PathVariable String transactionId) {
-        return transactionSagaClient.getTransactionSteps(transactionId);
-    }
-
-    @PostMapping("/saga/steps/{stepId}/retry")
-    public Map<String, Object> retryStep(@PathVariable Long stepId) {
-        return transactionSagaClient.retryStep(stepId);
-    }
-
-    @GetMapping("/saga/health")
-    public Map<String, Object> checkSagaHealth() {
-        return transactionSagaClient.checkSagaHealth();
-    }
-
-    @PostMapping("/saga/compensation/{transactionId}/initiate")
-    public Map<String, Object> initiateCompensation(@PathVariable String transactionId,
-                                                    @RequestParam String reason,
-                                                    @RequestParam(required = false) String details) {
-        return transactionSagaClient.initiateCompensation(transactionId, reason, details);
-    }
-
-    @GetMapping("/saga/compensation/history/{transactionId}")
-    public List<Map<String, Object>> getCompensationHistory(@PathVariable String transactionId) {
-        return transactionSagaClient.getCompensationHistory(transactionId);
-    }
-
-    @PutMapping("/saga/transactions/{transactionId}/status")
-    public Map<String, Object> updateTransactionStatus(@PathVariable String transactionId, @RequestBody Map<String, Object> statusRequest) {
-        return transactionSagaClient.updateTransactionStatus(transactionId, statusRequest);
-    }
-
-    @PostMapping("/saga/transactions/complete-order")
-    public Map<String, Object> createCompleteOrderWithSaga(@RequestBody Map<String, Object> orderRequest) {
-        return transactionSagaClient.createCompleteOrderWithSaga(orderRequest);
-    }
-
-    @GetMapping("/saga/transactions/{transactionId}/full-info")
-    public Map<String, Object> getTransactionFullInfo(@PathVariable String transactionId) {
-        return transactionSagaClient.getTransactionFullInfo(transactionId);
-    }
-
-    @PostMapping("/saga/transactions/{transactionId}/start")
-    public Map<String, Object> startTransaction(@PathVariable String transactionId) {
-        Map<String, Object> statusRequest = Map.of("status", "ACTIVE");
-        return transactionSagaClient.updateTransactionStatus(transactionId, statusRequest);
-    }
-
-    @PostMapping("/saga/transactions/{transactionId}/pause")
-    public Map<String, Object> pauseTransaction(@PathVariable String transactionId, @RequestParam(required = false) String reason) {
-        Map<String, Object> statusRequest = Map.of("status", "PAUSED", "reason", reason);
-        return transactionSagaClient.updateTransactionStatus(transactionId, statusRequest);
-    }
-
-    @PostMapping("/saga/transactions/{transactionId}/resume")
-    public Map<String, Object> resumeTransaction(@PathVariable String transactionId) {
-        Map<String, Object> statusRequest = Map.of("status", "ACTIVE");
-        return transactionSagaClient.updateTransactionStatus(transactionId, statusRequest);
-    }
-
-    @PostMapping("/saga/transactions/{transactionId}/complete")
-    public Map<String, Object> completeTransaction(@PathVariable String transactionId) {
-        Map<String, Object> statusRequest = Map.of("status", "COMPLETED");
-        return transactionSagaClient.updateTransactionStatus(transactionId, statusRequest);
-    }
-
-    @PostMapping("/saga/transactions/{transactionId}/cancel")
-    public Map<String, Object> cancelTransaction(@PathVariable String transactionId, @RequestParam(required = false) String reason) {
-        String compensationReason = reason != null ? "CANCELLED: " + reason : "CANCELLED";
-        return transactionSagaClient.initiateCompensation(transactionId, compensationReason, "Manual cancellation");
-    }
-
-    @PostMapping("/orders/with-saga-orchestration")
-    public Map<String, Object> createOrderWithSagaOrchestration(@RequestBody Map<String, Object> orderRequest) {
-        Map<String, Object> transactionResponse = transactionSagaClient.createTransaction(orderRequest);
-        String transactionId = (String) transactionResponse.get("id");
-        String clientId = (String) orderRequest.get("clientId");
-        String orderId = (String) orderRequest.get("orderId");
-
-        Object cartResponse = cartService.createCart(Integer.parseInt(clientId));
-        List<Map<String, Object>> items = (List<Map<String, Object>>) orderRequest.get("items");
-
-        if (items != null) {
-            for (Map<String, Object> item : items) {
-                cartService.addToCart(
-                        (Integer) ((Map<String, Object>) cartResponse).get("id"),
-                        Integer.parseInt((String) item.get("productId")),
-                        (Integer) item.get("quantity"),
-                        ((Number) item.get("price")).doubleValue()
-                );
-            }
+   //Блок 333 Транзакция
+    @PostMapping("/logs/transaction-saga")
+    public ResponseEntity<?> receiveTransactionSagaLog(@RequestBody Map<String, Object> logMessage) {
+        try {
+            log.info("📝 TransactionSaga Log: {}", logMessage);
+            // Можно сохранять в БД или просто логировать
+            return ResponseEntity.ok().body(Map.of("success", true, "received", true));
+        } catch (Exception e) {
+            log.error("Error receiving log: {}", e.getMessage());
+            return ResponseEntity.status(500).body(Map.of("success", false, "error", e.getMessage()));
         }
-
-        Map<String, Object> deliveryRequest = Map.of(
-                "orderId", orderId,
-                "clientId", clientId,
-                "deliveryAddress", orderRequest.get("deliveryAddress"),
-                "deliveryPhone", orderRequest.get("deliveryPhone")
-        );
-
-        Object deliveryResponse = deliveryService.createDelivery(deliveryRequest);
-
-        if (items != null && !items.isEmpty()) {
-            Map<String, Object> firstItem = items.get(0);
-            Map<String, Object> scanRequest = Map.of(
-                    "productId", firstItem.get("productId"),
-                    "quantity", firstItem.get("quantity"),
-                    "location", "Warehouse A"
-            );
-            transactionSagaClient.scanItem(transactionId, scanRequest);
-        }
-
-        return Map.of(
-                "transaction", transactionResponse,
-                "cart", cartResponse,
-                "delivery", deliveryResponse,
-                "message", "Order created with saga orchestration"
-        );
     }
 
     //Блок 18
