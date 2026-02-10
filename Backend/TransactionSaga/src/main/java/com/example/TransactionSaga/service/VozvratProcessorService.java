@@ -81,34 +81,40 @@ public class VozvratProcessorService {
     @Transactional
     public void processSingleRecord(CartItemVozvratProjection record) {
         try {
-            // 1. Проверить, не обработан ли уже этот cart_id
-            if (payBackRepository.existsByCartId(record.getCartId())) {
-                logger.debug("Cart {} already processed, skipping", record.getCartId());
-                return;
-            }
+            // УДАЛЕНО: проверка existsByCartId - мешает обрабатывать несколько товаров в корзине
 
-            // 2. Создать запись в pay_back
+            // 1. Создать запись в pay_back
             PayBack payBack = new PayBack(
-                    record.getClientId(),
-                    record.getCartId(),
-                    record.getPrice(),
-                    record.getCreatedDate()
+                    record.getClientId(),    // user_id
+                    record.getCartId(),      // cart_id
+                    record.getPrice(),       // price (возвращаемая сумма)
+                    record.getCreatedDate()  // created_date из carts
             );
 
             payBackRepository.save(payBack);
 
-            // 3. Обновить vozvrat на 'tcc'
+            // 2. Обновить vozvrat на 'tcc' (транзакция завершена)
             updateVozvratStatus(record.getId());
 
-            // 4. Залогировать успех
+            // 3. Залогировать успех
             Map<String, Object> successDetails = new HashMap<>();
             successDetails.put("cartItemId", record.getId());
             successDetails.put("cartId", record.getCartId());
             successDetails.put("userId", record.getClientId());
             successDetails.put("price", record.getPrice());
+            successDetails.put("payBackId", payBack.getId());
+
             loggingService.logInfo("Successfully processed vozvrat record", successDetails);
 
         } catch (Exception e) {
+            // Детали ошибки для логирования
+            Map<String, Object> errorDetails = new HashMap<>();
+            errorDetails.put("cartItemId", record.getId());
+            errorDetails.put("cartId", record.getCartId());
+            errorDetails.put("price", record.getPrice());
+            errorDetails.put("error", e.getMessage());
+
+            loggingService.logError("Failed to process vozvrat record", e, errorDetails);
             throw new RuntimeException("Failed to process record: " + record.getId(), e);
         }
     }

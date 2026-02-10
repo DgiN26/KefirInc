@@ -756,16 +756,45 @@ WHERE id = ?
                     log.info("✅ Cart {} status updated from '{}' to '{}' (verified: '{}')",
                             cartId, currentStatus, newStatus, verifiedStatus);
 
-                    // 5. Обновляем nalichie в cart_items если это завершение возврата
-                    if ("tc".equals(newStatus) || "completed".equals(newStatus)) {
+                    // 5. ОБНОВЛЯЕМ ТОВАРЫ ПРИ СТАТУСЕ 'tc' (ВОЗВРАТ ДЕНЕГ)
+                    if ("tc".equals(newStatus)) {
+                        try {
+                            // 5.1. Обновляем nalichie для unknown товаров
+                            String updateItemsSql = """
+                UPDATE cart_items 
+                SET nalichie = 'refunded'
+                WHERE cart_id = ? AND nalichie = 'unknown'
+                """;
+                            int updatedNalichie = jdbcTemplate.update(updateItemsSql, cartId);
+                            log.info("✅ Updated {} cart_items for cart {} from 'unknown' to 'refunded'",
+                                    updatedNalichie, cartId);
+
+                            // 5.2. ОБНОВЛЯЕМ vozvrat = 'tc' для ВСЕХ товаров заказа (кроме тех, где уже 'tcc')
+                            String updateVozvratSql = """
+                UPDATE cart_items 
+                SET vozvrat = 'tc'
+                WHERE cart_id = ? 
+                AND (vozvrat IS NULL OR vozvrat != 'tcc')
+                """;
+                            int updatedVozvrat = jdbcTemplate.update(updateVozvratSql, cartId);
+                            log.info("✅ Updated vozvrat='tc' for {} items in cart {} (except those with 'tcc')",
+                                    updatedVozvrat, cartId);
+
+                        } catch (Exception e) {
+                            log.warn("⚠️ Could not update cart_items for cart {}: {}", cartId, e.getMessage());
+                        }
+                    }
+
+                    // 6. (ОПЦИОНАЛЬНО) Обновляем товары при статусе 'completed'
+                    if ("completed".equals(newStatus)) {
                         try {
                             String updateItemsSql = """
-                    UPDATE cart_items 
-                    SET nalichie = 'refunded'
-                    WHERE cart_id = ? AND nalichie = 'unknown'
-                    """;
+                UPDATE cart_items 
+                SET nalichie = 'refunded'
+                WHERE cart_id = ? AND nalichie = 'unknown'
+                """;
                             int updatedItems = jdbcTemplate.update(updateItemsSql, cartId);
-                            log.info("✅ Updated {} cart_items for cart {} from 'unknown' to 'refunded'",
+                            log.info("✅ Updated {} cart_items for cart {} from 'unknown' to 'refunded' (completed status)",
                                     updatedItems, cartId);
                         } catch (Exception e) {
                             log.warn("⚠️ Could not update cart_items for cart {}: {}", cartId, e.getMessage());
@@ -779,6 +808,18 @@ WHERE id = ?
                     response.put("newStatus", newStatus);
                     response.put("verifiedStatus", verifiedStatus);
                     response.put("updatedRows", updatedRows);
+
+                    // Добавляем информацию об обновлении товаров
+                    if ("tc".equals(newStatus)) {
+                        String countVozvratSql = "SELECT COUNT(*) FROM cart_items WHERE cart_id = ? AND vozvrat = 'tc'";
+                        Long itemsWithTc = jdbcTemplate.queryForObject(countVozvratSql, Long.class, cartId);
+                        response.put("itemsWithVozvratTc", itemsWithTc);
+
+                        String countNalichieSql = "SELECT COUNT(*) FROM cart_items WHERE cart_id = ? AND nalichie = 'refunded'";
+                        Long itemsRefunded = jdbcTemplate.queryForObject(countNalichieSql, Long.class, cartId);
+                        response.put("itemsRefunded", itemsRefunded);
+                    }
+
                     response.put("message", "Статус заказа успешно обновлен");
 
                     return ResponseEntity.ok(response);
@@ -4982,13 +5023,42 @@ public ResponseEntity<?> getProcessingOrders(
 
             String newStatus;
             String decisionText;
+            int updatedItemsCount = 0;
 
             if ("CANCEL_ORDER".equals(decision)) {
                 newStatus = "cancelled";
                 decisionText = "Order cancelled";
+
+                // ПРИ ОТМЕНЕ: для ВСЕХ товаров заказа (кроме тех, где vozvrat = 'tcc')
+                String cancelItemsSql = """
+                UPDATE cart_items 
+                SET 
+                    nalichie = 'нет',
+                    vozvrat = 'tc'
+                WHERE cart_id = ?
+                AND (vozvrat IS NULL OR vozvrat != 'tcc')  -- НЕ ТРОГАЕМ ТОВАРЫ С TCC
+                """;
+                updatedItemsCount = jdbcTemplate.update(cancelItemsSql, orderId);
+                log.info("✅ Cancelled order #{}: updated {} items (nalichie='нет', vozvrat='tc')",
+                        orderId, updatedItemsCount);
+
             } else if ("APPROVE_WITHOUT_PRODUCT".equals(decision)) {
                 newStatus = "processing";
                 decisionText = "Continue without product";
+
+                // ОБНОВЛЯЕМ vozvrat = 'tc' ТОЛЬКО для товаров, у которых nalichie = 'нет'
+                // (и не трогаем товары с vozvrat = 'tcc')
+                String updateItemsSql = """
+                UPDATE cart_items 
+                SET vozvrat = 'tc' 
+                WHERE cart_id = ? 
+                AND (nalichie = 'нет' OR nalichie = 'эхЄ')  -- учитываем обе кодировки
+                AND (vozvrat IS NULL OR vozvrat != 'tcc')  -- не трогаем товары с tcc
+                """;
+                updatedItemsCount = jdbcTemplate.update(updateItemsSql, orderId);
+                log.info("✅ Updated vozvrat='tc' for {} items with nalichie='нет/эхЄ' in cart #{}",
+                        updatedItemsCount, orderId);
+
             } else if ("WAIT_FOR_PRODUCT".equals(decision)) {
                 newStatus = "waiting";
                 decisionText = "Wait for product";
@@ -5012,6 +5082,7 @@ public ResponseEntity<?> getProcessingOrders(
                 response.put("newStatus", newStatus);
                 response.put("decision", decision);
                 response.put("decisionText", decisionText);
+                response.put("itemsUpdated", updatedItemsCount);
                 response.put("message", "Decision successfully applied");
                 response.put("timestamp", System.currentTimeMillis());
 

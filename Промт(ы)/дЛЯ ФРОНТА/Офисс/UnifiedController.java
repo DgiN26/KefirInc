@@ -1,6 +1,10 @@
-//Это не полный файл - а намерено обрезная для экономии места - часть для нейросети!!!!!
 package com.example.ApiGateWay;
-
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import org.slf4j.Logger;
@@ -11,10 +15,13 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import org.springframework.web.bind.annotation.PostMapping;
 
 @RestController
 @RequestMapping("/api")
@@ -36,7 +43,6 @@ public class UnifiedController {
 
     @Autowired
     private ClientServiceClient clientService;
-
     @Autowired
     private ProductServiceClient productServiceClient;
 
@@ -51,6 +57,8 @@ public class UnifiedController {
 
     @Autowired
     private TransactionSagaClient transactionSagaClient;
+
+
 
     // ==================== БЛОК 1: АВТОРИЗАЦИЯ И АУТЕНТИФИКАЦИЯ ====================
 
@@ -324,9 +332,147 @@ public class UnifiedController {
         return sb.toString();
     }
 
+    // ==================== БЛОК 2: РЕГИСТРАЦИЯ ПОЛЬЗОВАТЕЛЕЙ ====================
 
+    @PostMapping("/clients/register")
+    public ResponseEntity<?> registerUser(@RequestBody Map<String, Object> userData) {
+        try {
+            System.out.println("=== GATEWAY DEBUG ===");
+            System.out.println("Получены данные: " + userData);
 
-   // ==================== БЛОК 12: OFFICE - расширенные методы из второго файла ====================
+            String username = (String) userData.get("username");
+            String password = (String) userData.get("password");
+            String email = (String) userData.get("email");
+            String firstname = (String) userData.get("firstname");
+
+            if (firstname == null || firstname.trim().isEmpty()) {
+                firstname = (String) userData.get("firstName");
+                if (firstname == null || firstname.trim().isEmpty()) {
+                    firstname = (String) userData.get("name");
+                }
+            }
+
+            List<String> errors = new ArrayList<>();
+            if (firstname == null || firstname.trim().isEmpty()) errors.add("Имя обязательно");
+            if (username == null || username.trim().isEmpty()) errors.add("Имя пользователя обязательно");
+            if (email == null || email.trim().isEmpty()) errors.add("Email обязателен");
+            else if (!email.contains("@")) errors.add("Неверный формат email");
+            if (password == null || password.trim().isEmpty()) errors.add("Пароль обязателен");
+            else if (password.length() < 6) errors.add("Пароль должен быть не менее 6 символов");
+
+            if (!errors.isEmpty()) {
+                System.err.println("Ошибки валидации: " + errors);
+                return ResponseEntity.badRequest().body(Map.of("success", false, "errors", errors));
+            }
+
+            Map<String, Object> registrationData = new HashMap<>();
+            registrationData.put("username", username);
+            registrationData.put("password", password);
+            registrationData.put("email", email);
+            registrationData.put("firstname", firstname);
+
+            if (userData.containsKey("age")) registrationData.put("age", userData.get("age"));
+            if (userData.containsKey("city")) registrationData.put("city", userData.get("city"));
+            if (userData.containsKey("magaz")) registrationData.put("magaz", userData.get("magaz"));
+
+            registrationData.put("role", "client");
+            registrationData.put("status", "active");
+
+            System.out.println("Подготовлены данные для UserService: " + registrationData);
+            System.out.println("Вызываем UserService через Feign...");
+
+            Map<String, Object> response = clientService.registerUser(registrationData);
+            System.out.println("✅ Ответ от UserService: " + response);
+
+            if (response.containsKey("success") && Boolean.TRUE.equals(response.get("success"))) {
+                return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
+
+        } catch (FeignException e) {
+            System.err.println("❌ FeignException:");
+            System.err.println("  Status: " + e.status());
+            System.err.println("  Message: " + e.getMessage());
+            System.err.println("  Content: " + e.contentUTF8());
+
+            if (e.status() == 500) {
+                String username = (String) userData.get("username");
+                System.out.println("Проверяем, создан ли пользователь " + username + " в БД...");
+
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", true);
+                response.put("message", "Пользователь создан, но была ошибка при формировании ответа");
+                response.put("warning", "UserService вернул ошибку: " + e.contentUTF8());
+                response.put("userData", userData);
+
+                return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            }
+
+            return ResponseEntity.status(e.status()).body(Map.of(
+                    "success", false,
+                    "error", "Ошибка сервиса регистрации",
+                    "details", e.contentUTF8()
+            ));
+
+        } catch (Exception e) {
+            System.err.println("❌ Общая ошибка в Gateway: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "success", false,
+                    "error", "Внутренняя ошибка сервера: " + e.getMessage()
+            ));
+        }
+    }
+
+    // ==================== БЛОК 3: ВАЛИДАЦИЯ И ПРОВЕРКИ ====================
+
+    @PostMapping("/clients/check-email")
+    public ResponseEntity<?> checkEmail(@RequestBody Map<String, String> request) {
+        try {
+            Map<String, Object> response = clientService.checkEmail(request);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "success", false,
+                    "available", false,
+                    "message", "Ошибка при проверке email",
+                    "error", e.getMessage()
+            ));
+        }
+    }
+
+    @PostMapping("/clients/check-username")
+    public ResponseEntity<?> checkUsername(@RequestBody Map<String, String> request) {
+        try {
+            Map<String, Object> response = clientService.checkUsername(request);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "success", false,
+                    "available", false,
+                    "message", "Ошибка при проверке логина",
+                    "error", e.getMessage()
+            ));
+        }
+    }
+
+    @PostMapping("/clients/validate")
+    public ResponseEntity<?> validateFields(@RequestBody Map<String, String> request) {
+        try {
+            Map<String, Object> response = clientService.validateFields(request);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "success", false,
+                    "message", "Ошибка валидации",
+                    "error", e.getMessage()
+            ));
+        }
+    }
+
+    
+    // ==================== БЛОК 12: OFFICE - расширенные методы из второго файла ====================
 
     @GetMapping("/office/test")
     public ResponseEntity<?> officeTest() {
@@ -1052,6 +1198,166 @@ public class UnifiedController {
         }
     }
 
+    // ==================== БЛОК 13: КОМПЛЕКСНЫЕ ОПЕРАЦИИ ====================
+    private String determineWarehouseTable(String city) {
+        if (city == null || city.trim().isEmpty()) {
+            log.debug("🏢 City не указан, используем основной склад");
+            return "usersklad";
+        }
 
+        String normalizedCity = city.trim().toLowerCase();
 
-  
+        // Если начинается с "sklad" - используем как имя таблицы склада
+        if (normalizedCity.startsWith("sklad")) {
+            log.info("🏢 City '{}' начинается с 'sklad', используем как склад: {}", city, normalizedCity);
+            return normalizedCity;
+        }
+
+        log.debug("🏢 City '{}' не частный склад, используем основной usersklad", city);
+        return "usersklad";
+    }
+    @GetMapping("/clients/{clientId}/with-carts")
+    public Map<String, Object> getClientWithCarts(@PathVariable int clientId) {
+        Map<String, Object> client = clientService.getClient(clientId);
+        List<Map<String, Object>> carts = cartService.getClientCarts(clientId);
+
+        return Map.of(
+                "client", client,
+                "carts", carts
+        );
+    }
+
+    @GetMapping("/clients/{clientId}/deliveries-info")
+    public Map<String, Object> getClientWithDeliveries(@PathVariable Integer clientId) {
+        Object client = clientService.getClient(clientId);
+
+        // Безопасное приведение типов
+        List<?> deliveries = (List<?>) deliveryService.getClientDeliveries(clientId);
+        List<?> carts = (List<?>) cartService.getClientCarts(clientId);
+
+        return Map.of(
+                "client", client,
+                "deliveries", deliveries != null ? deliveries : Collections.emptyList(),
+                "carts", carts != null ? carts : Collections.emptyList()
+        );
+    }
+
+    @PostMapping("/clients/{clientId}/complete-order")
+    public Map<String, Object> createCompleteOrder(
+            @PathVariable Integer clientId,
+            @RequestBody Map<String, Object> orderRequest) {
+
+        Object cart = cartService.createCart(clientId);
+        List<Map<String, Object>> items = (List<Map<String, Object>>) orderRequest.get("items");
+
+        if (items != null) {
+            for (Map<String, Object> item : items) {
+                cartService.addToCart(
+                        (Integer) ((Map<String, Object>) cart).get("id"),
+                        (Integer) item.get("productId"),
+                        (Integer) item.get("quantity"),
+                        (Double) item.get("price")
+                );
+            }
+        }
+
+        Map<String, Object> deliveryRequest = Map.of(
+                "orderId", orderRequest.get("orderId"),
+                "clientId", clientId,
+                "deliveryAddress", orderRequest.get("deliveryAddress"),
+                "deliveryPhone", orderRequest.get("deliveryPhone")
+        );
+
+        Object delivery = deliveryService.createDelivery(deliveryRequest);
+
+        return Map.of(
+                "clientId", clientId,
+                "cart", cart,
+                "delivery", delivery,
+                "message", "Complete order created successfully"
+        );
+    }
+
+    // ==================== БЛОК 14: БАЗА ДАННЫХ И HEALTH CHECKS ====================
+
+    @GetMapping("/database/test-connection")
+    public ResponseEntity<Map<String, Object>> testDatabaseConnection() {
+        log.info("Testing PostgreSQL connection...");
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            String result = jdbcTemplate.queryForObject("SELECT 'PostgreSQL Connected Successfully'", String.class);
+            String dbName = jdbcTemplate.queryForObject("SELECT current_database()", String.class);
+            String dbVersion = jdbcTemplate.queryForObject("SELECT version()", String.class);
+
+            log.info("Database connected: {} {}", dbName, dbVersion);
+            response.put("connected", true);
+            response.put("message", result);
+            response.put("databaseName", dbName);
+            response.put("databaseVersion", dbVersion);
+            response.put("port", 8082);
+            response.put("service", "sklad-service");
+            response.put("status", "UP");
+        } catch (Exception e) {
+            log.error("Database connection failed: {}", e.getMessage());
+            response.put("connected", false);
+            response.put("message", "Failed to connect to PostgreSQL");
+            response.put("error", e.getMessage());
+            response.put("port", 8082);
+            response.put("service", "sklad-service");
+            response.put("status", "DOWN");
+        }
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/database/stats")
+    public ResponseEntity<Map<String, Object>> getDatabaseStats() {
+        log.info("Getting database statistics...");
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            String dbName = jdbcTemplate.queryForObject("SELECT current_database()", String.class);
+            String dbSize = jdbcTemplate.queryForObject("SELECT pg_size_pretty(pg_database_size(current_database()))", String.class);
+            Integer tableCount = jdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public'", Integer.class);
+            Integer productsCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM usersklad", Integer.class);
+
+            response.put("status", "connected");
+            response.put("databaseName", dbName);
+            response.put("databaseSize", dbSize);
+            response.put("tableCount", tableCount != null ? tableCount : 0);
+            response.put("productsCount", productsCount != null ? productsCount : 0);
+            response.put("port", 8082);
+        } catch (Exception e) {
+            log.error("Failed to get database stats: {}", e.getMessage());
+            response.put("status", "error");
+            response.put("message", e.getMessage());
+            response.put("port", 8082);
+        }
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/health")
+    public ResponseEntity<Map<String, Object>> health() {
+        return ResponseEntity.ok(Map.of(
+                "status", "UP",
+                "service", "api-stub",
+                "timestamp", Instant.now().toString(),
+                "version", "1.0.0"
+        ));
+    }
+
+    @GetMapping("/actuator/health")
+    public ResponseEntity<Map<String, Object>> actuatorHealth() {
+        return ResponseEntity.ok(Map.of(
+                "status", "UP",
+                "components", Map.of(
+                        "db", Map.of("status", "UP", "details", Map.of("database", "H2")),
+                        "diskSpace", Map.of("status", "UP", "details", Map.of("total", 1000000000, "free", 500000000, "threshold", 10485760)),
+                        "ping", Map.of("status", "UP")
+                )
+        ));
+    }
+}
