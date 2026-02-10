@@ -2569,7 +2569,7 @@ WHERE id = ?
                 for (Map<String, Object> item : availableItems) {
                     Integer productId = (Integer) item.get("productId");
                     try {
-                        String updateSql = "UPDATE cart_items SET nalichie = 'есть' WHERE cart_id = ? AND product_id = ?";
+                        String updateSql = "UPDATE cart_items SET nalichie = 'есть', vozvrat = 'tcc' WHERE cart_id = ? AND product_id = ?";
                         jdbcTemplate.update(updateSql, cartId, productId);
                     } catch (Exception e) {
                         log.warn("Error updating item status for product {}: {}", productId, e.getMessage());
@@ -2736,25 +2736,26 @@ public ResponseEntity<?> getProcessingOrders(
                     collectorId, collectorCity, userId);
 
             String sql = """
-            SELECT 
-                c.id as cart_id,
-                c.client_id,
-                c.status,
-                c.created_date,
-                COALESCE(u.firstname, u.username, 'Клиент #' || c.client_id) as client_name,
-                COALESCE(u.email, 'client' || c.client_id || '@example.com') as client_email,
-                u.city as client_city,
-                COUNT(ci.id) as item_count,
-                COALESCE(SUM(ci.quantity), 0) as total_items
-            FROM carts c
-            LEFT JOIN users u ON c.client_id = u.id
-            LEFT JOIN cart_items ci ON c.id = ci.cart_id
-            WHERE c.status = 'processing'
-            AND u.city = ?
-            AND (ci.nalichie IS NULL OR ci.nalichie != 'нет')
-            GROUP BY c.id, u.firstname, u.username, u.email, u.city, c.created_date, c.client_id, c.status
-            ORDER BY c.created_date DESC
-            """;
+        SELECT 
+            c.id as cart_id,
+            c.client_id,
+            c.status,
+            c.created_date,
+            COALESCE(u.firstname, u.username, 'Клиент #' || c.client_id) as client_name,
+            COALESCE(u.email, 'client' || c.client_id || '@example.com') as client_email,
+            u.city as client_city,
+            COUNT(ci.id) as item_count,
+            COALESCE(SUM(ci.quantity), 0) as total_items
+        FROM carts c
+        LEFT JOIN users u ON c.client_id = u.id
+        LEFT JOIN cart_items ci ON c.id = ci.cart_id
+        WHERE c.status = 'processing'
+        AND u.city = ?
+        AND (ci.nalichie IS NULL OR ci.nalichie != 'нет')
+        AND (ci.vozvrat IS NULL OR ci.vozvrat != 'tcc')  -- ДОБАВЛЕНО: не показывать обработанные сборщиком
+        GROUP BY c.id, u.firstname, u.username, u.email, u.city, c.created_date, c.client_id, c.status
+        ORDER BY c.created_date DESC
+        """;
 
             List<Map<String, Object>> orders = jdbcTemplate.queryForList(sql, collectorCity);
             log.info("✅ Найдено {} заказов для city '{}'", orders.size(), collectorCity);
@@ -2775,25 +2776,26 @@ public ResponseEntity<?> getProcessingOrders(
             log.info("🔍 Поиск заказов для общего сборщика {} (userId: {})", collectorId, userId);
 
             String sql = """
-            SELECT 
-                c.id as cart_id,
-                c.client_id,
-                c.status,
-                c.created_date,
-                COALESCE(u.firstname, u.username, 'Клиент #' || c.client_id) as client_name,
-                COALESCE(u.email, 'client' || c.client_id || '@example.com') as client_email,
-                u.city as client_city,
-                COUNT(ci.id) as item_count,
-                COALESCE(SUM(ci.quantity), 0) as total_items
-            FROM carts c
-            LEFT JOIN users u ON c.client_id = u.id
-            LEFT JOIN cart_items ci ON c.id = ci.cart_id
-            WHERE c.status = 'processing'
-            AND (u.city IS NULL OR LOWER(u.city) NOT LIKE 'sklad%')
-            AND (ci.nalichie IS NULL OR ci.nalichie != 'нет')
-            GROUP BY c.id, u.firstname, u.username, u.email, u.city, c.created_date, c.client_id, c.status
-            ORDER BY c.created_date DESC
-            """;
+        SELECT 
+            c.id as cart_id,
+            c.client_id,
+            c.status,
+            c.created_date,
+            COALESCE(u.firstname, u.username, 'Клиент #' || c.client_id) as client_name,
+            COALESCE(u.email, 'client' || c.client_id || '@example.com') as client_email,
+            u.city as client_city,
+            COUNT(ci.id) as item_count,
+            COALESCE(SUM(ci.quantity), 0) as total_items
+        FROM carts c
+        LEFT JOIN users u ON c.client_id = u.id
+        LEFT JOIN cart_items ci ON c.id = ci.cart_id
+        WHERE c.status = 'processing'
+        AND (u.city IS NULL OR LOWER(u.city) NOT LIKE 'sklad%')
+        AND (ci.nalichie IS NULL OR ci.nalichie != 'нет')
+        AND (ci.vozvrat IS NULL OR ci.vozvrat != 'tcc')  -- ДОБАВЛЕНО: не показывать обработанные сборщиком
+        GROUP BY c.id, u.firstname, u.username, u.email, u.city, c.created_date, c.client_id, c.status
+        ORDER BY c.created_date DESC
+        """;
 
             List<Map<String, Object>> orders = jdbcTemplate.queryForList(sql);
             log.info("✅ Найдено {} заказов для общего сборщика", orders.size());
@@ -2825,19 +2827,20 @@ public ResponseEntity<?> getProcessingOrders(
             Integer cartId = (Integer) order.get("cart_id");
 
             String itemsSql = """
-            SELECT 
-                ci.id,
-                ci.product_id,
-                COALESCE(p.name, 'Товар #' || ci.product_id::text) as product_name,
-                ci.quantity,
-                ci.price,
-                ci.nalichie
-            FROM cart_items ci
-            LEFT JOIN usersklad p ON ci.product_id = p.id
-            WHERE ci.cart_id = ?
-            AND (ci.nalichie IS NULL OR ci.nalichie != 'нет')
-            ORDER BY ci.product_id
-            """;
+        SELECT 
+            ci.id,
+            ci.product_id,
+            COALESCE(p.name, 'Товар #' || ci.product_id::text) as product_name,
+            ci.quantity,
+            ci.price,
+            ci.nalichie
+        FROM cart_items ci
+        LEFT JOIN usersklad p ON ci.product_id = p.id
+        WHERE ci.cart_id = ?
+        AND (ci.nalichie IS NULL OR ci.nalichie != 'нет')
+        AND (ci.vozvrat IS NULL OR ci.vozvrat != 'tcc')  -- ДОБАВЛЕНО: не показывать обработанные сборщиком
+        ORDER BY ci.product_id
+        """;
 
             try {
                 List<Map<String, Object>> items = jdbcTemplate.queryForList(itemsSql, cartId);
