@@ -1545,14 +1545,25 @@ WHERE id = ?
     @PostMapping("/orders")
     public ResponseEntity<?> createOrder(@RequestBody Map<String, Object> orderRequest,
                                          @RequestHeader(value = "Authorization", required = false) String authHeader) {
-        try {
-            log.info("=== СОЗДАНИЕ ЗАКАЗА ===");
-            log.info("Получен заказ: {}", orderRequest);
-            log.info("Authorization header: {}", authHeader);
 
-            Integer userId = extractUserIdFromToken(authHeader);
+        log.info("=== СОЗДАНИЕ ЗАКАЗА ===");
+        log.info("Получен заказ: {}", orderRequest);
+        log.info("Authorization header: {}", authHeader);
+
+        Integer userId = null;
+        Integer cartId = null;
+
+        try {
+            // ========= ШАГ 1: ИЗВЛЕЧЕНИЕ USER ID =========
+            userId = extractUserIdFromToken(authHeader);
             log.info("✅ Извлечен userId: {}", userId);
 
+            if (userId == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "Не удалось идентифицировать пользователя", "success", false));
+            }
+
+            // ========= ШАГ 2: ВАЛИДАЦИЯ ВХОДНЫХ ДАННЫХ =========
             List<Map<String, Object>> items = (List<Map<String, Object>>) orderRequest.get("items");
             Number totalAmountNumber = (Number) orderRequest.get("totalAmount");
             Double totalAmount = totalAmountNumber != null ? totalAmountNumber.doubleValue() : null;
@@ -1561,19 +1572,9 @@ WHERE id = ?
                 return ResponseEntity.badRequest().body(Map.of("error", "Корзина пуста", "success", false));
             }
 
-            Map<String, Object> cartResponse;
-            try {
-                cartResponse = cartService.createCart(userId);
-                log.info("Создана корзина для пользователя {}: {}", userId, cartResponse);
-            } catch (FeignException e) {
-                log.error("Ошибка при создании корзины: {}", e.contentUTF8());
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(Map.of("error", "Не удалось создать корзину", "details", e.contentUTF8()));
-            }
-
-            Integer cartId = (Integer) cartResponse.get("id");
-            Double calculatedTotal = 0.0;
-            List<Map<String, Object>> processedItems = new ArrayList<>();
+            // ========= ШАГ 3: ПРОВЕРКА ТОВАРОВ ПЕРЕД СОЗДАНИЕМ КОРЗИНЫ =========
+            log.info("=== ПРОВЕРКА ТОВАРОВ ===");
+            List<Map<String, Object>> validatedItems = new ArrayList<>();
 
             for (Map<String, Object> item : items) {
                 try {
@@ -1588,11 +1589,18 @@ WHERE id = ?
                     Integer productId = productIdNumber.intValue();
                     Integer quantity = quantityNumber.intValue();
 
-                    Map<String, Object> product;
+                    if (quantity <= 0) {
+                        log.warn("Пропускаем товар ID {} с некорректным количеством: {}", productId, quantity);
+                        continue;
+                    }
+
+                    // Получаем информацию о товаре
+                    Map<String, Object> product = null;
                     try {
                         product = productServiceClient.getProductById(productId);
+                        log.info("Получен товар ID {}: {}", productId, product);
                     } catch (FeignException e) {
-                        log.error("Ошибка получения товара ID {}: {}", productId, e.contentUTF8());
+                        log.error("Ошибка при получении товара ID {}: {}", productId, e.getMessage());
                         continue;
                     }
 
@@ -1601,52 +1609,214 @@ WHERE id = ?
                         continue;
                     }
 
+                    // Извлекаем цену
                     Double price = 0.0;
                     Object priceObj = product.get("price");
-                    if (priceObj != null) {
-                        if (priceObj instanceof Number) price = ((Number) priceObj).doubleValue();
-                        else if (priceObj instanceof String) {
-                            try { price = Double.parseDouble((String) priceObj); }
-                            catch (NumberFormatException ex) { log.warn("Некорректный формат цены для товара ID {}: {}", productId, priceObj); }
+                    if (priceObj instanceof Number) {
+                        price = ((Number) priceObj).doubleValue();
+                    } else if (priceObj instanceof String) {
+                        try {
+                            price = Double.parseDouble((String) priceObj);
+                        } catch (NumberFormatException e) {
+                            log.warn("Некорректный формат цены: {}", priceObj);
                         }
                     }
 
+                    // Извлекаем остаток
                     Integer originalCount = 0;
                     Object countObj = product.get("count");
-                    if (countObj instanceof Integer) originalCount = (Integer) countObj;
-                    else if (countObj instanceof Number) originalCount = ((Number) countObj).intValue();
+                    if (countObj instanceof Number) {
+                        originalCount = ((Number) countObj).intValue();
+                    }
 
-                    Map<String, Object> addResponse = cartService.addToCart(cartId, productId, quantity, price);
-                    log.info("Добавлен товар в корзину: {}", addResponse);
+                    // Проверяем наличие
+                    if (originalCount < quantity) {
+                        log.warn("Недостаточно товара ID {} на складе. Доступно: {}, запрошено: {}",
+                                productId, originalCount, quantity);
+                        continue;
+                    }
 
-                    calculatedTotal += price * quantity;
+                    Map<String, Object> validatedItem = new HashMap<>();
+                    validatedItem.put("productId", productId);
+                    validatedItem.put("quantity", quantity);
+                    validatedItem.put("price", price);
+                    validatedItem.put("name", product.get("name"));
+                    validatedItem.put("productName", product.get("name"));
+                    validatedItem.put("originalCount", originalCount);
+                    validatedItem.put("product", product);
 
-                    Map<String, Object> processedItem = new HashMap<>(item);
-                    processedItem.put("price", price);
-                    processedItem.put("name", product.get("name"));
-                    processedItem.put("productName", product.get("name"));
-                    processedItem.put("originalCount", originalCount);
-                    processedItems.add(processedItem);
+                    validatedItems.add(validatedItem);
+                    log.info("✅ Товар ID {} прошел валидацию: {} шт. по цене {}, в наличии {}",
+                            productId, quantity, price, originalCount);
 
                 } catch (Exception e) {
-                    log.error("Ошибка при обработке товара: {}", e.getMessage(), e);
+                    log.error("Ошибка при валидации товара: {}", e.getMessage(), e);
                 }
             }
 
-            if (processedItems.isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Ни один товар не удалось добавить в корзину", "success", false));
+            if (validatedItems.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "error", "Нет доступных товаров для заказа",
+                        "success", false
+                ));
             }
 
-            Double finalAmount = totalAmount != null ? totalAmount : calculatedTotal;
+            // ========= ШАГ 4: СОЗДАНИЕ КОРЗИНЫ =========
+            log.info("=== СОЗДАНИЕ КОРЗИНЫ ДЛЯ ПОЛЬЗОВАТЕЛЯ {} ===", userId);
 
-            Map<String, Object> checkoutResponse;
             try {
-                log.info("Оформление заказа из корзины: {}", cartId);
-                checkoutResponse = cartService.checkoutCart(cartId);
-                log.info("Оформлен заказ: {}", checkoutResponse);
+                Map<String, Object> cartResponse = cartService.createCart(userId);
+                log.info("Ответ от сервиса корзин: {}", cartResponse);
+
+                Object cartIdObj = cartResponse.get("id");
+                if (cartIdObj == null) {
+                    cartIdObj = cartResponse.get("cartId");
+                }
+
+                if (cartIdObj == null) {
+                    log.error("В ответе отсутствует ID корзины");
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .body(Map.of("error", "Не удалось получить ID корзины", "success", false));
+                }
+
+                if (cartIdObj instanceof Integer) {
+                    cartId = (Integer) cartIdObj;
+                } else if (cartIdObj instanceof String) {
+                    try {
+                        cartId = Integer.parseInt((String) cartIdObj);
+                    } catch (NumberFormatException e) {
+                        log.error("Некорректный формат ID корзины: {}", cartIdObj);
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                .body(Map.of("error", "Некорректный формат ID корзины", "success", false));
+                    }
+                } else if (cartIdObj instanceof Long) {
+                    cartId = ((Long) cartIdObj).intValue();
+                }
+
+                log.info("✅ Создана корзина ID: {} для пользователя {}", cartId, userId);
 
             } catch (FeignException e) {
-                log.error("Ошибка при оформлении заказа: {}", e.contentUTF8());
+                log.error("❌ Ошибка при создании корзины: Status={}, Body={}",
+                        e.status(), e.contentUTF8());
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(Map.of("error", "Не удалось создать корзину", "details", e.getMessage(), "success", false));
+            }
+
+            // ========= ШАГ 5: ДОБАВЛЕНИЕ ТОВАРОВ В КОРЗИНУ С ДУБЛИРОВАНИЕМ =========
+            log.info("=== ДОБАВЛЕНИЕ ТОВАРОВ В КОРЗИНУ {} С ДУБЛИРОВАНИЕМ ЗАПИСЕЙ ===", cartId);
+            List<Map<String, Object>> successfullyAddedItems = new ArrayList<>();
+            List<Map<String, Object>> failedItems = new ArrayList<>();
+
+            Double calculatedTotal = 0.0;
+            int totalDuplicatedEntries = 0;
+
+            for (Map<String, Object> item : validatedItems) {
+                Integer productId = (Integer) item.get("productId");
+                Integer quantity = (Integer) item.get("quantity");
+                Double price = (Double) item.get("price");
+                String productName = (String) item.get("name");
+
+                log.info("🔄 Добавление товара {} (ID: {}, {} шт.) в корзину {}",
+                        productName, productId, quantity, cartId);
+
+                List<Map<String, Object>> addResponses = new ArrayList<>();
+                boolean allAdded = true;
+                int successfulAdds = 0;
+
+                // ВАЖНО: Создаем отдельную запись для КАЖДОЙ единицы товара
+                for (int i = 0; i < quantity; i++) {
+                    try {
+                        // Вызываем addToCart с quantity=1 для каждой единицы
+                        Map<String, Object> addResponse = cartService.addToCart(
+                                cartId,
+                                productId,
+                                1, // Всегда 1 для создания отдельной записи
+                                price
+                        );
+                        addResponses.add(addResponse);
+                        successfulAdds++;
+
+                        // Извлекаем ID созданной записи
+                        Object itemIdObj = addResponse.get("id");
+                        if (itemIdObj == null) {
+                            itemIdObj = addResponse.get("itemId");
+                        }
+                        if (itemIdObj == null) {
+                            itemIdObj = addResponse.get("cartItemId");
+                        }
+
+                        log.debug("  ➕ Добавлена запись {}/{} для товара ID {}: {}",
+                                i + 1, quantity, productId, itemIdObj);
+
+                    } catch (FeignException e) {
+                        log.error("  ❌ Ошибка добавления записи {}/{} для товара {}: Status={}, Body={}",
+                                i + 1, quantity, productId, e.status(),
+                                e.contentUTF8() != null ? e.contentUTF8() : "No body");
+                        allAdded = false;
+                        break;
+                    }
+                }
+
+                if (allAdded && !addResponses.isEmpty()) {
+                    // Сохраняем ID всех созданных записей
+                    List<Integer> cartItemIds = addResponses.stream()
+                            .map(r -> {
+                                Object id = r.get("id");
+                                if (id == null) id = r.get("itemId");
+                                if (id == null) id = r.get("cartItemId");
+
+                                if (id instanceof Integer) return (Integer) id;
+                                if (id instanceof String) {
+                                    try {
+                                        return Integer.parseInt((String) id);
+                                    } catch (NumberFormatException e) {
+                                        return null;
+                                    }
+                                }
+                                if (id instanceof Long) {
+                                    return ((Long) id).intValue();
+                                }
+                                return null;
+                            })
+                            .filter(Objects::nonNull)
+                            .collect(Collectors.toList());
+
+                    item.put("cartItemIds", cartItemIds);
+                    item.put("duplicatedEntries", quantity);
+                    item.put("addedSuccessfully", true);
+                    item.put("successfulAdds", successfulAdds);
+
+                    successfullyAddedItems.add(item);
+                    calculatedTotal += price * quantity;
+                    totalDuplicatedEntries += quantity;
+
+                    log.info("  ✅ Товар ID {} полностью добавлен. Создано {} отдельных записей в cart_items",
+                            productId, quantity);
+                } else {
+                    Map<String, Object> failedItem = new HashMap<>(item);
+                    failedItem.put("addedSuccessfully", false);
+                    failedItem.put("successfulAdds", successfulAdds);
+                    failedItem.put("error", "Не удалось добавить все единицы товара");
+                    failedItems.add(failedItem);
+                    log.warn("  ⚠️ Товар ID {} добавлен частично: {}/{} записей",
+                            productId, successfulAdds, quantity);
+                }
+            }
+
+            // ========= ШАГ 6: РАСЧЕТ ИТОГОВОЙ СУММЫ =========
+            Double finalAmount = totalAmount != null ? totalAmount : calculatedTotal;
+            log.info("💰 Итоговая сумма заказа: {} (расчетная: {})", finalAmount, calculatedTotal);
+            log.info("📊 Создано всего записей в cart_items: {}", totalDuplicatedEntries);
+
+            // ========= ШАГ 7: ОФОРМЛЕНИЕ ЗАКАЗА =========
+            log.info("=== ОФОРМЛЕНИЕ ЗАКАЗА ===");
+            Map<String, Object> checkoutResponse = null;
+
+            try {
+                checkoutResponse = cartService.checkoutCart(cartId);
+                log.info("✅ Заказ оформлен: {}", checkoutResponse);
+            } catch (FeignException e) {
+                log.error("❌ Ошибка при оформлении заказа: {}", e.contentUTF8());
 
                 Map<String, Object> errorResponse = new HashMap<>();
                 errorResponse.put("success", false);
@@ -1656,172 +1826,201 @@ WHERE id = ?
                 errorResponse.put("userId", userId);
                 errorResponse.put("totalAmount", finalAmount);
                 errorResponse.put("timestamp", new Date());
+                errorResponse.put("successfullyAddedItems", successfullyAddedItems);
+                errorResponse.put("failedItems", failedItems);
+                errorResponse.put("totalDuplicatedEntries", totalDuplicatedEntries);
 
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
             }
 
-            // ========= ВАЖНОЕ ИСПРАВЛЕНИЕ =========
-            // Принудительно проверяем и устанавливаем статус корзины в "processing"
-            log.info("🔍 Проверяем статус корзины {} после checkout", cartId);
+            // ========= ШАГ 8: ИСПРАВЛЕНИЕ СТАТУСА КОРЗИНЫ =========
             try {
-                // 1. Проверяем текущий статус
                 String currentStatus = jdbcTemplate.queryForObject(
                         "SELECT status FROM carts WHERE id = ?",
                         String.class, cartId);
+
                 log.info("📊 Текущий статус корзины {}: {}", cartId, currentStatus);
 
-                // 2. Если статус не "processing", исправляем
                 if (!"processing".equals(currentStatus)) {
-                    log.info("🔄 Исправляем статус корзины {} с '{}' на 'processing'", cartId, currentStatus);
-                    String updateSql = "UPDATE carts SET status = 'processing' WHERE id = ?";
-                    int updatedRows = jdbcTemplate.update(updateSql, cartId);
-                    log.info("✅ Исправлено строк: {}", updatedRows);
-
-                    // 3. Проверяем исправление
-                    String fixedStatus = jdbcTemplate.queryForObject(
-                            "SELECT status FROM carts WHERE id = ?",
-                            String.class, cartId);
-                    log.info("✅ Исправленный статус корзины {}: {}", cartId, fixedStatus);
+                    int updated = jdbcTemplate.update(
+                            "UPDATE carts SET status = 'processing' WHERE id = ?",
+                            cartId);
+                    log.info("🔄 Исправлен статус корзины {}: обновлено строк {}", cartId, updated);
                 }
             } catch (Exception e) {
                 log.warn("⚠️ Не удалось проверить/исправить статус корзины: {}", e.getMessage());
             }
-            // ========= КОНЕЦ ИСПРАВЛЕНИЯ =========
 
-            log.info("=== ОБНОВЛЕНИЕ КОЛИЧЕСТВА ТОВАРОВ ===");
-            boolean stockUpdated = true;
+            // ========= ШАГ 9: ОБНОВЛЕНИЕ ОСТАТКОВ ТОВАРОВ =========
+            log.info("=== ОБНОВЛЕНИЕ ОСТАТКОВ ТОВАРОВ ===");
             List<Map<String, Object>> stockUpdateResults = new ArrayList<>();
+            boolean allStocksUpdated = true;
 
-            for (Map<String, Object> processedItem : processedItems) {
+            for (Map<String, Object> item : successfullyAddedItems) {
                 try {
-                    Integer productId = (Integer) processedItem.get("productId");
-                    Integer quantity = (Integer) processedItem.get("quantity");
-                    Integer originalCount = (Integer) processedItem.get("originalCount");
+                    Integer productId = (Integer) item.get("productId");
+                    Integer quantity = (Integer) item.get("quantity");
+                    Integer originalCount = (Integer) item.get("originalCount");
+                    String productName = (String) item.get("name");
 
-                    if (productId == null || quantity == null || quantity <= 0) continue;
-
-                    log.info("Обновление товара ID {}: уменьшаем на {} шт. (было {} шт.)",
-                            productId, quantity, originalCount);
-
-                    Integer newCount = originalCount - quantity;
-                    if (newCount < 0) {
-                        log.warn("⚠️ ВНИМАНИЕ: Отрицательное количество для товара ID {}: {} - {} = {}",
-                                productId, originalCount, quantity, newCount);
-                        newCount = 0;
-                    }
+                    Integer newCount = Math.max(0, originalCount - quantity);
 
                     Map<String, Object> updates = new HashMap<>();
                     updates.put("count", newCount);
 
                     Map<String, Object> updateResult = new HashMap<>();
                     updateResult.put("productId", productId);
-                    updateResult.put("productName", processedItem.get("name"));
+                    updateResult.put("productName", productName);
                     updateResult.put("orderedQuantity", quantity);
                     updateResult.put("originalCount", originalCount);
                     updateResult.put("newCount", newCount);
-                    updateResult.put("updated", false);
 
                     try {
                         Map<String, Object> updatedProduct = productServiceClient.updateProduct(productId, updates);
                         Object updatedCount = updatedProduct.get("count");
+
                         if (updatedCount != null) {
                             Integer actualNewCount = 0;
-                            if (updatedCount instanceof Integer) actualNewCount = (Integer) updatedCount;
-                            else if (updatedCount instanceof Number) actualNewCount = ((Number) updatedCount).intValue();
+                            if (updatedCount instanceof Integer) {
+                                actualNewCount = (Integer) updatedCount;
+                            } else if (updatedCount instanceof Number) {
+                                actualNewCount = ((Number) updatedCount).intValue();
+                            }
 
                             updateResult.put("actualNewCount", actualNewCount);
                             updateResult.put("updated", true);
-                            log.info("✅ Товар ID {} обновлен: было {} шт., стало {} шт. (уменьшено на {} шт.)",
-                                    productId, originalCount, actualNewCount, quantity);
-                        } else {
-                            log.warn("⚠️ Товар ID {} обновлен, но поле 'count' отсутствует в ответе", productId);
-                            updateResult.put("warning", "count field missing in response");
-                            stockUpdated = false;
+                            log.info("  ✅ Товар {} (ID:{}): остаток обновлен с {} до {}",
+                                    productName, productId, originalCount, actualNewCount);
                         }
                     } catch (FeignException e) {
-                        log.error("❌ Feign ошибка обновления товара ID {}: {}", productId, e.contentUTF8());
-                        updateResult.put("error", e.contentUTF8());
+                        log.error("  ❌ Ошибка обновления товара {} (ID:{}): {}",
+                                productName, productId, e.getMessage());
                         updateResult.put("updated", false);
-                        stockUpdated = false;
-                    } catch (Exception e) {
-                        log.error("❌ Общая ошибка обновления товара ID {}: {}", productId, e.getMessage());
                         updateResult.put("error", e.getMessage());
-                        updateResult.put("updated", false);
-                        stockUpdated = false;
+                        allStocksUpdated = false;
                     }
 
                     stockUpdateResults.add(updateResult);
+
                 } catch (Exception e) {
-                    log.error("❌ Критическая ошибка при обновлении товара: {}", e.getMessage());
-                    stockUpdated = false;
+                    log.error("Ошибка при обновлении остатка: {}", e.getMessage());
+                    allStocksUpdated = false;
                 }
             }
 
-            log.info("Обновление количества товаров завершено: {}",
-                    stockUpdated ? "✅ ВСЕ ТОВАРЫ ОБНОВЛЕНЫ" : "⚠️ ЕСТЬ ОШИБКИ ПРИ ОБНОВЛЕНИИ");
-
+            // ========= ШАГ 10: ФОРМИРОВАНИЕ ОТВЕТА =========
             Map<String, Object> response = new HashMap<>();
+
+            // ID заказа
             Object checkoutId = checkoutResponse.get("id");
-            if (checkoutId != null) response.put("id", checkoutId.toString());
-            else response.put("id", "ORD-" + System.currentTimeMillis());
+            if (checkoutId == null) checkoutId = checkoutResponse.get("orderId");
+            if (checkoutId == null) checkoutId = checkoutResponse.get("order_id");
+            response.put("id", checkoutId != null ? checkoutId.toString() : "ORD-" + System.currentTimeMillis());
 
-            // === ВАЖНОЕ ИЗМЕНЕНИЕ ===
-            // 1. Сохраняем реальный статус из базы данных
-            String actualStatus = checkoutResponse.get("status") != null ?
-                    checkoutResponse.get("status").toString().toLowerCase() : "processing";
-
-            // 2. Определяем статус для CollectorApp
-            String collectorStatus;
-            if ("completed".equals(actualStatus) || "paid".equals(actualStatus) || "delivered".equals(actualStatus)) {
-                // Если заказ уже завершен, то сборщику он не нужен
-                collectorStatus = "completed";
-            } else {
-                // Для всех остальных статусов - processing
-                collectorStatus = "processing";
+            // Статусы
+            String actualStatus = "processing";
+            if (checkoutResponse.get("status") != null) {
+                actualStatus = checkoutResponse.get("status").toString().toLowerCase();
             }
 
-            // 3. Записываем оба статуса в ответ
-            response.put("status", actualStatus); // Реальный статус из БД
-            response.put("collectorStatus", collectorStatus); // Статус для CollectorApp
-            response.put("displayStatus", collectorStatus); // Дублируем для совместимости
+            String collectorStatus = "processing";
+            if ("completed".equals(actualStatus) || "paid".equals(actualStatus) || "delivered".equals(actualStatus)) {
+                collectorStatus = "completed";
+            }
+
+            response.put("status", actualStatus);
+            response.put("collectorStatus", collectorStatus);
+            response.put("displayStatus", collectorStatus);
+
+            // Основная информация
             response.put("message", "Заказ успешно создан");
+            response.put("success", true);
             response.put("totalAmount", finalAmount);
             response.put("cartId", cartId);
             response.put("userId", userId);
-            response.put("itemsCount", processedItems.size());
-            response.put("items", processedItems);
             response.put("timestamp", new Date());
-            response.put("success", true);
-            response.put("stockUpdated", stockUpdated);
-            response.put("stockUpdateResults", stockUpdateResults);
-            response.put("stockUpdateTimestamp", new Date());
 
-            // ДОБАВЛЯЕМ ПРОВЕРЕННЫЙ СТАТУС КОРЗИНЫ
-            try {
-                String verifiedCartStatus = jdbcTemplate.queryForObject(
-                        "SELECT status FROM carts WHERE id = ?",
-                        String.class, cartId);
-                response.put("cartStatus", verifiedCartStatus);
-                log.info("✅ Финальный статус корзины {} в БД: '{}'", cartId, verifiedCartStatus);
-            } catch (Exception e) {
-                log.warn("⚠️ Не удалось получить финальный статус корзины: {}", e.getMessage());
-                response.put("cartStatus", "unknown");
+            // Информация о товарах с деталями дублирования
+            int totalUnits = successfullyAddedItems.stream()
+                    .mapToInt(i -> (Integer) i.get("quantity"))
+                    .sum();
+
+            response.put("itemsCount", successfullyAddedItems.size());
+            response.put("totalItemsUnits", totalUnits);
+            response.put("totalDuplicatedEntries", totalDuplicatedEntries);
+
+            // Детальная информация о каждой созданной записи
+            List<Map<String, Object>> detailedItems = successfullyAddedItems.stream()
+                    .map(item -> {
+                        Map<String, Object> detail = new HashMap<>();
+                        detail.put("productId", item.get("productId"));
+                        detail.put("productName", item.get("name"));
+                        detail.put("quantity", item.get("quantity"));
+                        detail.put("price", item.get("price"));
+                        detail.put("originalCount", item.get("originalCount"));
+                        detail.put("cartItemIds", item.get("cartItemIds"));
+                        detail.put("duplicatedEntries", item.get("duplicatedEntries"));
+                        detail.put("entriesCreated", ((List<?>) item.get("cartItemIds")).size());
+                        return detail;
+                    })
+                    .collect(Collectors.toList());
+
+            response.put("items", detailedItems);
+
+            if (!failedItems.isEmpty()) {
+                response.put("failedItems", failedItems);
             }
+
+            // Информация об обновлении стоков
+            response.put("stockUpdated", allStocksUpdated);
+            response.put("stockUpdateResults", stockUpdateResults);
 
             long successfullyUpdated = stockUpdateResults.stream()
                     .filter(r -> Boolean.TRUE.equals(r.get("updated")))
                     .count();
 
-            log.info("✅ Заказ создан: {} для пользователя {}", response.get("id"), userId);
-            log.info("📦 Обновлено товаров: {}/{}", successfullyUpdated, processedItems.size());
-            log.info("🏷️ Статусы - Фактический: {}, Для сборщика: {}", actualStatus, collectorStatus);
+            response.put("successfullyUpdatedStock", successfullyUpdated);
+            response.put("failedToUpdateStock", successfullyAddedItems.size() - successfullyUpdated);
+
+            // Статус корзины
+            try {
+                String cartStatus = jdbcTemplate.queryForObject(
+                        "SELECT status FROM carts WHERE id = ?",
+                        String.class, cartId);
+                response.put("cartStatus", cartStatus);
+            } catch (Exception e) {
+                response.put("cartStatus", "unknown");
+            }
+
+            // Подробное логирование результата
+            log.info("🎯 ЗАКАЗ УСПЕШНО СОЗДАН:");
+            log.info("   ID: {}", response.get("id"));
+            log.info("   Корзина: {}", cartId);
+            log.info("   Пользователь: {}", userId);
+            log.info("   Товаров: {} позиций, {} единиц",
+                    successfullyAddedItems.size(), totalUnits);
+            log.info("   Создано записей в cart_items: {}", totalDuplicatedEntries);
+            log.info("   Статус: {}", actualStatus);
+            log.info("   Сумма: {}", finalAmount);
+            log.info("   Обновление стоков: {}", allStocksUpdated ? "✅" : "⚠️");
+
+            if (!failedItems.isEmpty()) {
+                log.warn("   ⚠️ Не удалось добавить {} позиций", failedItems.size());
+            }
 
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
         } catch (Exception e) {
-            log.error("❌ Необработанная ошибка при создании заказа: {}", e.getMessage(), e);
+            log.error("❌ КРИТИЧЕСКАЯ ОШИБКА ПРИ СОЗДАНИИ ЗАКАЗА:", e);
+
+            // Очищаем корзину если она была создана
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Ошибка при создании заказа", "message", e.getMessage(), "success", false, "timestamp", new Date()));
+                    .body(Map.of(
+                            "error", "Внутренняя ошибка сервера",
+                            "message", e.getMessage(),
+                            "success", false,
+                            "timestamp", new Date()
+                    ));
         }
     }
 
@@ -1892,7 +2091,7 @@ WHERE id = ?
             }
 
             log.info("Добавление товара в корзину: cartId={}, productId={}", cartId, productId);
-            Map<String, Object> response = cartService.addToCart(cartId, productId, quantity, price);
+            Map<String, Object> response = cartService.addToCart(cartId, productId,1, price);
             return ResponseEntity.ok(response);
         } catch (FeignException e) {
             log.error("Ошибка Feign при добавлении в корзину: {}", e.contentUTF8());
