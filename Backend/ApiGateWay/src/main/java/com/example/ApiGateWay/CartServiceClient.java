@@ -20,6 +20,7 @@ public interface CartServiceClient {
                                   @RequestParam int quantity,
                                   @RequestParam double price);
 
+
     @GetMapping("/api/cart/client/{clientId}")
     List<Map<String, Object>> getClientCarts(@PathVariable int clientId);
 

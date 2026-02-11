@@ -34,14 +34,8 @@ public class CartController {
                               @RequestParam int productId,
                               @RequestParam int quantity,
                               @RequestParam double price) {
-        CartItem existingItem = cartItemRepository.findByCartIdAndProductId(cartId, productId);
-        if (existingItem != null) {
-            existingItem.setQuantity(existingItem.getQuantity() + quantity);
-            return cartItemRepository.save(existingItem);
-        } else {
-            CartItem newItem = new CartItem(cartId, productId, quantity, price);
-            return cartItemRepository.save(newItem);
-        }
+        CartItem newItem = new CartItem(cartId, productId, 1, price);
+        return cartItemRepository.save(newItem);
     }
 
     @GetMapping("/client/{clientId}")
