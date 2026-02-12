@@ -1,4 +1,4 @@
-// CollectorApp.jsx - полная версия с поддержкой starаyoshibka и Reshenie
+// CollectorApp.jsx - полная версия с ИСПРАВЛЕНИЯМИ (добавлены cartItemId)
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import './CollectorApp.css';
@@ -456,12 +456,9 @@ const CollectorApp = () => {
   const reportMissingItems = async () => {
     if (!selectedOrder || !canReportMissing()) return;
     
-const missingItems = selectedOrder.items.filter((_, index) => itemStatuses[index] === 'нет');
+    const missingItems = selectedOrder.items.filter((_, index) => itemStatuses[index] === 'нет');
 
     try {
-      // Собираем все товары со статусом 'нет'
-      
-      
       // Собираем товары со статусом 'есть' для starаyoshibka
       const availableItems = selectedOrder.items.filter((_, index) => itemStatuses[index] === 'есть');
       
@@ -473,13 +470,16 @@ const missingItems = selectedOrder.items.filter((_, index) => itemStatuses[index
         'http://localhost:8080/api/collector/report-missing-items',
         {
           cartId: selectedOrder.cart_id,
+          // ========== ИСПРАВЛЕНИЕ: добавляем cartItemId ==========
           missingItems: missingItems.map(item => ({
+            cartItemId: item.id,           // ← ДОБАВЛЕНО!
             productId: item.product_id,
             productName: item.product_name,
             quantity: item.quantity,
             warehouse: item.warehouse
           })),
           availableItems: availableItems.map(item => ({
+            cartItemId: item.id,           // ← ДОБАВЛЕНО!
             productId: item.product_id,
             productName: item.product_name,
             quantity: item.quantity,
@@ -555,17 +555,18 @@ const missingItems = selectedOrder.items.filter((_, index) => itemStatuses[index
       }
     }
     
-const availableItems = selectedOrder.items.filter((_, index) => itemStatuses[index] === 'есть');
+    const availableItems = selectedOrder.items.filter((_, index) => itemStatuses[index] === 'есть');
 
     try {
       // Собираем все товары со статусом 'есть'
-      
       
       const response = await axios.post(
         'http://localhost:8080/api/collector/complete-with-selected-items',
         {
           cartId: selectedOrder.cart_id,
+          // ========== ИСПРАВЛЕНИЕ: добавляем cartItemId ==========
           availableItems: availableItems.map(item => ({
+            cartItemId: item.id,           // ← ДОБАВЛЕНО!
             productId: item.product_id,
             productName: item.product_name,
             quantity: item.quantity,
