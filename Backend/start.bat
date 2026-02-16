@@ -1,7 +1,7 @@
 @echo off
 chcp 65001 > nul
 
-set SERVICES=ApiGateway Auth User Sklad Delivery Collector Backet Office TransactionSaga
+set SERVICES=ApiGateway Auth User Sklad Delivery Collector Backet Office TransactionSaga Payment
 set COUNT=0
 
 for %%s in (%SERVICES%) do call :start_service %%s

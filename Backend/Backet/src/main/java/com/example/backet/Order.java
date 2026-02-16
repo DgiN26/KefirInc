@@ -2,6 +2,8 @@
 package com.example.backet;
 
 import jakarta.persistence.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -17,8 +19,8 @@ public class Order {
     @Column(name = "order_number")
     private String orderNumber;
 
-    @Column(name = "total_amount")
-    private double totalAmount;
+    @Column(name = "total_amount", precision = 10, scale = 2)
+    private BigDecimal totalAmount;
 
     @Column(name = "status")
     private String status;
@@ -31,12 +33,12 @@ public class Order {
         this.createdDate = LocalDateTime.now();
     }
 
-    public Order(int cartId, String orderNumber, double totalAmount, String status) {
+    public Order(int cartId, String orderNumber, BigDecimal totalAmount, String status, LocalDateTime createdDate) {
         this.cartId = cartId;
         this.orderNumber = orderNumber;
         this.totalAmount = totalAmount;
         this.status = status;
-        this.createdDate = LocalDateTime.now();
+        this.createdDate = createdDate;
     }
 
     // Геттеры и сеттеры
@@ -49,8 +51,8 @@ public class Order {
     public String getOrderNumber() { return orderNumber; }
     public void setOrderNumber(String orderNumber) { this.orderNumber = orderNumber; }
 
-    public double getTotalAmount() { return totalAmount; }
-    public void setTotalAmount(double totalAmount) { this.totalAmount = totalAmount; }
+    public BigDecimal getTotalAmount() { return totalAmount; }
+    public void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }

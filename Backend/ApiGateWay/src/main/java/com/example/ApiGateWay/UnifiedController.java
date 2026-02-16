@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -46,6 +47,9 @@ public class UnifiedController {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private PaymentServiceClient paymentServiceClient;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -704,6 +708,7 @@ public class UnifiedController {
             return ResponseEntity.status(e.status()).body(Map.of("error", "Ошибка: " + e.getMessage()));
         }
     }
+
     @PostMapping("/support/update-order-status")
     public ResponseEntity<?> updateOrderStatus(@RequestBody Map<String, Object> request) {
         try {
@@ -1557,6 +1562,61 @@ WHERE id = ?
     }
 
     // ==================== БЛОК 7: ЗАКАЗЫ (ORDERS) - из первого файла ====================
+    /**
+     * Получить заказ по ID корзины
+     */
+    @GetMapping("/orders/by-cart/{cartId}")
+    public ResponseEntity<?> getOrderByCartId(@PathVariable Integer cartId) {
+        try {
+            log.info("🔍 Поиск заказа по cart_id: {}", cartId);
+
+            // Пробуем получить заказ из таблицы orders
+            String sql = "SELECT * FROM orders WHERE cart_id = ?";
+            Map<String, Object> order;
+
+            try {
+                order = jdbcTemplate.queryForMap(sql, cartId);
+            } catch (EmptyResultDataAccessException e) {
+                log.info("Заказ для корзины {} не найден", cartId);
+                return ResponseEntity.ok(Map.of(
+                        "success", false,
+                        "message", "Заказ не найден",
+                        "cartId", cartId
+                ));
+            }
+
+            // Получаем номер заказа (может быть в разных полях)
+            String orderNumber = (String) order.get("order_number");
+            if (orderNumber == null) {
+                orderNumber = (String) order.get("orderNumber");
+            }
+            if (orderNumber == null) {
+                // Если нет поля с номером, генерируем из ID
+                orderNumber = "ORD-" + order.get("id");
+            }
+
+            log.info("✅ Найден заказ: {}", orderNumber);
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "cartId", cartId,
+                    "orderId", order.get("id"),
+                    "orderNumber", orderNumber,
+                    "status", order.get("status"),
+                    "totalAmount", order.get("total_amount")
+            ));
+
+        } catch (Exception e) {
+            log.error("❌ Ошибка при поиске заказа по cart_id {}: {}", cartId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of(
+                            "success", false,
+                            "error", "Ошибка при поиске заказа",
+                            "message", e.getMessage()
+                    ));
+        }
+    }
+
     @PostMapping("/orders")
     public ResponseEntity<?> createOrder(@RequestBody Map<String, Object> orderRequest,
                                          @RequestHeader(value = "Authorization", required = false) String authHeader) {
@@ -1585,6 +1645,9 @@ WHERE id = ?
             if (items == null || items.isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Корзина пуста", "success", false));
             }
+
+            // Получаем статус оплаты из запроса (по умолчанию false)
+            boolean isPaid = orderRequest.containsKey("isPaid") && Boolean.TRUE.equals(orderRequest.get("isPaid"));
 
             // ========= ШАГ 3: ПРОВЕРКА ТОВАРОВ ПЕРЕД СОЗДАНИЕМ КОРЗИНЫ =========
             log.info("=== ПРОВЕРКА ТОВАРОВ ===");
@@ -1716,8 +1779,8 @@ WHERE id = ?
                         .body(Map.of("error", "Не удалось создать корзину", "details", e.getMessage(), "success", false));
             }
 
-            // ========= ШАГ 5: ДОБАВЛЕНИЕ ТОВАРОВ В КОРЗИНУ С ДУБЛИРОВАНИЕМ =========
-            log.info("=== ДОБАВЛЕНИЕ ТОВАРОВ В КОРЗИНУ {} С ДУБЛИРОВАНИЕМ ЗАПИСЕЙ ===", cartId);
+            // ========= ШАГ 5: ДОБАВЛЕНИЕ ТОВАРОВ В КОРЗИНУ =========
+            log.info("=== ДОБАВЛЕНИЕ ТОВАРОВ В КОРЗИНУ {} ===", cartId);
             List<Map<String, Object>> successfullyAddedItems = new ArrayList<>();
             List<Map<String, Object>> failedItems = new ArrayList<>();
 
@@ -1737,30 +1800,16 @@ WHERE id = ?
                 boolean allAdded = true;
                 int successfulAdds = 0;
 
-                // ВАЖНО: Создаем отдельную запись для КАЖДОЙ единицы товара
                 for (int i = 0; i < quantity; i++) {
                     try {
-                        // Вызываем addToCart с quantity=1 для каждой единицы
                         Map<String, Object> addResponse = cartService.addToCart(
                                 cartId,
                                 productId,
-                                1, // Всегда 1 для создания отдельной записи
+                                1,
                                 price
                         );
                         addResponses.add(addResponse);
                         successfulAdds++;
-
-                        // Извлекаем ID созданной записи
-                        Object itemIdObj = addResponse.get("id");
-                        if (itemIdObj == null) {
-                            itemIdObj = addResponse.get("itemId");
-                        }
-                        if (itemIdObj == null) {
-                            itemIdObj = addResponse.get("cartItemId");
-                        }
-
-                        log.debug("  ➕ Добавлена запись {}/{} для товара ID {}: {}",
-                                i + 1, quantity, productId, itemIdObj);
 
                     } catch (FeignException e) {
                         log.error("  ❌ Ошибка добавления записи {}/{} для товара {}: Status={}, Body={}",
@@ -1820,7 +1869,6 @@ WHERE id = ?
             // ========= ШАГ 6: РАСЧЕТ ИТОГОВОЙ СУММЫ =========
             Double finalAmount = totalAmount != null ? totalAmount : calculatedTotal;
             log.info("💰 Итоговая сумма заказа: {} (расчетная: {})", finalAmount, calculatedTotal);
-            log.info("📊 Создано всего записей в cart_items: {}", totalDuplicatedEntries);
 
             // ========= ШАГ 7: ОФОРМЛЕНИЕ ЗАКАЗА =========
             log.info("=== ОФОРМЛЕНИЕ ЗАКАЗА ===");
@@ -1847,7 +1895,9 @@ WHERE id = ?
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
             }
 
-            // ========= ШАГ 8: ИСПРАВЛЕНИЕ СТАТУСА КОРЗИНЫ =========
+            // ========= ШАГ 8: УСТАНОВКА СТАТУСА КОРЗИНЫ =========
+            String orderStatus = isPaid ? "completed" : "pending";
+
             try {
                 String currentStatus = jdbcTemplate.queryForObject(
                         "SELECT status FROM carts WHERE id = ?",
@@ -1855,71 +1905,77 @@ WHERE id = ?
 
                 log.info("📊 Текущий статус корзины {}: {}", cartId, currentStatus);
 
-                if (!"processing".equals(currentStatus)) {
+                if (!orderStatus.equals(currentStatus)) {
                     int updated = jdbcTemplate.update(
-                            "UPDATE carts SET status = 'processing' WHERE id = ?",
-                            cartId);
-                    log.info("🔄 Исправлен статус корзины {}: обновлено строк {}", cartId, updated);
+                            "UPDATE carts SET status = ? WHERE id = ?",
+                            orderStatus, cartId);
+                    log.info("🔄 Установлен статус {} для корзины {}: обновлено строк {}",
+                            orderStatus, cartId, updated);
                 }
             } catch (Exception e) {
                 log.warn("⚠️ Не удалось проверить/исправить статус корзины: {}", e.getMessage());
             }
 
-            // ========= ШАГ 9: ОБНОВЛЕНИЕ ОСТАТКОВ ТОВАРОВ =========
-            log.info("=== ОБНОВЛЕНИЕ ОСТАТКОВ ТОВАРОВ ===");
+            // ========= ШАГ 9: ОБНОВЛЕНИЕ ОСТАТКОВ ТОВАРОВ (ТОЛЬКО ЕСЛИ ОПЛАЧЕНО) =========
             List<Map<String, Object>> stockUpdateResults = new ArrayList<>();
             boolean allStocksUpdated = true;
 
-            for (Map<String, Object> item : successfullyAddedItems) {
-                try {
-                    Integer productId = (Integer) item.get("productId");
-                    Integer quantity = (Integer) item.get("quantity");
-                    Integer originalCount = (Integer) item.get("originalCount");
-                    String productName = (String) item.get("name");
+            if (isPaid) {
+                log.info("=== ОБНОВЛЕНИЕ ОСТАТКОВ ТОВАРОВ (ЗАКАЗ ОПЛАЧЕН) ===");
 
-                    Integer newCount = Math.max(0, originalCount - quantity);
-
-                    Map<String, Object> updates = new HashMap<>();
-                    updates.put("count", newCount);
-
-                    Map<String, Object> updateResult = new HashMap<>();
-                    updateResult.put("productId", productId);
-                    updateResult.put("productName", productName);
-                    updateResult.put("orderedQuantity", quantity);
-                    updateResult.put("originalCount", originalCount);
-                    updateResult.put("newCount", newCount);
-
+                for (Map<String, Object> item : successfullyAddedItems) {
                     try {
-                        Map<String, Object> updatedProduct = productServiceClient.updateProduct(productId, updates);
-                        Object updatedCount = updatedProduct.get("count");
+                        Integer productId = (Integer) item.get("productId");
+                        Integer quantity = (Integer) item.get("quantity");
+                        Integer originalCount = (Integer) item.get("originalCount");
+                        String productName = (String) item.get("name");
 
-                        if (updatedCount != null) {
-                            Integer actualNewCount = 0;
-                            if (updatedCount instanceof Integer) {
-                                actualNewCount = (Integer) updatedCount;
-                            } else if (updatedCount instanceof Number) {
-                                actualNewCount = ((Number) updatedCount).intValue();
+                        Integer newCount = Math.max(0, originalCount - quantity);
+
+                        Map<String, Object> updates = new HashMap<>();
+                        updates.put("count", newCount);
+
+                        Map<String, Object> updateResult = new HashMap<>();
+                        updateResult.put("productId", productId);
+                        updateResult.put("productName", productName);
+                        updateResult.put("orderedQuantity", quantity);
+                        updateResult.put("originalCount", originalCount);
+                        updateResult.put("newCount", newCount);
+
+                        try {
+                            Map<String, Object> updatedProduct = productServiceClient.updateProduct(productId, updates);
+                            Object updatedCount = updatedProduct.get("count");
+
+                            if (updatedCount != null) {
+                                Integer actualNewCount = 0;
+                                if (updatedCount instanceof Integer) {
+                                    actualNewCount = (Integer) updatedCount;
+                                } else if (updatedCount instanceof Number) {
+                                    actualNewCount = ((Number) updatedCount).intValue();
+                                }
+
+                                updateResult.put("actualNewCount", actualNewCount);
+                                updateResult.put("updated", true);
+                                log.info("  ✅ Товар {} (ID:{}): остаток обновлен с {} до {}",
+                                        productName, productId, originalCount, actualNewCount);
                             }
-
-                            updateResult.put("actualNewCount", actualNewCount);
-                            updateResult.put("updated", true);
-                            log.info("  ✅ Товар {} (ID:{}): остаток обновлен с {} до {}",
-                                    productName, productId, originalCount, actualNewCount);
+                        } catch (FeignException e) {
+                            log.error("  ❌ Ошибка обновления товара {} (ID:{}): {}",
+                                    productName, productId, e.getMessage());
+                            updateResult.put("updated", false);
+                            updateResult.put("error", e.getMessage());
+                            allStocksUpdated = false;
                         }
-                    } catch (FeignException e) {
-                        log.error("  ❌ Ошибка обновления товара {} (ID:{}): {}",
-                                productName, productId, e.getMessage());
-                        updateResult.put("updated", false);
-                        updateResult.put("error", e.getMessage());
+
+                        stockUpdateResults.add(updateResult);
+
+                    } catch (Exception e) {
+                        log.error("Ошибка при обновлении остатка: {}", e.getMessage());
                         allStocksUpdated = false;
                     }
-
-                    stockUpdateResults.add(updateResult);
-
-                } catch (Exception e) {
-                    log.error("Ошибка при обновлении остатка: {}", e.getMessage());
-                    allStocksUpdated = false;
                 }
+            } else {
+                log.info("=== ЗАКАЗ НЕ ОПЛАЧЕН, ТОВАРЫ НЕ СПИСЫВАЮТСЯ ===");
             }
 
             // ========= ШАГ 10: ФОРМИРОВАНИЕ ОТВЕТА =========
@@ -1929,22 +1985,12 @@ WHERE id = ?
             Object checkoutId = checkoutResponse.get("id");
             if (checkoutId == null) checkoutId = checkoutResponse.get("orderId");
             if (checkoutId == null) checkoutId = checkoutResponse.get("order_id");
-            response.put("id", checkoutId != null ? checkoutId.toString() : "ORD-" + System.currentTimeMillis());
+            String ordStr = checkoutId != null ? checkoutId.toString() : "ORD-" + System.currentTimeMillis();
+            response.put("id", ordStr);
 
-            // Статусы
-            String actualStatus = "processing";
-            if (checkoutResponse.get("status") != null) {
-                actualStatus = checkoutResponse.get("status").toString().toLowerCase();
-            }
-
-            String collectorStatus = "processing";
-            if ("completed".equals(actualStatus) || "paid".equals(actualStatus) || "delivered".equals(actualStatus)) {
-                collectorStatus = "completed";
-            }
-
-            response.put("status", actualStatus);
-            response.put("collectorStatus", collectorStatus);
-            response.put("displayStatus", collectorStatus);
+            // Статус
+            response.put("status", orderStatus);
+            response.put("isPaid", isPaid);
 
             // Основная информация
             response.put("message", "Заказ успешно создан");
@@ -1954,7 +2000,7 @@ WHERE id = ?
             response.put("userId", userId);
             response.put("timestamp", new Date());
 
-            // Информация о товарах с деталями дублирования
+            // Информация о товарах
             int totalUnits = successfullyAddedItems.stream()
                     .mapToInt(i -> (Integer) i.get("quantity"))
                     .sum();
@@ -1963,7 +2009,7 @@ WHERE id = ?
             response.put("totalItemsUnits", totalUnits);
             response.put("totalDuplicatedEntries", totalDuplicatedEntries);
 
-            // Детальная информация о каждой созданной записи
+            // Детальная информация о товарах
             List<Map<String, Object>> detailedItems = successfullyAddedItems.stream()
                     .map(item -> {
                         Map<String, Object> detail = new HashMap<>();
@@ -1985,16 +2031,18 @@ WHERE id = ?
                 response.put("failedItems", failedItems);
             }
 
-            // Информация об обновлении стоков
-            response.put("stockUpdated", allStocksUpdated);
-            response.put("stockUpdateResults", stockUpdateResults);
+            // Информация об обновлении стоков (только если было списание)
+            if (isPaid) {
+                response.put("stockUpdated", allStocksUpdated);
+                response.put("stockUpdateResults", stockUpdateResults);
 
-            long successfullyUpdated = stockUpdateResults.stream()
-                    .filter(r -> Boolean.TRUE.equals(r.get("updated")))
-                    .count();
+                long successfullyUpdated = stockUpdateResults.stream()
+                        .filter(r -> Boolean.TRUE.equals(r.get("updated")))
+                        .count();
 
-            response.put("successfullyUpdatedStock", successfullyUpdated);
-            response.put("failedToUpdateStock", successfullyAddedItems.size() - successfullyUpdated);
+                response.put("successfullyUpdatedStock", successfullyUpdated);
+                response.put("failedToUpdateStock", successfullyAddedItems.size() - successfullyUpdated);
+            }
 
             // Статус корзины
             try {
@@ -2003,31 +2051,16 @@ WHERE id = ?
                         String.class, cartId);
                 response.put("cartStatus", cartStatus);
             } catch (Exception e) {
-                response.put("cartStatus", "unknown");
+                response.put("cartStatus", orderStatus);
             }
 
-            // Подробное логирование результата
-            log.info("🎯 ЗАКАЗ УСПЕШНО СОЗДАН:");
-            log.info("   ID: {}", response.get("id"));
-            log.info("   Корзина: {}", cartId);
-            log.info("   Пользователь: {}", userId);
-            log.info("   Товаров: {} позиций, {} единиц",
-                    successfullyAddedItems.size(), totalUnits);
-            log.info("   Создано записей в cart_items: {}", totalDuplicatedEntries);
-            log.info("   Статус: {}", actualStatus);
-            log.info("   Сумма: {}", finalAmount);
-            log.info("   Обновление стоков: {}", allStocksUpdated ? "✅" : "⚠️");
-
-            if (!failedItems.isEmpty()) {
-                log.warn("   ⚠️ Не удалось добавить {} позиций", failedItems.size());
-            }
+            log.info("🎯 ЗАКАЗ УСПЕШНО СОЗДАН: ID={}, статус={}, оплачен={}",
+                    response.get("id"), orderStatus, isPaid);
 
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
         } catch (Exception e) {
             log.error("❌ КРИТИЧЕСКАЯ ОШИБКА ПРИ СОЗДАНИИ ЗАКАЗА:", e);
-
-            // Очищаем корзину если она была создана
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of(
                             "error", "Внутренняя ошибка сервера",
@@ -5470,6 +5503,32 @@ public ResponseEntity<?> getProcessingOrders(
         );
     }
 
+    @PostMapping("/payments/withdraw")  // Добавить если нет
+    public ResponseEntity<?> withdraw(
+            @RequestBody Map<String, Object> request,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+
+        try {
+            Integer userId = extractUserIdFromToken(authHeader);
+
+            Map<String, Object> withdrawRequest = new HashMap<>();
+            withdrawRequest.put("user_id", userId);
+            withdrawRequest.put("amount", request.get("amount"));
+            withdrawRequest.put("order_id", request.get("order_id"));
+            withdrawRequest.put("description", request.get("description"));
+
+            ResponseEntity<Map<String, Object>> withdrawResponse =
+                    paymentServiceClient.withdraw(withdrawRequest);
+
+            return ResponseEntity.ok(withdrawResponse.getBody());
+
+        } catch (Exception e) {
+            log.error("Ошибка при списании: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "error", e.getMessage()));
+        }
+    }
+
     @GetMapping("/clients/{clientId}/deliveries-info")
     public Map<String, Object> getClientWithDeliveries(@PathVariable Integer clientId) {
         Object client = clientService.getClient(clientId);
@@ -5601,6 +5660,332 @@ public ResponseEntity<?> getProcessingOrders(
                         "diskSpace", Map.of("status", "UP", "details", Map.of("total", 1000000000, "free", 500000000, "threshold", 10485760)),
                         "ping", Map.of("status", "UP")
                 )
+        ));
+    }
+
+    // ==================== БЛОК: PAYMENTS ====================
+
+    /**
+     * Подтверждение оплаты заказа и списание товаров
+     */
+    @PostMapping("/orders/{orderId}/confirm-payment")
+    public ResponseEntity<?> confirmOrderPayment(
+            @PathVariable String orderId,  // Это order_number из таблицы orders
+            @RequestBody Map<String, Object> paymentData,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+
+        try {
+            log.info("💰 Подтверждение оплаты заказа #{}, данные: {}", orderId, paymentData);
+
+            // 1. Получаем информацию о заказе из таблицы orders по order_number
+            String getOrderSql = "SELECT * FROM orders WHERE order_number = ?";
+            Map<String, Object> order = jdbcTemplate.queryForMap(getOrderSql, orderId);
+
+            // Получаем cart_id из заказа (это число)
+            Integer cartId = (Integer) order.get("cart_id");
+            log.info("📦 Найден заказ, cart_id = {}", cartId);
+
+            // 2. Получаем товары из корзины по cart_id
+            String getItemsSql = "SELECT * FROM cart_items WHERE cart_id = ?";
+            List<Map<String, Object>> items = jdbcTemplate.queryForList(getItemsSql, cartId);
+
+            // 3. СПИСЫВАЕМ ТОВАРЫ СО СКЛАДА
+            int itemsSpent = 0;
+            for (Map<String, Object> item : items) {
+                Integer productId = (Integer) item.get("product_id");
+                Integer quantity = (Integer) item.get("quantity");
+
+                if (productId != null && quantity != null && quantity > 0) {
+                    // Проверяем наличие
+                    String checkSql = "SELECT count FROM usersklad WHERE id = ?";
+                    Integer availableCount = jdbcTemplate.queryForObject(checkSql, Integer.class, productId);
+
+                    if (availableCount != null && availableCount >= quantity) {
+                        // Списание
+                        String updateSql = "UPDATE usersklad SET count = count - ? WHERE id = ?";
+                        jdbcTemplate.update(updateSql, quantity, productId);
+                        itemsSpent++;
+                        log.info("✅ Списано {} шт. товара {}", quantity, productId);
+                    } else {
+                        log.warn("⚠️ Товар ID {} отсутствует на складе", productId);
+                    }
+                }
+            }
+
+            // 4. Обновляем статус корзины на "processing"
+            String updateCartSql = "UPDATE carts SET status = 'processing' WHERE id = ?";
+            jdbcTemplate.update(updateCartSql, cartId);
+
+            log.info("✅ Заказ #{} оплачен, статус обновлен на 'processing', списано {} товаров",
+                    orderId, itemsSpent);
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "Оплата подтверждена, заказ обрабатывается",
+                    "orderId", orderId,
+                    "itemsSpent", itemsSpent
+            ));
+
+        } catch (EmptyResultDataAccessException e) {
+            log.error("❌ Заказ с номером {} не найден", orderId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("success", false, "error", "Заказ не найден"));
+        } catch (Exception e) {
+            log.error("❌ Ошибка при подтверждении оплаты: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/payments/create-account")
+    public ResponseEntity<?> createPaymentAccount(
+            @RequestBody Map<String, Object> request,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+
+        try {
+            log.info("💰 Создание платежного счета: {}", request);
+
+            // Извлекаем userId из токена если не передан в запросе
+            if (!request.containsKey("user_id") && authHeader != null) {
+                Integer userId = extractUserIdFromToken(authHeader);
+                request.put("user_id", userId);
+            }
+
+            // Убеждаемся что роль указана
+            if (!request.containsKey("role")) {
+                request.put("role", "client");
+            }
+
+            // ЕСЛИ ЕСТЬ НОМЕР КАРТЫ, ОН УЖЕ ДОЛЖЕН БЫТЬ В ЗАПРОСЕ
+            // НИЧЕГО ДОБАВЛЯТЬ НЕ НУЖНО
+
+            log.info("📦 Отправляем в payment-service: {}", request);
+
+            ResponseEntity<Map<String, Object>> response =
+                    paymentServiceClient.createClientAccount(request);
+
+            return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
+
+        } catch (Exception e) {
+            log.error("❌ Ошибка создания платежного счета: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Проверка существования счета
+     */
+    @GetMapping("/payments/account-exists/{userId}")
+    public ResponseEntity<?> checkAccountExists(@PathVariable Long userId) {
+        try {
+            log.info("🔍 Проверка существования счета для userId: {}", userId);
+
+            ResponseEntity<Map<String, Object>> response =
+                    paymentServiceClient.accountExists(userId);
+
+            return ResponseEntity.ok(response.getBody());
+
+        } catch (FeignException.NotFound e) {
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "user_id", userId,
+                    "account_exists", false
+            ));
+        } catch (Exception e) {
+            log.error("❌ Ошибка проверки счета: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Получить информацию о счете (баланс + номер счета)
+     */
+    @GetMapping("/payments/account-info/{userId}")
+    public ResponseEntity<?> getAccountInfo(@PathVariable Long userId) {
+        try {
+            log.info("📊 Получение информации о счете для userId: {}", userId);
+
+            // Получаем баланс
+            ResponseEntity<Map<String, Object>> balanceResponse =
+                    paymentServiceClient.getBalance(userId);
+
+            Map<String, Object> balanceData = balanceResponse.getBody();
+
+            if (balanceData != null && "success".equals(balanceData.get("status"))) {
+                // Формируем полную информацию о счете
+                Map<String, Object> accountInfo = new HashMap<>();
+                accountInfo.put("userId", userId);
+                accountInfo.put("balance", balanceData.get("balance"));
+                accountInfo.put("accountNumber", "PA-" + String.format("%08d", userId));
+                accountInfo.put("status", "active");
+
+                return ResponseEntity.ok(Map.of(
+                        "success", true,
+                        "account", accountInfo
+                ));
+            } else {
+                return ResponseEntity.ok(Map.of(
+                        "success", false,
+                        "message", "Счет не найден"
+                ));
+            }
+
+        } catch (FeignException.NotFound e) {
+            return ResponseEntity.ok(Map.of(
+                    "success", false,
+                    "message", "Счет не найден"
+            ));
+        } catch (Exception e) {
+            log.error("❌ Ошибка получения информации о счете: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "error", e.getMessage()));
+        }
+    }
+
+    /* Создание платежного счета при регистрации клиента */
+    @PostMapping("/clients/register-with-payment")
+    public ResponseEntity<?> registerWithPayment(@RequestBody Map<String, Object> userData) {
+        try {
+            // 1. Регистрируем пользователя
+            Map<String, Object> registrationResponse = clientService.registerUser(userData);
+
+            if (registrationResponse.containsKey("success") &&
+                    Boolean.TRUE.equals(registrationResponse.get("success"))) {
+
+                Integer userId = (Integer) registrationResponse.get("id");
+
+                // 2. Создаем платежный счет
+                Map<String, Object> paymentRequest = new HashMap<>();
+                paymentRequest.put("user_id", userId);
+                paymentRequest.put("role", "client");
+
+                ResponseEntity<Map<String, Object>> paymentResponse =
+                        paymentServiceClient.createClientAccount(paymentRequest);
+
+                if (paymentResponse.getStatusCode().is2xxSuccessful()) {
+                    return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+                            "success", true,
+                            "message", "Пользователь зарегистрирован и платежный счет создан",
+                            "user", registrationResponse,
+                            "payment", paymentResponse.getBody()
+                    ));
+                }
+            }
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(registrationResponse);
+
+        } catch (Exception e) {
+            log.error("Ошибка при регистрации с платежным счетом: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "error", e.getMessage()));
+        }
+    }
+
+    /* Оплата заказа */
+    @PostMapping("/orders/{orderId}/pay")
+    public ResponseEntity<?> payOrder(
+            @PathVariable Long orderId,
+            @RequestBody Map<String, Object> paymentData,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+
+        try {
+            // 1. Извлекаем userId из токена
+            Integer userId = extractUserIdFromToken(authHeader);
+            Map<String, Object> paymentRequest = new HashMap<>();
+            paymentRequest.put("client_id", userId);
+            paymentRequest.put("driver_id", 456); // ID водителя из заказа
+            paymentRequest.put("amount", paymentData.get("amount"));
+            paymentRequest.put("order_id", orderId);
+
+            ResponseEntity<Map<String, Object>> paymentResponse =
+                    paymentServiceClient.payForOrder(paymentRequest);
+
+            return ResponseEntity.ok(paymentResponse.getBody());
+
+        } catch (Exception e) {
+            log.error("Ошибка при оплате заказа: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "error", e.getMessage()));
+        }
+    }
+
+    /* Получить баланс текущего пользователя */
+    @GetMapping("/payments/my-balance")
+    public ResponseEntity<?> getMyBalance(
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+
+        try {
+            Integer userId = extractUserIdFromToken(authHeader);
+
+            ResponseEntity<Map<String, Object>> balanceResponse =
+                    paymentServiceClient.getBalance(userId.longValue());
+
+            return ResponseEntity.ok(balanceResponse.getBody());
+
+        } catch (Exception e) {
+            log.error("Ошибка при получении баланса: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "error", e.getMessage()));
+        }
+    }
+
+    /* Пополнить баланс */
+    @PostMapping("/payments/deposit")
+
+    public ResponseEntity<?> deposit(
+            @RequestBody Map<String, Object> request,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+
+        try {
+            Integer userId = extractUserIdFromToken(authHeader);
+
+            Map<String, Object> depositRequest = new HashMap<>();
+            depositRequest.put("user_id", userId);
+            depositRequest.put("amount", request.get("amount"));
+            depositRequest.put("order_id", request.get("order_id"));
+            depositRequest.put("description", request.get("description"));
+
+            ResponseEntity<Map<String, Object>> depositResponse =
+                    paymentServiceClient.deposit(depositRequest);
+
+            return ResponseEntity.ok(depositResponse.getBody());
+
+        } catch (Exception e) {
+            log.error("Ошибка при пополнении: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "error", e.getMessage()));
+        }
+    }
+
+    /* Получить историю транзакций пользователя */
+    @GetMapping("/payments/my-transactions")
+    public ResponseEntity<?> getMyTransactions(
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+
+        try {
+            Integer userId = extractUserIdFromToken(authHeader);
+
+            ResponseEntity<Map<String, Object>> transactionsResponse =
+                    paymentServiceClient.getTransactionHistory(userId.longValue());
+
+            return ResponseEntity.ok(transactionsResponse.getBody());
+
+        } catch (Exception e) {
+            log.error("Ошибка при получении истории: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/payments/health")
+    public ResponseEntity<Map<String, Object>> PaymentsHealth() {
+        return ResponseEntity.ok(Map.of(
+                "status", "UP",
+                "service", "api-stub",
+                "timestamp", Instant.now().toString(),
+                "version", "1.0.0"
         ));
     }
 }

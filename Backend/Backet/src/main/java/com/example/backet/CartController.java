@@ -3,6 +3,10 @@ package com.example.backet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -69,8 +73,14 @@ public class CartController {
 
             // 6. СОХРАНИТЬ ЗАКАЗ В БД (НОВОЕ!)
             String orderNumber = "ORD-" + System.currentTimeMillis();
-            Order order = new Order(cartId, orderNumber, totalAmount, "CREATED");
-            Order savedOrder = orderRepository.save(order); // ← Сохраняем в БД
+            // КОНВЕРТИРУЕМ double в BigDecimal с 2 знаками после запятой
+            BigDecimal bdTotalAmount = BigDecimal.valueOf(totalAmount)
+                    .setScale(2, RoundingMode.HALF_UP);
+
+            // ИСПОЛЬЗУЕМ BigDecimal В КОНСТРУКТОРЕ
+            Order order = new Order(cartId, orderNumber, bdTotalAmount, "CREATED", LocalDateTime.now());
+
+            Order savedOrder = orderRepository.save(order);
 
             // 7. Создать ответ
             Map<String, Object> response = new HashMap<>();
