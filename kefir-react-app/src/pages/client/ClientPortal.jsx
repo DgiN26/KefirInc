@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
+import PaymentModal from './PaymentModal';
 import '../../App.css';
 import './ClientPortal.css';
 
@@ -16,6 +17,9 @@ const ClientPortal = () => {
   const [showProductModal, setShowProductModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState('name-asc');
+  // Добавьте это состояние
+const [showPaymentModal, setShowPaymentModal] = useState(false);
+const [currentOrderDetails, setCurrentOrderDetails] = useState(null);
 
   const getAuthToken = useCallback(() => {
     return localStorage.getItem('token');
@@ -231,58 +235,108 @@ const fetchProducts = useCallback(async () => {
   return Number(cart.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(2));
 }, [cart]);
 
-  const handleCheckout = useCallback(async () => {
-    if (cart.length === 0) {
-      alert('Корзина пуста!');
-      return;
+const extractUserIdFromToken = useCallback((token) => {
+  try {
+    if (!token) return null;
+    
+    const cleanToken = token.replace('Bearer ', '');
+    
+    // Для auth-токенов
+    if (cleanToken.startsWith('auth-')) {
+      // TODO: Получить userId из auth сервиса
+      // Пока возвращаем заглушку
+      return 1;
     }
-
-    const token = getAuthToken();
-    if (!token) {
-      alert('Требуется авторизация. Пожалуйста, войдите в систему.');
-      return;
+    
+    // Для JWT токенов
+    if (cleanToken.includes('.')) {
+      const payload = JSON.parse(atob(cleanToken.split('.')[1]));
+      return payload.userId || payload.id || payload.sub;
     }
+    
+    return null;
+  } catch (err) {
+    console.error('Ошибка извлечения userId:', err);
+    return null;
+  }
+}, []);
 
-    try {
-      setOrderStatus('processing');
+const handleCheckout = useCallback(async () => {
+  if (cart.length === 0) {
+    alert('Корзина пуста!');
+    return;
+  }
+
+  const token = getAuthToken();
+  if (!token) {
+    alert('Требуется авторизация. Пожалуйста, войдите в систему.');
+    return;
+  }
+
+  try {
+    setOrderStatus('processing');
+    
+    // Извлекаем userId из токена
+    const userId = extractUserIdFromToken(token);
+    
+    // СОЗДАЕМ ЗАКАЗ СО СТАТУСОМ "PENDING" (товары НЕ списываются)
+    const orderData = {
+      userId: userId,
+      items: cart.map(item => ({
+        productId: item.id,
+        productName: item.name,
+        quantity: item.quantity,
+        price: item.price
+      })),
+      totalAmount: calculateTotal,
+      status: 'pending' // Важно! Статус "ожидает оплаты"
+    };
+
+    // Создаем заказ (без списания товаров!)
+    const response = await axios.post(
+      'http://localhost:8080/api/orders',
+      orderData,
+      getAuthHeaders()
+    );
+    
+    if (response.status === 200 || response.status === 201) {
+      const orderId = response.data.id || response.data.orderId;
       
-      const orderData = {
-        items: cart.map(item => ({
+      // Открываем модальное окно оплаты
+      setCurrentOrderDetails({
+        ...orderData,
+        orderId: orderId,
+        // Сохраняем копию корзины для списания после оплаты
+        items: [...cart.map(item => ({
           productId: item.id,
-          quantity: item.quantity
-        })),
-        totalAmount: calculateTotal
-      };
-
-      const response = await axios.post(
-        'http://localhost:8080/api/orders', 
-        orderData, 
-        getAuthHeaders()
-      );
+          quantity: item.quantity,
+          price: item.price,
+          name: item.name
+        }))]
+      });
+      setShowPaymentModal(true);
       
-      if (response.status === 200 || response.status === 201) {
-        setOrderStatus('success');
-        await fetchProducts();
-        setCart([]);
-        setTimeout(() => setOrderStatus(null), 3000);
-      }
-    } catch (err) {
-      console.error('Ошибка при оформлении заказа:', err);
+      // НЕ очищаем корзину сразу! Только после успешной оплаты
+      // setCart([]); - ЭТО НАДО УБРАТЬ
       
-      if (err.response?.status === 401) {
-        setOrderStatus('auth_error');
-        alert('Сессия истекла. Пожалуйста, войдите снова.');
-        localStorage.removeItem('token');
-      } else if (err.response?.status === 403) {
-        setOrderStatus('auth_error');
-        alert('Недостаточно прав для оформления заказа.');
-      } else {
-        setOrderStatus('error');
-      }
-      
-      setTimeout(() => setOrderStatus(null), 3000);
+      await fetchProducts(); // Обновляем каталог (но товары еще на складе)
     }
-  }, [cart, calculateTotal, getAuthToken, getAuthHeaders, fetchProducts]);
+  } catch (err) {
+    console.error('Ошибка при создании заказа:', err);
+    setOrderStatus('error');
+    setTimeout(() => setOrderStatus(null), 3000);
+  } finally {
+    setOrderStatus(null);
+  }
+}, [cart, calculateTotal, getAuthToken, getAuthHeaders, fetchProducts, extractUserIdFromToken]);
+
+const handlePaymentSuccess = useCallback((paymentData) => {
+  console.log('✅ Оплата успешна:', paymentData);
+  setOrderStatus('success');
+  setCart([]); // Очищаем корзину
+  fetchProducts(); // ← ЭТО ОБНОВИТ ТОВАРЫ
+  setTimeout(() => setOrderStatus(null), 3000);
+}, [fetchProducts]);
 
   return (
     <div className="client-portal-container">
@@ -709,6 +763,19 @@ const fetchProducts = useCallback(async () => {
       {showProductModal && (
         <div className="modal-backdrop show fade" onClick={() => setShowProductModal(false)}></div>
       )}
+
+      {/* Использование отдельного компонента модального окна */}
+<PaymentModal
+  show={showPaymentModal}
+  onClose={() => {
+    setShowPaymentModal(false);
+    setCurrentOrderDetails(null);
+  }}
+  orderDetails={currentOrderDetails}
+  onConfirm={handlePaymentSuccess}
+  onClearCart={() => setCart([])}
+  authToken={getAuthToken()} // Передаем токен для авторизации
+/>
     </div>
   );
 };

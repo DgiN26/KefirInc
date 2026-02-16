@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
+import PaymentModal from './PaymentModal';
 import './ClientCart.css';
 
 const ClientCart = () => {
@@ -8,6 +9,10 @@ const ClientCart = () => {
   const [error, setError] = useState('');
   const [selectedCart, setSelectedCart] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  
+  // Состояния для PaymentModal
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [currentOrderDetails, setCurrentOrderDetails] = useState(null);
 
   // Функция для получения clientId из localStorage
   const getClientId = useCallback(() => {
@@ -24,6 +29,11 @@ const ClientCart = () => {
     return null;
   }, []);
 
+  // Функция для получения токена
+  const getAuthToken = useCallback(() => {
+    return localStorage.getItem('token');
+  }, []);
+
   // Получаем корзины
   const fetchCarts = useCallback(async () => {
     try {
@@ -38,7 +48,7 @@ const ClientCart = () => {
         `http://localhost:8080/api/cart/client/${clientId}/full`
       );
       
-      console.log('Ответ от API:', response.data); // Для отладки
+      console.log('Ответ от API:', response.data);
       
       if (response.data.success) {
         return response.data.carts || [];
@@ -67,9 +77,18 @@ const ClientCart = () => {
 
       const cartsData = await fetchCarts();
 
-      console.log('Получено корзин:', cartsData.length);
+      console.log('Получено корзин до сортировки:', cartsData.length);
 
-      setCarts(cartsData);
+      // СОРТИРУЕМ ПО ВОЗРАСТАНИЮ ID
+      const sortedCarts = [...cartsData].sort((a, b) => {
+        const idA = a.id || 0;
+        const idB = b.id || 0;
+        return idB - idA; // По убыыванию
+      });
+
+      console.log('Получено корзин после сортировки:', sortedCarts.length);
+
+      setCarts(sortedCarts);
 
     } catch (err) {
       console.error('Ошибка при загрузке данных:', err);
@@ -88,6 +107,61 @@ const ClientCart = () => {
     setShowModal(false);
     setSelectedCart(null);
   };
+
+  // Функция открытия оплаты
+  const handleOpenPayment = async (cart) => {
+    console.log('📦 Открытие оплаты для корзины:', cart);
+    
+    const cartId = cart.id;
+    let orderNumber = null;
+    
+    try {
+      const orderResponse = await axios.get(
+        `http://localhost:8080/api/orders/by-cart/${cartId}`,
+        {
+          headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        }
+      );
+      
+      if (orderResponse.data && orderResponse.data.success) {
+        orderNumber = orderResponse.data.orderNumber;
+        console.log('✅ Найден настоящий номер заказа:', orderNumber);
+      }
+    } catch (err) {
+      console.log('⚠️ Не удалось получить номер заказа, используем ORD-' + cartId);
+    }
+    
+    if (!orderNumber) {
+      orderNumber = `ORD-${cartId}`;
+    }
+    
+    const orderDetails = {
+      userId: cart.clientId,
+      orderId: orderNumber,
+      cartId: cartId,
+      totalAmount: cart.totalAmount,
+      items: cart.items?.map(item => ({
+        productId: item.productId,
+        productName: item.productName,
+        quantity: item.quantity,
+        price: item.price
+      })) || []
+    };
+    
+    console.log('💰 Открытие оплаты для заказа:', orderDetails);
+    
+    setCurrentOrderDetails(orderDetails);
+    setShowPaymentModal(true);
+    setShowModal(false);
+  };
+
+  // Обработка успешной оплаты
+  const handlePaymentSuccess = useCallback((paymentData) => {
+    console.log('✅ Оплата успешна:', paymentData);
+    setTimeout(() => {
+    loadData(); // ← ОБНОВЛЯЕМ ЗАКАЗЫ ЧЕРЕЗ 2 СЕКУНДЫ
+  }, 2000);
+  }, [loadData]);
 
   useEffect(() => {
     loadData();
@@ -180,8 +254,9 @@ const ClientCart = () => {
   const totalCarts = carts.length;
   const totalAmount = carts.reduce((sum, cart) => sum + (cart.totalAmount || 0), 0);
   const completedCarts = carts.filter(cart => cart.status === 'completed').length;
+  const pendingCarts = carts.filter(cart => cart.status === 'pending').length;
 
-  // Функция для отображения статуса (ИСПРАВЛЕННАЯ)
+  // Функция для отображения статуса
   const renderStatus = (cart) => {
     const status = cart.status || 'active';
     
@@ -207,8 +282,8 @@ const ClientCart = () => {
         case 'in_progress':
           return {
             text: '⚙️ В обработке',
-            bgColor: '#fff3e0',
-            textColor: '#ef6c00'
+            bgColor: '#e2dede',
+            textColor: '#797572'
           };
         
         case 'problem':
@@ -227,9 +302,9 @@ const ClientCart = () => {
         
         case 'pending':
           return {
-            text: '⏳ Ожидание',
-            bgColor: '#f5f5f5',
-            textColor: '#757575'
+            text: '⏳ Ожидание оплаты',
+            bgColor: '#fff3e0',
+            textColor: '#ed6c02'
           };
         
         case 'active':
@@ -301,6 +376,15 @@ const ClientCart = () => {
             </div>
             <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#182027ff' }}>
               {totalCarts}
+            </div>
+          </div>
+          
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '12px', color: '#666', marginBottom: '5px' }}>
+              В обработке
+            </div>
+            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#1976d2' }}>
+              {pendingCarts}
             </div>
           </div>
           
@@ -382,7 +466,7 @@ const ClientCart = () => {
         ))}
       </div>
 
-      {/* Модальное окно */}
+      {/* Модальное окно с деталями заказа */}
       {showModal && selectedCart && (
         <div style={{
           position: 'fixed',
@@ -525,7 +609,7 @@ const ClientCart = () => {
               )}
             </div>
             
-            {/* Итог */}
+            {/* Итог и кнопка оплаты */}
             <div style={{ 
               display: 'flex', 
               flexDirection: 'column',
@@ -557,6 +641,32 @@ const ClientCart = () => {
                 </div>
               </div>
               
+              {/* Кнопка оплаты - только для статуса pending */}
+              {selectedCart.status === 'pending' && (
+                <div style={{
+                  padding: '15px 30px',
+                  backgroundColor: '#fff3e0',
+                  textAlign: 'center',
+                  borderTop: '1px solid #ffe0b2'
+                }}>
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => handleOpenPayment(selectedCart)}
+                    style={{
+                      backgroundColor: '#ed6c02',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '12px 30px',
+                      fontSize: '16px',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    <i className="bi bi-credit-card"></i> Оплатить заказ
+                  </button>
+                </div>
+              )}
+              
               {selectedCart.status === 'completed' && (
                 <div style={{
                   padding: '15px 30px',
@@ -576,6 +686,19 @@ const ClientCart = () => {
           </div>
         </div>
       )}
+
+      {/* Модальное окно оплаты */}
+      <PaymentModal
+        show={showPaymentModal}
+        onClose={() => {
+          setShowPaymentModal(false);
+          setCurrentOrderDetails(null);
+        }}
+        orderDetails={currentOrderDetails}
+        onConfirm={handlePaymentSuccess}
+        onClearCart={() => {}}
+        authToken={getAuthToken()}
+      />
     </div>
   );
 };

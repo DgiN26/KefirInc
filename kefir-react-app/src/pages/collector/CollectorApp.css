@@ -1,4 +1,6 @@
 /* src/pages/collector/CollectorApp.css */
+
+/* Основной контейнер */
 .collector-app {
   font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
 }
@@ -20,15 +22,48 @@
   }
 }
 
-/* Стили для курсора фломастера */
-.cursor-felt-pen {
-  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M8 28l16-16-4-4L4 24z" fill="black"/><path d="M24 4l4 4-16 16-4-4z" fill="%23000000"/></svg>') 4 28, auto;
+/* Стили для курсора фломастера - ТОЛЬКО для элементов с этим классом */
+.collector-app .cursor-felt-pen {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M8 28l16-16-4-4L4 24z" fill="black"/><path d="M24 4l4 4-16 16-4-4z" fill="%23000000"/></svg>') 4 28, pointer !important;
 }
+
+/* Дополнительно для кнопок, которые должны иметь курсор-указатель */
+.collector-app .cursor-felt-pen,
+.collector-app button.cursor-felt-pen,
+.collector-app [role="button"].cursor-felt-pen {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M8 28l16-16-4-4L4 24z" fill="black"/><path d="M24 4l4 4-16 16-4-4z" fill="%23000000"/></svg>') 4 28, pointer !important;
+}
+
+/* Для отключенных кнопок */
+.collector-app button.cursor-felt-pen:disabled,
+.collector-app .cursor-felt-pen:disabled {
+  cursor: not-allowed !important;
+  opacity: 0.5;
+}
+
+/* УБИРАЕМ ГЛОБАЛЬНЫЕ СЕЛЕКТОРЫ! */
+/* Удаляем или комментируем эти блоки:
+
+.collector-app * {
+  cursor: url(...) !important;
+}
+
+button, input, .btn, [onclick] {
+  cursor: url(...) !important;
+}
+
+.collector-app button,
+.collector-app input[type="button"],
+.collector-app input[type="submit"],
+.collector-app [role="button"] {
+  cursor: url(...) !important;
+}
+
+*/
 
 /* Эффекты наведения для элементов */
 .order-card-hover:hover {
   transform: translateY(-2px);
-  /*box-shadow: 2px 2px 0 #000;*/
   transition: all 0.2s ease;
 }
 
@@ -49,51 +84,4 @@
 .print-effect {
   text-shadow: 0 1px 0 rgba(0,0,0,0.1);
   letter-spacing: 0.3px;
-}
-/* src/pages/collector/CollectorApp.css */
-
-/* ГЛОБАЛЬНЫЙ КУРСОР ДЛЯ ВСЕХ КЛИКАБЕЛЬНЫХ ЭЛЕМЕНТОВ */
-.collector-app button,
-.collector-app input[type="button"],
-.collector-app input[type="submit"],
-.collector-app .cursor-felt-pen,
-.collector-app [role="button"] {
-  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M8 28l16-16-4-4L4 24z" fill="black"/><path d="M24 4l4 4-16 16-4-4z" fill="%23000000"/></svg>') 4 28, auto !important;
-}
-
-/* Для отключенных кнопок */
-.collector-app button:disabled,
-.collector-app input[type="button"]:disabled,
-.collector-app input[type="submit"]:disabled {
-  cursor: not-allowed !important;
-}
-
-/* Для всех интерактивных элементов в коллекторе */
-.collector-app * {
-  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M8 28l16-16-4-4L4 24z" fill="black"/><path d="M24 4l4 4-16 16-4-4z" fill="%23000000"/></svg>') 4 28, auto !important;
-}
-
-/* Исключения для текстовых полей */
-.collector-app input[type="text"],
-.collector-app input[type="email"],
-.collector-app input[type="password"],
-.collector-app textarea {
-  cursor: text !important;
-}
-
-/* Оверрайд для стандартного курсора браузера */
-button, input, .btn, [onclick] {
-  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M8 28l16-16-4-4L4 24z" fill="black"/><path d="M24 4l4 4-16 16-4-4z" fill="%23000000"/></svg>') 4 28, auto !important;
-}
-
-.cursor-felt-pen:hover {
-  border: 2px solid #dee2e6 !important;
-  box-shadow: none !important;
-  outline: none !important;
-}
-
-.orders-list .cursor-felt-pen:hover {
-  border: 2px solid #dee2e6 !important;
-  box-shadow: none !important;
-  outline: none !important;
 }
