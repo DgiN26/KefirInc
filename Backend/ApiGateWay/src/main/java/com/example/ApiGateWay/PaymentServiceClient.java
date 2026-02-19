@@ -66,4 +66,25 @@ public interface PaymentServiceClient {
 
     @GetMapping("/api/payments/health")
     ResponseEntity<Map<String, Object>> PaymentsHealth();
+
+    @PostMapping("/api/payments/transfer")
+    ResponseEntity<Map<String, Object>> transfer(@RequestBody Map<String, Object> request);
+
+    @GetMapping("/api/payments/payback/process")
+    ResponseEntity<Map<String, Object>> processPayBack();
+
+    @PostMapping("/api/payments/create-cart")
+    ResponseEntity<Map<String, Object>> createPaymentCart(@RequestBody Map<String, Object> request);
+
+    @GetMapping("/api/payments/card-info/{userId}")
+    ResponseEntity<Map<String, Object>> getCardInfo(@PathVariable("userId") Long userId);
+
+    @GetMapping("/api/payments/payback/status")
+    ResponseEntity<Map<String, Object>> getPayBackStatus();
+
+    @GetMapping("/api/payments/payback/scheduler-status")
+    ResponseEntity<Map<String, Object>> getPayBackSchedulerStatus();
+
+    @PostMapping("/api/payments/card-payment")
+    ResponseEntity<Map<String, Object>> cardPayment(@RequestBody Map<String, Object> request);
 }

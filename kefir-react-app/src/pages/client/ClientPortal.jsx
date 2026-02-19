@@ -279,8 +279,9 @@ const handleCheckout = useCallback(async () => {
     // Извлекаем userId из токена
     const userId = extractUserIdFromToken(token);
     
-    // СОЗДАЕМ ЗАКАЗ СО СТАТУСОМ "PENDING" (товары НЕ списываются)
-    const orderData = {
+    // НЕ СОЗДАЕМ ЗАКАЗ НА СЕРВЕРЕ!
+    // Просто подготавливаем данные для модального окна
+    const orderDetails = {
       userId: userId,
       items: cart.map(item => ({
         productId: item.id,
@@ -288,47 +289,21 @@ const handleCheckout = useCallback(async () => {
         quantity: item.quantity,
         price: item.price
       })),
-      totalAmount: calculateTotal,
-      status: 'pending' // Важно! Статус "ожидает оплаты"
+      totalAmount: calculateTotal
     };
-
-    // Создаем заказ (без списания товаров!)
-    const response = await axios.post(
-      'http://localhost:8080/api/orders',
-      orderData,
-      getAuthHeaders()
-    );
     
-    if (response.status === 200 || response.status === 201) {
-      const orderId = response.data.id || response.data.orderId;
-      
-      // Открываем модальное окно оплаты
-      setCurrentOrderDetails({
-        ...orderData,
-        orderId: orderId,
-        // Сохраняем копию корзины для списания после оплаты
-        items: [...cart.map(item => ({
-          productId: item.id,
-          quantity: item.quantity,
-          price: item.price,
-          name: item.name
-        }))]
-      });
-      setShowPaymentModal(true);
-      
-      // НЕ очищаем корзину сразу! Только после успешной оплаты
-      // setCart([]); - ЭТО НАДО УБРАТЬ
-      
-      await fetchProducts(); // Обновляем каталог (но товары еще на складе)
-    }
+    // Открываем модальное окно оплаты
+    setCurrentOrderDetails(orderDetails);
+    setShowPaymentModal(true);
+    
+    setOrderStatus(null);
+    
   } catch (err) {
-    console.error('Ошибка при создании заказа:', err);
+    console.error('Ошибка при подготовке к оплате:', err);
     setOrderStatus('error');
     setTimeout(() => setOrderStatus(null), 3000);
-  } finally {
-    setOrderStatus(null);
   }
-}, [cart, calculateTotal, getAuthToken, getAuthHeaders, fetchProducts, extractUserIdFromToken]);
+}, [cart, calculateTotal, getAuthToken, extractUserIdFromToken]);
 
 const handlePaymentSuccess = useCallback((paymentData) => {
   console.log('✅ Оплата успешна:', paymentData);

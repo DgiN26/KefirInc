@@ -88,7 +88,7 @@ public class VozvratProcessorService {
                     record.getClientId(),    // user_id
                     record.getCartId(),      // cart_id
                     record.getPrice(),       // price (возвращаемая сумма)
-                    record.getCreatedDate()  // created_date из carts
+                    record.getCreatedDate() // created_date из carts
             );
 
             payBackRepository.save(payBack);

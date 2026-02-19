@@ -2189,6 +2189,39 @@ WHERE id = ?
         }
     }
 
+    @DeleteMapping("/cart/{cartId}")
+    public ResponseEntity<?> deleteCart(@PathVariable Integer cartId,
+                                        @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        try {
+            Integer userId = extractUserIdFromToken(authHeader);
+
+            // Проверяем, что заказ принадлежит пользователю
+            String checkSql = "SELECT client_id, status FROM carts WHERE id = ?";
+            Map<String, Object> cart = jdbcTemplate.queryForMap(checkSql, cartId);
+
+            if (!cart.get("client_id").equals(userId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("success", false, "error", "Заказ не принадлежит пользователю"));
+            }
+
+            if (!"pending".equals(cart.get("status"))) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("success", false, "error", "Можно удалять только заказы в статусе 'pending'"));
+            }
+
+            // Удаляем связанные записи
+            jdbcTemplate.update("DELETE FROM cart_items WHERE cart_id = ?", cartId);
+            jdbcTemplate.update("DELETE FROM carts WHERE id = ?", cartId);
+
+            return ResponseEntity.ok(Map.of("success", true, "message", "Заказ успешно удален"));
+
+        } catch (Exception e) {
+            log.error("Ошибка при удалении заказа: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "error", e.getMessage()));
+        }
+    }
+
     @GetMapping("/cart/client/{clientId}/full")
     public ResponseEntity<?> getClientCartsFull(@PathVariable int clientId) {
         try {
@@ -5529,6 +5562,21 @@ public ResponseEntity<?> getProcessingOrders(
         }
     }
 
+    @GetMapping("/payback/process")
+    public ResponseEntity<Map<String, Object>> processPayBack() {
+        return paymentServiceClient.processPayBack();
+    }
+
+    @GetMapping("/payback/status")
+    public ResponseEntity<Map<String, Object>> getPayBackStatus() {
+        return paymentServiceClient.getPayBackStatus();
+    }
+
+    @GetMapping("/payback/scheduler-status")
+    public ResponseEntity<Map<String, Object>> getPayBackSchedulerStatus() {
+        return paymentServiceClient.getPayBackSchedulerStatus();
+    }
+
     @GetMapping("/clients/{clientId}/deliveries-info")
     public Map<String, Object> getClientWithDeliveries(@PathVariable Integer clientId) {
         Object client = clientService.getClient(clientId);
@@ -5737,6 +5785,47 @@ public ResponseEntity<?> getProcessingOrders(
         }
     }
 
+    @PostMapping("/payments/create-cart")
+    public ResponseEntity<Map<String, Object>> createPaymentCart(@RequestBody Map<String, Object> request,
+                                                                 @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        try {
+            Integer userId = extractUserIdFromToken(authHeader);
+            request.put("user_id", userId);
+
+            ResponseEntity<Map<String, Object>> response = paymentServiceClient.createPaymentCart(request);
+            return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
+
+        } catch (Exception e) {
+            log.error("❌ Ошибка создания платежной карты: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/payments/card-info/{userId}")
+    public ResponseEntity<Map<String, Object>> getCardInfo(@PathVariable Long userId) {
+        try {
+            ResponseEntity<Map<String, Object>> response = paymentServiceClient.getCardInfo(userId);
+            return ResponseEntity.ok(response.getBody());
+        } catch (Exception e) {
+            log.error("❌ Ошибка получения информации о карте: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/payments/card-payment")
+    public ResponseEntity<Map<String, Object>> cardPayment(@RequestBody Map<String, Object> request,
+                                                           @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        try {
+            ResponseEntity<Map<String, Object>> response = paymentServiceClient.cardPayment(request);
+            return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "error", e.getMessage()));
+        }
+    }
+
     @PostMapping("/payments/create-account")
     public ResponseEntity<?> createPaymentAccount(
             @RequestBody Map<String, Object> request,
@@ -5781,21 +5870,60 @@ public ResponseEntity<?> getProcessingOrders(
         try {
             log.info("🔍 Проверка существования счета для userId: {}", userId);
 
-            ResponseEntity<Map<String, Object>> response =
-                    paymentServiceClient.accountExists(userId);
+            // Вызываем Feign клиент
+            ResponseEntity<Map<String, Object>> response = paymentServiceClient.accountExists(userId);
 
-            return ResponseEntity.ok(response.getBody());
+            // Проверяем статус ответа
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                return ResponseEntity.ok(response.getBody());
+            } else {
+                // Если статус не успешный, но нет исключения
+                return ResponseEntity.status(response.getStatusCode())
+                        .body(response.getBody() != null ?
+                                response.getBody() :
+                                Map.of("success", false, "error", "Unknown error"));
+            }
 
         } catch (FeignException.NotFound e) {
+            // 404 - счет не найден (это нормально)
+            log.info("Счет для userId {} не найден (404)", userId);
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "user_id", userId,
                     "account_exists", false
             ));
+
+        } catch (FeignException.BadRequest e) {
+            // 400 - неверный запрос
+            log.error("❌ Неверный запрос при проверке счета {}: {}", userId, e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "error", "Неверный запрос",
+                    "details", e.getMessage()
+            ));
+
+        } catch (FeignException e) {
+            // Другие Feign ошибки (500, таймауты и т.д.)
+            log.error("❌ Feign ошибка при проверке счета {}: status={}, message={}",
+                    userId, e.status(), e.getMessage());
+
+            return ResponseEntity.status(e.status())
+                    .body(Map.of(
+                            "success", false,
+                            "error", "Ошибка при обращении к payment-service",
+                            "status", e.status(),
+                            "details", e.getMessage()
+                    ));
+
         } catch (Exception e) {
-            log.error("❌ Ошибка проверки счета: {}", e.getMessage());
+            // Другие неожиданные ошибки
+            log.error("❌ Неожиданная ошибка проверки счета {}: {}", userId, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("success", false, "error", e.getMessage()));
+                    .body(Map.of(
+                            "success", false,
+                            "error", "Внутренняя ошибка сервера",
+                            "message", e.getMessage()
+                    ));
         }
     }
 
