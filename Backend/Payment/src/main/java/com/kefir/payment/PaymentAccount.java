@@ -27,18 +27,16 @@ public class PaymentAccount {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "card_number", nullable = false)
-    private String cardNumber;
-
-    // Конструкторы
+   // @Column(name = "card_number", nullable = false)
+   // private String cardNumber;
 
     public PaymentAccount() {
     }
 
-    public PaymentAccount(Long userId, BigDecimal cash, String cardNumber) {
+    public PaymentAccount(Long userId, BigDecimal cash) {
         this.userId = userId;
         this.cash = cash;
-        this.cardNumber = cardNumber;
+       // this.cardNumber = cardNumber;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
@@ -57,13 +55,6 @@ public class PaymentAccount {
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-
-    public String getCardNumber() {
-        return cardNumber;
-    }
-    public void setCardNumber(String cardNumber) {
-        this.cardNumber = cardNumber;
-    }
 
     public Long getUserId() { return userId; }
     public void setUserId(Long userId) { this.userId = userId; }

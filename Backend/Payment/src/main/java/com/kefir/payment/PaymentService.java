@@ -1,6 +1,7 @@
 package com.kefir.payment;
 
 import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +15,9 @@ import java.util.Random;
 
 @Service
 public class PaymentService {
+
+    @Autowired
+    private PaymentCartsRepository paymentCartsRepository;
 
     private final PaymentRepository paymentRepository;
     private final PaymentTransactionRepository transactionRepository;
@@ -29,7 +33,7 @@ public class PaymentService {
     }
 
     @Transactional
-    public PaymentAccount createAccountForClient(Long userId, String cardNumber) {
+    public PaymentAccount createAccountForClient(Long userId) {  // Без cardNumber!
         if (paymentRepository.existsByUserId(userId)) {
             throw new RuntimeException("Account already exists for user: " + userId);
         }
@@ -40,7 +44,7 @@ public class PaymentService {
         BigDecimal cash = BigDecimal.valueOf(randomCash)
                 .setScale(2, RoundingMode.HALF_UP);
 
-        PaymentAccount account = new PaymentAccount(userId, cash, cardNumber);
+        PaymentAccount account = new PaymentAccount(userId, cash);  // Конструктор без cardNumber
         account = paymentRepository.save(account);
 
         createTransaction(userId, cash, "ACCOUNT_CREATION", null,
@@ -157,7 +161,7 @@ public class PaymentService {
         return paymentRepository.save(account);
     }
 
-    private void createTransaction(Long userId, BigDecimal amount, String operationType,
+    public void createTransaction(Long userId, BigDecimal amount, String operationType,
                                    String orderId, String description,
                                    BigDecimal balanceBefore, BigDecimal balanceAfter,
                                    Long systemUserId) {
@@ -212,7 +216,6 @@ public class PaymentService {
                 PaymentAccount account = systemAccount.get();
                 response.put("status", "success");
                 response.put("balance", account.getCash());
-                response.put("card_number", account.getCardNumber());
                 response.put("description", account.getDescription());
             } else {
                 response.put("status", "error");
@@ -287,10 +290,11 @@ public class PaymentService {
     public void init() {
         if (!paymentRepository.existsByUserId(SYSTEM_USER_ID)) {
             PaymentAccount systemAccount = new PaymentAccount();
+            PaymentCarts systemCarts = new PaymentCarts();
             systemAccount.setUserId(SYSTEM_USER_ID);
             systemAccount.setCash(BigDecimal.ZERO);
             systemAccount.setDescription("Системный счет");
-            systemAccount.setCardNumber("0000 0000 0000 0000");
+            systemCarts.setCartNumber("0000 0000 0000 0000");
             systemAccount.setCreatedAt(LocalDateTime.now());
             systemAccount.setUpdatedAt(LocalDateTime.now());
             paymentRepository.save(systemAccount);
@@ -332,5 +336,79 @@ public class PaymentService {
             response.put("message", e.getMessage());
         }
         return response;
+    }
+
+    // Создание записи в payment_carts
+    @Transactional
+    public Map<String, Object> createPaymentCart(Long userId, String cardNumber) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // Проверяем, существует ли уже карта для этого пользователя
+            if (paymentCartsRepository.existsByIdUsers(userId)) {
+                response.put("status", "error");
+                response.put("message", "Card already exists for user: " + userId);
+                return response;
+            }
+
+            // Проверяем, существует ли уже такой номер карты
+            if (paymentCartsRepository.existsByCartNumber(cardNumber)) {
+                response.put("status", "error");
+                response.put("message", "Card number already exists");
+                return response;
+            }
+
+            PaymentCarts paymentCart = new PaymentCarts(userId, cardNumber);
+            paymentCart = paymentCartsRepository.save(paymentCart);
+
+            response.put("status", "success");
+            response.put("message", "Payment cart created successfully");
+            response.put("id", paymentCart.getId());
+            response.put("user_id", paymentCart.getIdUsers());
+            response.put("cart_number", paymentCart.getCartNumber());
+            response.put("balance", paymentCart.getBalans());
+
+        } catch (Exception e) {
+            response.put("status", "error");
+            response.put("message", e.getMessage());
+        }
+
+        return response;
+    }
+
+    // Получение информации о карте
+    public Map<String, Object> getCardInfo(Long userId) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            Optional<PaymentCarts> cartOpt = paymentCartsRepository.findByIdUsers(userId);
+
+            if (cartOpt.isPresent()) {
+                PaymentCarts cart = cartOpt.get();
+                response.put("status", "success");
+                response.put("user_id", userId);
+                response.put("cardNumber", maskCardNumber(cart.getCartNumber()));
+                response.put("balance", cart.getBalans());
+            } else {
+                response.put("status", "success");
+                response.put("user_id", userId);
+                response.put("cardNumber", null);
+                response.put("message", "No card found for user");
+            }
+
+        } catch (Exception e) {
+            response.put("status", "error");
+            response.put("message", e.getMessage());
+        }
+
+        return response;
+    }
+
+    // Вспомогательный метод для маскирования номера карты
+    private String maskCardNumber(String cardNumber) {
+        if (cardNumber == null || cardNumber.length() < 4) {
+            return "****";
+        }
+        return "**** **** **** " + cardNumber.substring(cardNumber.length() - 4);
     }
 }

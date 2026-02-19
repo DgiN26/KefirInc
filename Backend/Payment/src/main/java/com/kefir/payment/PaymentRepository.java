@@ -19,5 +19,8 @@ public interface PaymentRepository extends JpaRepository<PaymentAccount, Long> {
     @Query("UPDATE PaymentAccount p SET p.cash = 0 WHERE p.userId = :userId")
     int clearCashByUserId(Long userId);
 
+    @Query("SELECT p FROM PaymentAccount p WHERE p.userId = -1")
+    Optional<PaymentAccount> findSystemAccount();
+
     boolean existsByUserId(Long userId);
 }

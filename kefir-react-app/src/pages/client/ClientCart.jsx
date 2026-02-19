@@ -14,6 +14,11 @@ const ClientCart = () => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [currentOrderDetails, setCurrentOrderDetails] = useState(null);
 
+  // Состояние для подтверждения удаления
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [cartToDelete, setCartToDelete] = useState(null);
+  const [deletingCart, setDeletingCart] = useState(false);
+
   // Функция для получения clientId из localStorage
   const getClientId = useCallback(() => {
     try {
@@ -79,11 +84,11 @@ const ClientCart = () => {
 
       console.log('Получено корзин до сортировки:', cartsData.length);
 
-      // СОРТИРУЕМ ПО ВОЗРАСТАНИЮ ID
+      // СОРТИРУЕМ ПО УБЫВАНИЮ ID
       const sortedCarts = [...cartsData].sort((a, b) => {
         const idA = a.id || 0;
         const idB = b.id || 0;
-        return idB - idA; // По убыыванию
+        return idB - idA; // По убыванию
       });
 
       console.log('Получено корзин после сортировки:', sortedCarts.length);
@@ -97,6 +102,51 @@ const ClientCart = () => {
       setLoading(false);
     }
   }, [fetchCarts, getClientId]);
+
+  // Функция удаления заказа
+  const handleDeleteOrder = async () => {
+    if (!cartToDelete) return;
+    
+    setDeletingCart(true);
+    
+    try {
+      // Отправляем запрос на удаление заказа
+      const response = await axios.delete(
+        `http://localhost:8080/api/cart/${cartToDelete.id}`,
+        {
+          headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        }
+      );
+      
+      if (response.data && response.data.success) {
+        // Удаляем заказ из локального состояния
+        setCarts(prev => prev.filter(cart => cart.id !== cartToDelete.id));
+        setShowDeleteConfirm(false);
+        setCartToDelete(null);
+        setShowModal(false);
+      } else {
+        alert('Ошибка при удалении заказа');
+      }
+    } catch (err) {
+      console.error('Ошибка удаления заказа:', err);
+      alert(err.response?.data?.message || 'Ошибка при удалении заказа');
+    } finally {
+      setDeletingCart(false);
+    }
+  };
+
+  // Открыть подтверждение удаления
+  const openDeleteConfirm = (cart, e) => {
+    e.stopPropagation();
+    setCartToDelete(cart);
+    setShowDeleteConfirm(true);
+  };
+
+  // Закрыть подтверждение удаления
+  const closeDeleteConfirm = () => {
+    setShowDeleteConfirm(false);
+    setCartToDelete(null);
+  };
 
   const handleCartClick = (cart) => {
     setSelectedCart(cart);
@@ -159,8 +209,8 @@ const ClientCart = () => {
   const handlePaymentSuccess = useCallback((paymentData) => {
     console.log('✅ Оплата успешна:', paymentData);
     setTimeout(() => {
-    loadData(); // ← ОБНОВЛЯЕМ ЗАКАЗЫ ЧЕРЕЗ 2 СЕКУНДЫ
-  }, 2000);
+      loadData(); // Обновляем заказы через 2 секунды
+    }, 2000);
   }, [loadData]);
 
   useEffect(() => {
@@ -641,47 +691,133 @@ const ClientCart = () => {
                 </div>
               </div>
               
-              {/* Кнопка оплаты - только для статуса pending */}
-              {selectedCart.status === 'pending' && (
-                <div style={{
-                  padding: '15px 30px',
-                  backgroundColor: '#fff3e0',
-                  textAlign: 'center',
-                  borderTop: '1px solid #ffe0b2'
-                }}>
-                  <button
-                    className="btn btn-primary"
-                    onClick={() => handleOpenPayment(selectedCart)}
-                    style={{
-                      backgroundColor: '#ed6c02',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '8px',
-                      padding: '12px 30px',
-                      fontSize: '16px',
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    <i className="bi bi-credit-card"></i> Оплатить заказ
-                  </button>
-                </div>
-              )}
-              
-              {selectedCart.status === 'completed' && (
-                <div style={{
-                  padding: '15px 30px',
-                  backgroundColor: '#e8f5e9',
-                  textAlign: 'center',
-                  color: '#2e7d32',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px'
-                }}>
-                  <span style={{ fontSize: '16px' }}>✅</span>
-                  Заказ завершен
-                </div>
-              )}
+              {/* Кнопки действий */}
+              <div style={{
+                padding: '15px 30px',
+                backgroundColor: '#fff3e0',
+                textAlign: 'center',
+                borderTop: '1px solid #ffe0b2',
+                display: 'flex',
+                gap: '10px',
+                justifyContent: 'center'
+              }}>
+                {selectedCart.status === 'pending' && (
+                  <>
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => handleOpenPayment(selectedCart)}
+                      style={{
+                        backgroundColor: '#ed6c02',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        padding: '12px 20px',
+                        fontSize: '16px',
+                        fontWeight: 'bold',
+                        flex: 1
+                      }}
+                    >
+                      <i className="bi bi-credit-card"></i> Оплатить
+                    </button>
+                    
+                    <button
+                      className="btn btn-outline-danger"
+                      onClick={(e) => openDeleteConfirm(selectedCart, e)}
+                      style={{
+                        borderRadius: '8px',
+                        padding: '12px 20px',
+                        fontSize: '16px',
+                        flex: 1
+                      }}
+                    >
+                      <i className="bi bi-trash"></i> Удалить
+                    </button>
+                  </>
+                )}
+                
+                {selectedCart.status === 'completed' && (
+                  <div style={{
+                    backgroundColor: '#e8f5e9',
+                    color: '#2e7d32',
+                    padding: '12px 20px',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    width: '100%'
+                  }}>
+                    <span style={{ fontSize: '16px' }}>✅</span>
+                    Заказ завершен
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Модальное окно подтверждения удаления */}
+      {showDeleteConfirm && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1100,
+          padding: '20px'
+        }} onClick={closeDeleteConfirm}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            width: '100%',
+            maxWidth: '400px',
+            padding: '25px',
+            textAlign: 'center'
+          }} onClick={e => e.stopPropagation()}>
+            <div style={{ fontSize: '48px', marginBottom: '15px', color: '#d32f2f' }}>
+              <i className="bi bi-exclamation-triangle-fill"></i>
+            </div>
+            <h3 style={{ marginBottom: '10px' }}>Подтверждение удаления</h3>
+            <p style={{ marginBottom: '20px', color: '#666' }}>
+              Вы уверены, что хотите удалить заказ #{cartToDelete?.id}?
+              <br />
+              <small>Это действие нельзя отменить.</small>
+            </p>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+              <button
+                onClick={closeDeleteConfirm}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: '#6c757d',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer'
+                }}
+                disabled={deletingCart}
+              >
+                Отмена
+              </button>
+              <button
+                onClick={handleDeleteOrder}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: '#dc3545',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: deletingCart ? 'wait' : 'pointer'
+                }}
+                disabled={deletingCart}
+              >
+                {deletingCart ? 'Удаление...' : 'Удалить'}
+              </button>
             </div>
           </div>
         </div>

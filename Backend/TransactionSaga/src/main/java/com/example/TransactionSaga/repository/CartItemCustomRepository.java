@@ -5,6 +5,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,13 +48,18 @@ public class CartItemCustomRepository {
                     }
 
                     @Override
-                    public Double getPrice() {
-                        return row[2] != null ? ((Number) row[2]).doubleValue() : null;
+                    public BigDecimal getPrice() {
+                        return row[2] != null ? new BigDecimal(row[2].toString()) : null;
                     }
 
                     @Override
-                    public Integer getClientId() {
-                        return row[3] != null ? ((Number) row[3]).intValue() : null;
+                    public Long getClientId() {
+                        return row[3] != null ? Long.valueOf(row[3].toString()) : null;
+                    }
+
+                    @Override
+                    public String getStatus() {
+                        return "created";
                     }
 
                     @Override
